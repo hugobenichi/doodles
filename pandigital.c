@@ -9,7 +9,7 @@ int is_pandigital(int val)
   
   while(rez && val > 0)
   {
-    int bit = 1 << (val % 10) - 1; // 1 at bit index 0
+    int bit = 1 << ( (val % 10) - 1 ); // 1 at bit index 0
     if( flags & bit )
       rez = 0;
     flags += bit;
