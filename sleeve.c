@@ -4,10 +4,12 @@
 void sleeve(int* table, int len)
 {
 
-  int i = 0;
+  table[0] = 0;
+  table[1] = 0;
+  int i = 2;
   while(len-i)
     table[i++] = 1;
-      
+        
   i = 2;
   while(len-i)
   {
