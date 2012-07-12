@@ -1,22 +1,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int is_pandigital(int val)
+int is_prod_pandigital(int a, int b)
 {
   int flags = 0;
   int len = 0;
   int rez = 1;
-  
-  while(rez && val > 0)
+  int c = a*b;
+  while(rez && a > 0)
   {
-    int bit = 1 << (val % 10) - 1; // 1 at bit index 0
+    int bit = 1 << ((a % 10) - 1);
     if( flags & bit )
       rez = 0;
     flags += bit;
-    val /= 10;
+    a /= 10;
     len++;
   }
-  
+  while(rez && b > 0)
+  {
+    int bit = 1 << ((b % 10) - 1);
+    if( flags & bit )
+      rez = 0;
+    flags += bit;
+    b /= 10;
+    len++;
+  }
+  while(rez && c > 0)
+  {
+    int bit = 1 << ((c % 10) - 1);
+    if( flags & bit )
+      rez = 0;
+    flags += bit;
+    c /= 10;
+    len++;
+  }    
+  rez *= len;
   while(rez && len)
   {
     if ( !(flags & 0x0001) )
@@ -30,24 +48,42 @@ int is_pandigital(int val)
 
 int main(void)
 {
-
-  int lim = 100000000; //9876543; //21;
   
-  int *primes = malloc( lim * sizeof(int) );
-  sleeve(primes, lim);
-
-  int i = 1000;
-  int best = 0;
-  while( lim -i )
+  
+  int i, j, lim = 10000, sum = 0;
+  int* found = malloc( sizeof(int) * 10000);
+  
+  for(i = 0; i < 10000; i++)
+    found[i] = 0;
+  
+  /* this twin loop could be made much faster, 
+   * by killing some terms like 1000 * 1000
+   * but too lazy
+   */
+  i = 1;
+  while ( lim - i)
   {
-    if ( primes[i] && is_pandigital(i) )
-      best = i;
+    j = i+1;
+    while ( lim - j)
+    {
+      int rez = 0;
+      if ( 9 == is_prod_pandigital(i,j))    // can calculate flags for i and reuse the results
+      {
+        printf("found:  %i x %i = %i\n", i, j, i*j);
+        if ( !found[i*j] )
+        {
+          sum += i*j;
+          found[i*j] = 1; 
+        }
+      }
+      j++;
+    }
     i++;
   }
   
-  printf("%i\n",best);
-  
-  free(primes);
+  printf("raw sum: %i\n",sum);
 
+  free(found);
+  
   exit(0);
 }
