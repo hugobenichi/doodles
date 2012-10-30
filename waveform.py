@@ -41,7 +41,11 @@ def read_binary( path, length = 1000, frame = -1 ):
 	the 'length' parameter controls the number of points ver waveform.
 	the 'frame' parameter controls the total number of waveforms to read.
 	"""
-	file = open( path, 'rb' )     #don't forget 'rb' for reading binary
+	try:
+		file = open( path, 'rb' )     #don't forget 'rb' for reading binary
+	except IOError:
+		sys.stderr.write("error while opening binary file at %s\n" % path)
+		sys.exit(2)
 	frame_read = 0
 	try:
 		while (frame < 0 or frame > frame_read):
