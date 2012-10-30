@@ -47,9 +47,99 @@ def read_binary( path, length = 1000, frame = -1 ):
 		while (frame < 0 or frame > frame_read):
 			byte_waveform = file.read(length)
 			if not byte_waveform: break
-			waveform = numpy.fromiter( array.array( 'b', byte_waveform ), dtype=numpy.int )
-			yield numpy.append( waveform, numpy.linspace(0,0,trailing) )
+			yield numpy.fromiter( array.array( 'b', byte_waveform ), dtype=numpy.int )
 			frame_read += 1
 	finally:
 		file.close()
 
+
+"""
+accumulator object for getting mean of a set fo waveform
+"""
+class average:
+	def from_collection(waveform_collection):
+		mean = average()
+		for waveform in waveform_collection: mean.add(waveform)
+		return mean.compute()
+
+	def __init__(me):
+		me.mean = None
+		me.waveforms = 0
+
+	def add(me, waveform):
+		if me.mean is None: 
+			me.mean = numpy.linspace(0,0,len(waveform))
+		me.mean += waveform
+		me.waveforms += 1
+
+	def compute(me):
+		return me.mean / me.waveforms
+
+
+"""
+
+accumulator object to get mean spectrum of a set of waveforms
+"""
+class spectrum:
+	def from_collection(waveform_collection):
+		spec = spectrum()
+		for waveform in waveform_collection: spec.add(waveform)
+		return spec.compute()
+
+	def power( waveform ):
+		fft = numpy.fft.rfft(waveform)
+		return numpy.real( fft * numpy.conjugate(fft) )
+
+	def __init__(me):
+		me.components = average()
+
+	def add(me, waveform):
+		me.components.add(spectrum.power(waveform))
+
+	def compute(me):
+		return 10 * numpy.log10( me.components.compute() )
+
+"""
+glorified array to clean histogram preparation
+"""
+class slice_at:
+	def from_collection(index, waveform_collection):	
+		return [waveform[index] for waveform in waveform_collection]
+
+	def __init__(me, index):
+		me.at = index
+		me.values = []
+
+	def add(me, waveform):
+		me.values.append( waveform[me.at] )
+
+"""
+compute a matrix which is a stacked image of all waveforms in a set.
+ti improve dynamic range, every column is normalized independently using its maximum value
+"""
+class trace:
+	def from_collection(waveform_collection):
+		trace_mat = trace()
+		for waveform in waveform_collection: trace_mat.add(waveform)
+		return trace.compute()
+
+	def __init__(me):
+		me.trace = None
+
+	def add(me, waveform):
+		if me.trace is None:
+			me.trace = numpy.zeros( (len(waveform),256), dtype=numpy.dtype('d') )
+		for axis, height in enumerate(waveform):
+			me.trace[axix][128-height] += 1.0   # the y axis is reversed in the pylab.imshow() routine
+
+	def compute(me):
+		for col in me.trace:
+			max_of_col = max(col)
+			for heigth, pixel in enumerate(col):
+				col[heigth] /= max_col
+		return me.trace
+
+
+"""
+for the four above class write with reduce function (using generator reuse)
+"""
