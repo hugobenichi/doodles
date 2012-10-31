@@ -92,8 +92,8 @@ tes.plot.waveform( mean_wfm_data, output, show = to_plot )
 tes.plot.trace( wfmtrace_data, output, show = to_plot )
 
 if output is not None: 
-	numpy.savetxt( output + "spectrum" + ".val", mean_wfm_data )
-	numpy.savetxt( output + "average"  + ".val", spectrum_data )
+	numpy.savetxt( output + "average"  + ".val", mean_wfm_data )
+	numpy.savetxt( output + "spectrum" + ".val", spectrum_data )
 	numpy.savetxt( output + "trace"    + ".val", wfmtrace_data )
 
 
