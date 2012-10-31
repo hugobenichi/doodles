@@ -43,6 +43,7 @@ import getopt
 import numpy
 import tes.waveform
 import tes.plot
+import tes.filter
 
 try:
 	input = sys.argv[1]
@@ -81,18 +82,18 @@ freq = tes.waveform.freq(rate, length)
 time = tes.waveform.time(rate, length)
 
 
-cutoff = 10 * 1e6           # 50 MHz  -> 10 MHz -> 5 MHz
+cutoff = 50 * 1e6           # 50 MHz  -> 10 MHz -> 5 MHz
 notch_start = 2.6 * 1e6
 notch_stop  = 5.0 * 1e6
 
 band_index, notch_i_s, notch_i_e = 0, 0, 0
 
-while freq[band_index+1] < cutoff: band_index += 1
+while freq[band_index] < cutoff: band_index += 1
 while freq[notch_i_s] < notch_start: notch_i_s += 1
 while freq[notch_i_e] < notch_stop: notch_i_e += 1
 
 for waveform in tes.waveform.read_binary( path=input, length = length, frame = frame):
-	filtered = tes.filter.lowpass(waveform)
+	filtered = tes.filter.lowpass(waveform, band_index)
 	mean_wfm.add(filtered)
 	wfmtrace.add(filtered)
 

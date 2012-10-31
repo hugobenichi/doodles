@@ -1,6 +1,6 @@
 import numpy
 
-def apply_filter( waveform, filter_action )
+def apply_filter( waveform, filter_action ):
 	fft = numpy.fft.rfft( waveform ) 
 	filter_action(fft)
 	return numpy.fft.irfft( fft )
@@ -10,21 +10,23 @@ def bandpass(waveform, array_of_range_pairs):
 		for start, end in array_of_range_pairs: fft[start:end] = 0
 	return apply_filter(waveform, to_zero)
 
-def lowpass(waveform, upper_index)
-	def to_zero(fft): fft: fft[upper_index:] = 0
+def lowpass(waveform, upper_index):
+	def to_zero(fft): fft[upper_index:] = 0
 	return apply_filter(waveform, to_zero)
 
-def highpass(waveform, lower_index)
-	def to_zero(fft): fft: fft[:lower_index] = 0
+def highpass(waveform, lower_index):
+	def to_zero(fft): fft[:lower_index] = 0
 	return apply_filter(waveform, to_zero)
 
 def arbitrary(waveform, transfer):
-	def to_zero(fft): fft: fft = fft * transfer
+	def to_zero(fft): fft = fft * transfer
 	return apply_filter(waveform, to_zero)
 
-def (waveform_collection, filter):
+def something(waveform_collection, filter):
 	"""
 	think about iterator gluing idiom
+	waveform generator -> rfft generator -> filter -> irfft generator
+	add forkign pipes
 	"""	
 	return 0
 
