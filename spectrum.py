@@ -1,9 +1,11 @@
 #!/usr/bin/env python3 
 ########################################################
 #                                                      #
-#   script to generate the mean fft spectrum from      #
-#   a binary file of waveforms (signed char)           #
+#   script to generate the mean fft spectrum           #
+#   and mean waveform from a binary file of            #
+#   waveforms (signed char)                            #
 #                                                      #
+#	  creation:    2012/10/30                            #   
 #   based on:    github.com/hugobenichi/tes            #
 #   copyright:   hugo benichi 2012                     #
 #   contact:     hugo[dot]benichi[at]m4x[dot]org       #
@@ -72,13 +74,21 @@ except TypeError:
 	sys.exit(22)
 
 
-waveforms = tes.waveform.read_binary( path=input, length = length, frame = frame)
+mean_wfm = tes.waveform.average()
+spectrum = tes.waveform.spectrum()
 
-spectrum_data = [ tes.waveform.freq(rate, length),
-                  tes.waveform.spectrum.from_collection( waveforms ) ]
+for waveform in tes.waveform.read_binary( path=input, length = length, frame = frame):
+	mean_wfm.add(waveform)
+	spectrum.add(waveform) 
+
+mean_wfm_data = [ tes.waveform.time(rate, length), mean_wfm.compute() ]
+spectrum_data = [ tes.waveform.freq(rate, length), spectrum.compute() ]
 
 tes.plot.spectrum( spectrum_data, output, show = to_plot )
+tes.plot.waveform( mean_wfm_data, output, show = to_plot )
 
-if output is not None: numpy.savetxt( output + ".val", spectrum_data )
+if output is not None: 
+	numpy.savetxt( output + "spectrum" + ".val", mean_wfm_data )
+	numpy.savetxt( output + "average"  + ".val", spectrum_data )
 
 
