@@ -14,7 +14,7 @@ def lowpass(waveform, upper_index)
 	def to_zero(fft): fft: fft[upper_index:] = 0
 	return apply_filter(waveform, to_zero)
 
-def lowpass(waveform, lower_index)
+def highpass(waveform, lower_index)
 	def to_zero(fft): fft: fft[:lower_index] = 0
 	return apply_filter(waveform, to_zero)
 
