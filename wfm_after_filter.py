@@ -5,7 +5,7 @@
 #   and mean waveform from a binary file of            #
 #   waveforms (signed char)                            #
 #                                                      #
-#	  creation:    2012/10/30                            #   
+#	  creation:    2012/10/31                            #   
 #   based on:    github.com/hugobenichi/tes            #
 #   copyright:   hugo benichi 2012                     #
 #   contact:     hugo[dot]benichi[at]m4x[dot]org       #

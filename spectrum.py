@@ -15,6 +15,8 @@
 help = """
   this script attempts to read a binary file of waveforms
   encoded in signed char and computes its mean fft spectrum
+  it also computes the mean waveform and the trace image
+  of all waveforms stacked together. 
   
   argument: 
     path/to/input/binary/file    (1st place on the command line)
@@ -28,9 +30,10 @@ help = """
     -p,        --plot            show the fft spectrum
 
   comments:
-    - you need to have the "tes" python package on your python path ()
+    - you need to have the "tes" python package on your python path
     - if neither -s nor -p options are specified, nothing happens
-    - spectrum data are saved in textual format using numpy.savetxt.
+    - spectrum and mean waveform data are saved in textual format 
+      using numpy.savetxt.
         1st line: frequency axis, space seperated
         2nd line: frequency components in dB, space seperated
         use numpy.loadtxt("path/to/data") to reload the data
@@ -94,6 +97,6 @@ tes.plot.trace( wfmtrace_data, output, show = to_plot )
 if output is not None: 
 	numpy.savetxt( output + "average"  + ".val", mean_wfm_data )
 	numpy.savetxt( output + "spectrum" + ".val", spectrum_data )
-	numpy.savetxt( output + "trace"    + ".val", wfmtrace_data )
+	numpy.savetxt( output + "trace"    + ".val", wfmtrace_data[1] )
 
 
