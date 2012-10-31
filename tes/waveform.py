@@ -134,13 +134,13 @@ class trace:
 		if me.trace is None:
 			me.trace = numpy.zeros( (len(waveform),256), dtype=numpy.dtype('d') )
 		for axis, height in enumerate(waveform):
-			me.trace[axix][128-height] += 1.0   # the y axis is reversed in the pylab.imshow() routine
+			me.trace[axis][128-height] += 1.0   # the y axis is reversed in the pylab.imshow() routine
 
 	def compute(me):
 		for col in me.trace:
 			max_of_col = max(col)
 			for heigth, pixel in enumerate(col):
-				col[heigth] /= max_col
+				col[heigth] /= max_of_col
 		return me.trace
 
 
