@@ -9,7 +9,7 @@ def waveform(waveform_data, path, show = False):
 		pyplot.xlabel( 'time' )
 		pyplot.ylabel( 'amplitude' )
 		pyplot.plot( time, waveform)
-		if path is not None: pyplot.savefig( path + ".png")
+		if path is not None: pyplot.savefig( path + "waveform.png")
 		if show: pyplot.show()
 
 def spectrum(spectrum_data, path, show = False):
@@ -25,7 +25,7 @@ def spectrum(spectrum_data, path, show = False):
 		pyplot.xlabel( 'frequency' )
 		pyplot.ylabel( 'power (dB)' )
 		pyplot.plot( freq, spectrum )
-		if path is not None: pyplot.savefig( path + ".png" )
+		if path is not None: pyplot.savefig( path + "spectrum.png" )
 		if show: pyplot.show()
 
 
@@ -60,5 +60,5 @@ def trace( trace_data, path, show = False):
                    extent=axis_range, interpolation='spline36', 
                    cmap=pylab.cm.Reds, 
                    aspect='auto')
-		if path is not None: pyplot.savefig(path + ".png", dpi=300)
+		if path is not None: pyplot.savefig(path + "trace.png", dpi=300)
 		if show: pyplot.show()
