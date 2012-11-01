@@ -134,9 +134,15 @@ class trace:
 		if me.trace is None:
 			me.trace = numpy.zeros( (len(waveform),256), dtype=numpy.dtype('d') )
 		for axis, height in enumerate(waveform):
+      # the y axis is reversed by default in pylab.imshow()
+			# therefore 128-height gives the correct y-axis points
+			# also, 128-height is implicity converted to math.floor(128-height) apparently
 			me.trace[axis][128-height] += 1.0   # the y axis is reversed in the pylab.imshow() routine
 
 	def compute(me):
+		"""
+		normalization by column to optimize dynamic range and local contrast
+		"""
 		for col in me.trace:
 			max_of_col = max(col)
 			for heigth, pixel in enumerate(col):
