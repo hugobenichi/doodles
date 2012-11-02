@@ -4,11 +4,11 @@ import matplotlib.pyplot as pyplot
 
 def waveform(waveform_data, path, show = False):
 	if path is not None or show:
-		time, waveform = waveform_data
 		pyplot.clf()
 		pyplot.xlabel( 'time' )
 		pyplot.ylabel( 'amplitude' )
-		pyplot.plot( time, waveform)
+		(x, to_plot) = (waveform_data[0], waveform_data[1:] )
+		for y in to_plot: pyplot.plot(x, y)
 		if path is not None: pyplot.savefig( path + "waveform.png")
 		if show: pyplot.show()
 
@@ -24,7 +24,8 @@ def spectrum(spectrum_data, path, show = False):
 		pyplot.xscale('log')
 		pyplot.xlabel( 'frequency' )
 		pyplot.ylabel( 'power (dB)' )
-		pyplot.plot( freq, spectrum )
+		(x, to_plot) = (spectrum_data[0], spectrum_data[1:] )
+		for y in to_plot: pyplot.plot(x, y)
 		if path is not None: pyplot.savefig( path + "spectrum.png" )
 		if show: pyplot.show()
 
