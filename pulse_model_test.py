@@ -21,12 +21,17 @@ length = 1000
 rate   = 5 * 1e-9
 cutoff = 10 * 1e6  # 10 MHz
 
+ampl = 106*2
+orig = 320
+rise = 1.0 / 0.13e-6
+fall = 1.0 / 0.6e-6
+dc   = -86
+
 time = tes.waveform.time(rate, length)
 pulse = tes.model.pulse( len(time), 
-                         1.0,
-                         40,
-                         0.20e-6,
-                         0.66e-6 )
-
+                         ampl,
+                         orig,
+                         rise * rate,
+                         fall * rate ) + dc
 
 tes.plot.waveform( (time, pulse), None, show = True )
