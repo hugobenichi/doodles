@@ -29,22 +29,15 @@ def spectrum(spectrum_data, path = None, show = False):
 		if path is not None: pyplot.savefig( path + "spectrum.png" )
 		if show: pyplot.show()
 
-
 def histogram(data, path = None, show = False, bins = 50):
 	if path is not None or show:
 		pyplot.clf()
-		fig = pyplot.figure()
-		ax = fig.add_subplot(111)
-		n, bins, patches = ax.hist(data, bin_num, normed=0, facecolor='green', alpha=0.75)
-		# hist uses numpy.histogram under the hood to create 'n' and 'bins'.
-		# numpy.histogram returns the bin edges, so there will be 50 probability
-		# density values in n, 51 bin edges in bins and 50 patches.  To get
-		# everything lined up, we'll compute the bin centers
-		bincenters = 0.5*(bins[1:]+bins[:-1])
-		ax.set_xlabel('voltage')
-		ax.set_ylabel('frequency')
-		ax.set_xlim( min(bins), max(bins) )
-		# add figure saving  + ".png"
+		n, edges, patches = pyplot.hist(data, bins, normed=0, facecolor='green', alpha=0.75)
+		bincenters = 0.5*(edges[1:]+edges[:-1])
+		pyplot.xlabel('voltage')
+		pyplot.ylabel('frequency')
+		pyplot.xlim( min(edges), max(edges) )
+		if path is not None: pyplot.savefig(path + "histo.png", dpi=300)
 		if show: pyplot.show()
 
 def trace( trace_data, path = None, show = False):
@@ -63,3 +56,4 @@ def trace( trace_data, path = None, show = False):
                    aspect='auto')
 		if path is not None: pyplot.savefig(path + "trace.png", dpi=300)
 		if show: pyplot.show()
+
