@@ -94,7 +94,7 @@ while freq[band_index] < cutoff: band_index += 1
 while freq[notch_i_s] < notch_start: notch_i_s += 1
 while freq[notch_i_e] < notch_stop: notch_i_e += 1
 
-for waveform in tes.waveform.read_binary( path=input, length = length, frame = frame):
+for waveform in tes.waveform.read_binary( path=input, length=length, frame=frame):
 	filtered = tes.filter.lowpass(waveform, band_index)
 	mean_wfm.add(filtered)
 	wfmtrace.add(filtered)

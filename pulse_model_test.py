@@ -1,9 +1,7 @@
 #!/usr/bin/env python3 
 ########################################################
 #                                                      #
-#   script to generate the mean fft spectrum           #
-#   and mean waveform from a binary file of            #
-#   waveforms (signed char)                            #
+#   simple test for functions of module tes.model      #
 #                                                      #
 #	  creation:    2012/11/02                            #   
 #   based on:    github.com/hugobenichi/tes            #
@@ -19,13 +17,13 @@ import tes.model
 
 length = 1000
 rate   = 5 * 1e-9
-cutoff = 10 * 1e6  # 10 MHz
 
 ampl = 106*2
 orig = 320
 rise = 1.0 / 0.13e-6
 fall = 1.0 / 0.6e-6
 dc   = -86
+
 
 time = tes.waveform.time(rate, length)
 pulse = tes.model.pulse( len(time), 
@@ -34,4 +32,18 @@ pulse = tes.model.pulse( len(time),
                          rise * rate,
                          fall * rate ) + dc
 
-tes.plot.waveform( (time, pulse), None, show = True )
+
+pulse2 = tes.model.pulse( len(time), 
+                         ampl,
+                         orig,
+                         0.5*rise * rate,
+                         fall * rate ) + dc
+#tes.plot.waveform( (time, pulse, pulse2), None, show = True )
+
+
+avrg = tes.waveform.average.from_collection( tes.waveform.read_binary( path=input, length=length, frame=frame) )
+
+dc_lvl = numpy.linspace(dc,dc,len(avrg)
+
+
+tes.plot.waveform( (time, avrg, dc_lvl), None, show=True )
