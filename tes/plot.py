@@ -2,7 +2,7 @@ import numpy
 import pylab
 import matplotlib.pyplot as pyplot
 
-def waveform(waveform_data, path, show = False):
+def waveform(waveform_data, path = None, show = False):
 	if path is not None or show:
 		pyplot.clf()
 		pyplot.xlabel( 'time' )
@@ -12,7 +12,7 @@ def waveform(waveform_data, path, show = False):
 		if path is not None: pyplot.savefig( path + "waveform.png")
 		if show: pyplot.show()
 
-def spectrum(spectrum_data, path, show = False):
+def spectrum(spectrum_data, path = None, show = False):
 	"""
 	assume spectrum data is given in decibels
 	"""
@@ -30,7 +30,7 @@ def spectrum(spectrum_data, path, show = False):
 		if show: pyplot.show()
 
 
-def histogram(data, path, show = False, bin_num = 50):
+def histogram(data, path = None, show = False, bins = 50):
 	if path is not None or show:
 		pyplot.clf()
 		fig = pyplot.figure()
@@ -47,7 +47,7 @@ def histogram(data, path, show = False, bin_num = 50):
 		# add figure saving  + ".png"
 		if show: pyplot.show()
 
-def trace( trace_data, path, show = False):
+def trace( trace_data, path = None, show = False):
 	if path is not None or show:
 		time, trace = trace_data
 		pyplot.clf()
