@@ -29,10 +29,15 @@ def spectrum(spectrum_data, path = None, show = False):
 		if path is not None: pyplot.savefig( path + "spectrum.png" )
 		if show: pyplot.show()
 
-def histogram(data, path = None, show = False, bins = 50):
+def histogram(to_plot, path = None, show = False, bins = 50):
 	if path is not None or show:
 		pyplot.clf()
-		n, edges, patches = pyplot.hist(data, bins, normed=0, facecolor='green', alpha=0.75)
+		# options cumulative = True for cumulative distribution
+		for data in to_plot:
+			#results = pyplot.hist(data, bins, facecolor='green', alpha=0.5)
+			#results = pyplot.hist(data, bins, alpha=0.2, histtype='stepfilled')
+			results = pyplot.hist(data, bins, alpha=0.8, histtype='step')
+		n, edges, patches = results
 		bincenters = 0.5*(edges[1:]+edges[:-1])
 		pyplot.xlabel('voltage')
 		pyplot.ylabel('frequency')

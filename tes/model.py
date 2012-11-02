@@ -1,6 +1,6 @@
 ########################################################
 #                                                      #
-#   script to generate the mean fft spectrum           #
+#   module to estimate the timing characteristic       #
 #   and mean waveform from a binary file of            #
 #   waveforms (signed char)                            #
 #                                                      #
@@ -11,9 +11,9 @@
 #                                                      #
 ########################################################
 
-import sys
-import numpy
-import scipy.optimize
+import sys                # for clean exit and stderr
+import numpy              # for array calculation
+import scipy.optimize     # for non-lin mean-square fit
 
 """
 this module works in 2 steps
@@ -95,4 +95,8 @@ def initial_guess( raw_waveform, dc ):
   fall = 10.0 # find with falling time between max and relaxation amp 
   return (amplitude, time, rise, fall)
 
+
+# !                                                        ! #
+# ! try to fit a raw waveform against the average waveform ! #
+# !                                                        ! #
 
