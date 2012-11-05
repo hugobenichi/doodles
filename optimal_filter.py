@@ -18,6 +18,7 @@ import numpy
 import tes.waveform
 import tes.plot
 import tes.filter
+import tes.model
 
 
 input  = sys.argv[1]
@@ -55,8 +56,15 @@ for noise_wfm in tes.waveform.read_binary( path=noise, length=length, frame=1000
 
 noise   = noise_power.compute()
 signal  = tes.waveform.spectrum.from_collection([pulse-dc])
-optimal = signal / (signal + noise)
 
-tes.plot.spectrum( (freq, signal, noise)  )
-tes.plot.spectrum( (freq,optimal), ylim=(0,10)  )
+s_lin = numpy.power(signal/10,10)
+n_lin = numpy.power(noise/10,10)
+
+opt_lin = s_lin / (s_lin + n_lin)
+
+optimal = 10*numpy.log10(opt_lin)
+
+#tes.plot.spectrum( (freq, signal, noise)  )
+tes.plot.waveform( (freq, opt_lin) )
+tes.plot.spectrum( (freq,optimal), ylim=(-60,0)  )
 
