@@ -30,4 +30,8 @@ def something(waveform_collection, filter):
 	"""	
 	return 0
 
-# add generator of known filters with scipy ?
+def moving_average(array, n):
+	output = numpy.zeros(len(array) + n - 1)
+	for i in range(0,n):
+		output[i:len(array)+i] += array
+	return (output/n) #[0:len(array)]
