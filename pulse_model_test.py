@@ -58,7 +58,7 @@ hist_max = tes.histogram.byte1()
 hist_fit = tes.histogram.byte1()
 hist_fit_weight = tes.histogram.byte1()
 
-for waveform in tes.waveform.read_binary( path=input, length=length): #, frame=10000):
+for waveform in tes.waveform.read_binary( path=input, length=length, frame=-1):
 	waveform = tes.filter.lowpass(waveform, band_index)
 	dc_wfm = waveform-dc
 	e = tes.model.fit_amplitude( dc_wfm, ref_wfm, dc )
@@ -71,7 +71,9 @@ for waveform in tes.waveform.read_binary( path=input, length=length): #, frame=1
 	tes.histogram.add( hist_max, dc+max(dc_wfm) )
 
 volt = numpy.arange(0,256)
-output = sys.argv[2]+ "png"
 #tes.plot.waveform( [volt, hist_raw, hist_fit, hist_fit_weight ], output )
-tes.plot.waveform( [volt, hist_raw, hist_fit_weight ], output )
+tes.plot.waveform( [volt,hist_raw,hist_fit_weight], sys.argv[2] )
 
+
+numpy.savetxt( sys.argv[2] + "_raw.val", hist_raw )
+numpy.savetxt( sys.argv[2] + "_wfit.val", hist_fit_weight )
