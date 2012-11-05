@@ -53,6 +53,15 @@ def freq2time( freq ):
 	return numpy.linspace( 0, length*sampling, length )
 
 
+def freq_index(freq, where):
+	"""
+	return the index in array <freq> of the frequency value <where>
+	"""
+	index = 0
+	while freq[index] < where: index += 1
+	return index
+
+
 def read_binary( path, length = 1000, frame = -1 ):
 	"""
 	reads a file of binary waveforms (signed char format)
