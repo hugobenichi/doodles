@@ -56,5 +56,10 @@ if True:
 	dc   = -87
 	model = tes.model.pulse( len(time), ampl, orig, rise * rate, fall * rate ) + dc
 	deriv = tes.model.derivate( len(time), ampl, orig, rise * rate, fall * rate )
-	tes.plot.waveform((time,model,deriv, numpy.abs(model*deriv)) )
+	#tes.plot.waveform((time,model,deriv, numpy.abs(model*deriv)) )
+	m = -min(deriv)
+	for (i,x) in enumerate(deriv):
+		if x > m: deriv[i] = m
+	tes.plot.waveform((time,numpy.abs(deriv)) )
+	#tes.plot.waveform((time,model,deriv) )
 

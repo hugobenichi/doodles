@@ -15,19 +15,21 @@ import pylab                        # for color maps
 import matplotlib.pyplot as pyplot  # for plotting
 
 
-def waveform(waveform_data, save=None, show=True):
+def waveform(waveform_data, save=None, show=True, xlim=None, ylim=None):
 	if save is not None or show:
 		(x, to_plot) = (waveform_data[0], waveform_data[1:] )
 		pyplot.clf()
 		pyplot.xlabel( 'time' )
 		pyplot.ylabel( 'amplitude' )
 		pyplot.xlim(x[1], x[-1])
+		if xlim is not None: pyplot.xlim(*xlim)
+		if ylim is not None: pyplot.ylim(*ylim)
 		for y in to_plot: pyplot.plot(x, y)
 		if save is not None: pyplot.savefig( save + "waveform.png")
 		if show: pyplot.show()
 
 
-def spectrum(spectrum_data, save=None, show=True, ylim=(0,100)):
+def spectrum(spectrum_data, save=None, show=True, xlim=None, ylim=(0,100)):
 	"""
 	assume spectrum data is given in decibels
 	"""
@@ -36,6 +38,7 @@ def spectrum(spectrum_data, save=None, show=True, ylim=(0,100)):
 		pyplot.clf()
 		pyplot.gca().set_autoscale_on(False)
 		pyplot.xlim(x[1], x[-1])
+		if xlim is not None: pyplot.xlim(*xlim)
 		pyplot.ylim(ylim[0], ylim[1])
 		pyplot.xscale('log')
 		pyplot.xlabel( 'frequency' )

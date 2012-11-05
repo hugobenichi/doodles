@@ -78,7 +78,7 @@ def fit_all_parameters( avg_waveform, dc ):
 	return parameters
 
 
-def fit_amplitude( raw_waveform, ref_waveform, dc ):
+def fit_amplitude( raw_waveform, ref_waveform, dc=0 ):
 	"""
 	fit a single noisy waveform to the model given 
 	previously estimated timing characteristic
@@ -96,12 +96,17 @@ def fit_amplitude( raw_waveform, ref_waveform, dc ):
 	return amplitude
 
 
-def fit_autoweight_amplitude( raw_waveform, ref_waveform, dc ):
+def fit_autoweight_amplitude( raw_waveform, ref_waveform, dc=0 ):
 	def difference(a): return ref_waveform * (raw_waveform - a * ref_waveform)
 	amplitude = max( raw_waveform )
 	[amplitude], covar = scipy.optimize.leastsq( difference, [amplitude] )
 	return amplitude
 
+def fit_weight_amplitude( raw_waveform, ref_waveform, weight ):
+	def difference(a): return weight * (raw_waveform - a * ref_waveform)
+	amplitude = max( raw_waveform )
+	[amplitude], covar = scipy.optimize.leastsq( difference, [amplitude] )
+	return amplitude
 
 def initial_guess( raw_waveform, dc ):
   """
