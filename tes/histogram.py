@@ -31,6 +31,7 @@ def add(histo, where):
 	except IndexError:
 		sys.stderr.write( "tes.histogram.add: index err @ 128 + %s\n" % str(where))
 
+
 def visibility(histo, fringes = 3):
 	"""
 	(looks like it works lol)
@@ -114,5 +115,22 @@ def contrast(a, b):
 	computes the contrast given the min and max value, given in any order.
 	"""
 	return (max([a,b])-min([a,b]))/(a+b)
+
+
+def peaks(histo, rng = range(0,255)):
+	for lmax_at, lmax in enumerate(histo):
+		if lmax == max(histo): break
+	peaks = [lmax_at]
+	prev_peak = lmax_at
+	next_peak = lmax_at
+	while prev_peak in rng:
+		prev_peak, _ = prev_max(histo, prev_min(histo, prev_peak)[0])
+		peaks = [prev_peak] + peaks
+	while next_peak in rng:
+		next_peak,_ = next_max(histo, next_min(histo, next_peak)[0])
+		peaks.append(next_peak)
+	return peaks
+
+
 
 
