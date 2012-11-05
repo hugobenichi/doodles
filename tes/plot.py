@@ -15,23 +15,23 @@ import pylab                        # for color maps
 import matplotlib.pyplot as pyplot  # for plotting
 
 
-def waveform(waveform_data, path=None, show=True):
-	if path is not None or show:
+def waveform(waveform_data, save=None, show=True):
+	if save is not None or show:
 		(x, to_plot) = (waveform_data[0], waveform_data[1:] )
 		pyplot.clf()
 		pyplot.xlabel( 'time' )
 		pyplot.ylabel( 'amplitude' )
 		pyplot.xlim(x[1], x[-1])
 		for y in to_plot: pyplot.plot(x, y)
-		if path is not None: pyplot.savefig( path + "waveform.png")
+		if save is not None: pyplot.savefig( save + "waveform.png")
 		if show: pyplot.show()
 
 
-def spectrum(spectrum_data, path=None, show=True, ylim=(0,100)):
+def spectrum(spectrum_data, save=None, show=True, ylim=(0,100)):
 	"""
 	assume spectrum data is given in decibels
 	"""
-	if path is not None or show:
+	if save is not None or show:
 		(x, to_plot) = (spectrum_data[0], spectrum_data[1:] )
 		pyplot.clf()
 		pyplot.gca().set_autoscale_on(False)
@@ -41,12 +41,12 @@ def spectrum(spectrum_data, path=None, show=True, ylim=(0,100)):
 		pyplot.xlabel( 'frequency' )
 		pyplot.ylabel( 'power (dB)' )
 		for y in to_plot: pyplot.plot(x, y)
-		if path is not None: pyplot.savefig( path + "spectrum.png" )
+		if save is not None: pyplot.savefig( save + "spectrum.png" )
 		if show: pyplot.show()
 
 
-def trace( trace_data, path=None, show=True):
-	if path is not None or show:
+def trace( trace_data, save=None, show=True):
+	if save is not None or show:
 		time, trace = trace_data
 		pyplot.clf()
 		axis_range = [0, time[-1], -128, 127]
@@ -59,12 +59,12 @@ def trace( trace_data, path=None, show=True):
                    extent=axis_range, interpolation='spline36', 
                    cmap=pylab.cm.Reds, 
                    aspect='auto')
-		if path is not None: pyplot.savefig(path + "trace.png", dpi=300)
+		if save is not None: pyplot.savefig(save + "trace.png", dpi=300)
 		if show: pyplot.show()
 
 
-def histogram(to_plot, path=None, show=True, bins=50):
-	if path is not None or show:
+def histogram(to_plot, save=None, show=True, bins=50):
+	if save is not None or show:
 		pyplot.clf()
 		# options cumulative = True for cumulative distribution
 		all_max = []
@@ -79,7 +79,7 @@ def histogram(to_plot, path=None, show=True, bins=50):
 		pyplot.ylabel('frequency')
 		pyplot.xlim( min(edges), max(edges) )
 		pyplot.ylim( 0, max(all_max) )
-		if path is not None: pyplot.savefig(path + "histo.png", dpi=300)
+		if save is not None: pyplot.savefig(save + "histo.png", dpi=300)
 		if show: pyplot.show()
 
 

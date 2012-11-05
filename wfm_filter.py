@@ -102,8 +102,8 @@ for waveform in tes.waveform.read_binary( path=input, length=length, frame=frame
 mean_wfm_data = [ time, mean_wfm.compute() ]
 wfmtrace_data = [ time, wfmtrace.compute() ] # cannot be passed directly to numpy.savetxt
 
-tes.plot.waveform( mean_wfm_data, output, show = to_plot )
-tes.plot.trace( wfmtrace_data, output, show = to_plot )
+tes.plot.waveform( mean_wfm_data, save=output, show=to_plot )
+tes.plot.trace( wfmtrace_data, save=output, show=to_plot )
 
 if output is not None: 
 	numpy.savetxt( output + "meanwfm" + ".val", mean_wfm_data )

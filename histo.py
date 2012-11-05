@@ -51,9 +51,9 @@ for waveform in tes.waveform.read_binary(path=input, length=length, frame=frame)
 		#h.append( filtered[c] )
 #		h.append( tes.filter.lowpass(waveform, i)[c] )
 
-#tes.plot.histogram( [histo_raw, histo_flt], show=True, bins=bins)
-#tes.plot.histogram( [histo_raw] + [h for (h,c,i) in histo], show=True, bins=bins)
-#tes.plot.histogram( [histo_raw] , show=True, bins=bins)
+#tes.plot.histogram( [histo_raw, histo_flt], bins=bins)
+#tes.plot.histogram( [histo_raw] + [h for (h,c,i) in histo], bins=bins)
+#tes.plot.histogram( [histo_raw] , bins=bins)
 
-tes.plot.waveform( [volt, histo_raw ], show=True )
+tes.plot.waveform([volt, histo_raw ])
 

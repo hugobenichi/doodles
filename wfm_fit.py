@@ -97,11 +97,7 @@ print(estimated)
 
 model_wfm = tes.model.pulse( len(time), *estimated)
 
-#tes.plot.waveform( (time, mean_wfm, model_wfm), output, show = to_plot ) # change here to tes.plot so as to plot several waveform together
-#
-#  (x, to_plot) = ( data[0], data[1:] )
-#  for y in to_plot: pyplot.plot( x, y)
-#
+#tes.plot.waveform( (time, mean_wfm, model_wfm), save=output, show=to_plot ) 
 
 #if output is not None: 
 #	numpy.savetxt( output + "meanwfm" + ".val", [time, mean_wfm] )
