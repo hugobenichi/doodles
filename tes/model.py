@@ -32,13 +32,25 @@ def pulse(length, amplitude, origin, rise, fall):
 	assuming a 0 background dc voltage
 	"""
 	x = numpy.arange(0-origin,length-origin)
-
 	exp_rise = numpy.exp( -(rise* x ) )
 	exp_fall = numpy.exp( -(fall* x ) )
 	exp_rise[:origin] = 0
 	exp_fall[:origin] = 0
-	return amplitude * ( exp_fall - exp_rise ) 
+	return amplitude * (exp_fall - exp_rise)
 
+
+def derivate(length, amplitude, origin, rise, fall):
+	"""
+	compute the 1st order time derivate of a model
+	pulse in a numpy array given estimated timing
+	characteristic assuming a 0 background dc voltage
+	"""
+	x = numpy.arange(0-origin,length-origin)
+	exp_rise = rise * numpy.exp( -(rise* x ) )
+	exp_fall = fall * numpy.exp( -(fall* x ) )
+	exp_rise[:origin] = 0
+	exp_fall[:origin] = 0
+	return amplitude * (exp_rise - exp_fall)
 
 def fit_all_parameters( avg_waveform, dc ):
 	"""

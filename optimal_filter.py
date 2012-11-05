@@ -1,11 +1,11 @@
 #!/usr/bin/env python3 
 ########################################################
 #                                                      #
-#   script to generate the mean fft spectrum           #
-#   and mean waveform from a binary file of            #
-#   waveforms (signed char)                            #
+#   script to test tes.filter.optimal() and to         #
+#   generate the optimal filter given a reference      #
+#   signal and a noise signal                          #
 #                                                      #
-#	  creation:    2012/10/30                            #
+#   creation:    2012/10/30                            #
 #   based on:    github.com/hugobenichi/tes            #
 #   copyright:   hugo benichi 2012                     #
 #   contact:     hugo[dot]benichi[at]m4x[dot]org       #
@@ -24,49 +24,37 @@ import tes.model
 input  = sys.argv[1]
 noise  = sys.argv[2]
 output = sys.argv[3]
-
 frame  = -1
 length = 1000
 to_plot= False
 rate   = 5e-9
 cutoff = 2e7
 
-ampl = 106*2
-orig = 320
-rise = 1.0 / 0.13e-6
-fall = 1.0 / 0.6e-6
-dc   = -87
 
-
-time = tes.waveform.time(rate, length)
 freq = tes.waveform.freq(rate, length)
+time = tes.waveform.time(rate, length)
+
+if False:
+	filt, sign, noiz = tes.filter.optimal(
+		tes.waveform.read_binary( path=input, length=length, frame=frame),
+		tes.waveform.read_binary( path=noise, length=length, frame=frame),
+		dc
+	)
+
+	filt[tes.waveform.freq_index(freq, cutoff):] = 0
+
+	tes.plot.spectrum( (freq, sign, noiz), save=output+"_spec")
+	tes.plot.spectrum( (freq, filt), ylim=(0,1), save=output+"_filter")
+	numpy.savetxt( output + "_filter.val", filt )
 
 
-model = tes.model.pulse( len(time), ampl, orig, rise * rate, fall * rate ) + dc
-pulse = tes.waveform.average.from_collection( 
-          tes.waveform.read_binary( 
-            path=input, length=length, frame=frame) )
-#tes.plot.waveform( (time, model - dc, pulse - dc) )
-
-noise_power = tes.waveform.spectrum()
-for noise_wfm in tes.waveform.read_binary( path=noise, length=length, frame=frame):
-	noise_power.add( noise_wfm-dc )
-
-noise   = noise_power.compute()
-signal  = tes.waveform.spectrum.from_collection([pulse-dc])
-
-s_lin = numpy.power(signal/10,10)
-n_lin = numpy.power(noise/10,10)
-opt_lin = s_lin / (s_lin + n_lin)
-
-
-opt_lin[tes.waveform.freq_index(freq, cutoff):] = 0
-
-tes.plot.spectrum( (freq, signal, noise), save=output+"_spec")
-tes.plot.spectrum( (freq, opt_lin), ylim=(0,1), save=output+"_filter")
-
-numpy.savetxt( output + "_filter.val", opt_lin )
-
-
-
+if True:
+	ampl = 106*2
+	orig = 320
+	rise = 1.0 / 0.13e-6
+	fall = 1.0 / 0.6e-6
+	dc   = -87
+	model = tes.model.pulse( len(time), ampl, orig, rise * rate, fall * rate ) + dc
+	deriv = tes.model.derivate( len(time), ampl, orig, rise * rate, fall * rate )
+	tes.plot.waveform((time,model,deriv, numpy.abs(model*deriv)) )
 

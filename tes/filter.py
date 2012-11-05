@@ -11,7 +11,7 @@
 
 
 import numpy                        # for numpy array
-
+import tes.waveform                 # for average and spectrum in optimal
 
 def apply_filter( waveform, filter_action ):
 	fft = numpy.fft.rfft( waveform ) 
@@ -38,6 +38,15 @@ def highpass(waveform, lower_index):
 def arbitrary(waveform, transfer):
 	def to_zero(fft): fft = fft * transfer
 	return apply_filter(waveform, to_zero)
+
+
+def optimal(waveform_col, noise_col, dc):
+	pulse  = tes.waveform.average.from_collection( waveform_col )
+	signal = tes.waveform.spectrum.from_collection( [pulse - dc] )
+	noise  = tes.waveform.spectrum.from_collection( [wfm - dc for wfm in noise_col] )
+	slin, nlin = numpy.power(signal/10,10), numpy.power(noise/10,10)
+	optimal = slin / (slin+nlin)
+	return (optimal, signal, noise)
 
 
 def something(waveform_collection, filter):
