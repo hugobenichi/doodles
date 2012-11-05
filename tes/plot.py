@@ -17,29 +17,29 @@ import matplotlib.pyplot as pyplot  # for plotting
 
 def waveform(waveform_data, path=None, show=True):
 	if path is not None or show:
+		(x, to_plot) = (waveform_data[0], waveform_data[1:] )
 		pyplot.clf()
 		pyplot.xlabel( 'time' )
 		pyplot.ylabel( 'amplitude' )
-		pyplot.xlim(50,250)
-		(x, to_plot) = (waveform_data[0], waveform_data[1:] )
+		pyplot.xlim(x[1], x[-1])
 		for y in to_plot: pyplot.plot(x, y)
 		if path is not None: pyplot.savefig( path + "waveform.png")
 		if show: pyplot.show()
 
 
-def spectrum(spectrum_data, path=None, show=True):
+def spectrum(spectrum_data, path=None, show=True, ylim=(0,100)):
 	"""
 	assume spectrum data is given in decibels
 	"""
 	if path is not None or show:
-		freq, spectrum = spectrum_data
+		(x, to_plot) = (spectrum_data[0], spectrum_data[1:] )
 		pyplot.clf()
 		pyplot.gca().set_autoscale_on(False)
-		pyplot.axis([freq[1], freq[-1], 0, 100])
+		pyplot.xlim(x[1], x[-1])
+		pyplot.ylim(ylim[0], ylim[1])
 		pyplot.xscale('log')
 		pyplot.xlabel( 'frequency' )
 		pyplot.ylabel( 'power (dB)' )
-		(x, to_plot) = (spectrum_data[0], spectrum_data[1:] )
 		for y in to_plot: pyplot.plot(x, y)
 		if path is not None: pyplot.savefig( path + "spectrum.png" )
 		if show: pyplot.show()

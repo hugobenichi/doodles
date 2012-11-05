@@ -31,7 +31,6 @@ def add(histo, where):
 	except IndexError:
 		sys.stderr.write( "tes.histogram.add: index err @ 128 + %s\n" % str(where))
 
-
 def visibility(histo, fringes = 3):
 	"""
 	(looks like it works lol)
