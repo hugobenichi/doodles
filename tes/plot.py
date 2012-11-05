@@ -7,6 +7,7 @@ def waveform(waveform_data, path = None, show = False):
 		pyplot.clf()
 		pyplot.xlabel( 'time' )
 		pyplot.ylabel( 'amplitude' )
+		pyplot.xlim(50,250)
 		(x, to_plot) = (waveform_data[0], waveform_data[1:] )
 		for y in to_plot: pyplot.plot(x, y)
 		if path is not None: pyplot.savefig( path + "waveform.png")
@@ -33,15 +34,18 @@ def histogram(to_plot, path = None, show = False, bins = 50):
 	if path is not None or show:
 		pyplot.clf()
 		# options cumulative = True for cumulative distribution
+		all_max = []
 		for data in to_plot:
 			#results = pyplot.hist(data, bins, facecolor='green', alpha=0.5)
 			#results = pyplot.hist(data, bins, alpha=0.2, histtype='stepfilled')
-			results = pyplot.hist(data, bins, alpha=0.8, histtype='step')
-		n, edges, patches = results
+			results = pyplot.hist(data, bins, alpha=0.8, histtype='step', normed=True)
+			n, edges, patches = results
+			all_max.append( max(n))
 		bincenters = 0.5*(edges[1:]+edges[:-1])
 		pyplot.xlabel('voltage')
 		pyplot.ylabel('frequency')
 		pyplot.xlim( min(edges), max(edges) )
+		pyplot.ylim( 0, max(all_max) )
 		if path is not None: pyplot.savefig(path + "histo.png", dpi=300)
 		if show: pyplot.show()
 

@@ -61,7 +61,7 @@ def fit_all_parameters( avg_waveform, dc ):
 		sys.exit(125)
 	return parameters
 
-def fit_amplitude( raw_waveform, dc, parameters ):
+def fit_amplitude( raw_waveform, ref_waveform, dc ):
 	"""
 	fit a single noisy waveform to the model given 
 	previously estimated timing characteristic
@@ -73,14 +73,15 @@ def fit_amplitude( raw_waveform, dc, parameters ):
 		!! eventually can do this better with a per-frame
 		   optimized dc level
 	"""
-	model_pulse = pulse( len(raw_waveform), *parameters )
-	def mult_pulse(x, a): return a*x + dc
-	amplitude = 0
-	try:
-		amplitude = scipy.optimize.curve_fit( mult_pulse, raw_waveform, model_pulse )
-	except RuntimeError as err:
-		sys.stderr.write('could not perform fit ERROR: %s\n' % str(err))
-		sys.exit(125)
+	def difference(a): return raw_waveform - a * ref_waveform
+	amplitude = max( raw_waveform )
+	[amplitude], covar = scipy.optimize.leastsq( difference, [amplitude] )
+	return amplitude
+
+def fit_autoweight_amplitude( raw_waveform, ref_waveform, dc ):
+	def difference(a): return ref_waveform * (raw_waveform - a * ref_waveform)
+	amplitude = max( raw_waveform )
+	[amplitude], covar = scipy.optimize.leastsq( difference, [amplitude] )
 	return amplitude
 
 def initial_guess( raw_waveform, dc ):
