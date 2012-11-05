@@ -1,6 +1,19 @@
-import numpy
-import pylab
-import matplotlib.pyplot as pyplot
+########################################################
+#                                                      #
+#   plotting routines for waveforms/fft spectrum/...   #
+#                                                      #
+#	  creation:    2012/10/29                            #   
+#   based on:    github.com/hugobenichi/tes            #
+#   copyright:   hugo benichi 2012                     #
+#   contact:     hugo[dot]benichi[at]m4x[dot]org       #
+#                                                      #
+########################################################
+
+
+import numpy                        # for numpy array
+import pylab                        # for color maps
+import matplotlib.pyplot as pyplot  # for plotting
+
 
 def waveform(waveform_data, path=None, show=True):
 	if path is not None or show:
@@ -12,6 +25,7 @@ def waveform(waveform_data, path=None, show=True):
 		for y in to_plot: pyplot.plot(x, y)
 		if path is not None: pyplot.savefig( path + "waveform.png")
 		if show: pyplot.show()
+
 
 def spectrum(spectrum_data, path=None, show=True):
 	"""
@@ -29,6 +43,25 @@ def spectrum(spectrum_data, path=None, show=True):
 		for y in to_plot: pyplot.plot(x, y)
 		if path is not None: pyplot.savefig( path + "spectrum.png" )
 		if show: pyplot.show()
+
+
+def trace( trace_data, path=None, show=True):
+	if path is not None or show:
+		time, trace = trace_data
+		pyplot.clf()
+		axis_range = [0, time[-1], -128, 127]
+		pyplot.xlabel( 'time' )
+		pyplot.ylabel( 'amplitude' )
+		pyplot.gca().set_autoscale_on(False)
+		pyplot.axis( axis_range )
+		pyplot.imshow( trace.transpose(), 
+                   shape=(len(time),256), 
+                   extent=axis_range, interpolation='spline36', 
+                   cmap=pylab.cm.Reds, 
+                   aspect='auto')
+		if path is not None: pyplot.savefig(path + "trace.png", dpi=300)
+		if show: pyplot.show()
+
 
 def histogram(to_plot, path=None, show=True, bins=50):
 	if path is not None or show:
@@ -49,20 +82,4 @@ def histogram(to_plot, path=None, show=True, bins=50):
 		if path is not None: pyplot.savefig(path + "histo.png", dpi=300)
 		if show: pyplot.show()
 
-def trace( trace_data, path=None, show=True):
-	if path is not None or show:
-		time, trace = trace_data
-		pyplot.clf()
-		axis_range = [0, time[-1], -128, 127]
-		pyplot.xlabel( 'time' )
-		pyplot.ylabel( 'amplitude' )
-		pyplot.gca().set_autoscale_on(False)
-		pyplot.axis( axis_range )
-		pyplot.imshow( trace.transpose(), 
-                   shape=(len(time),256), 
-                   extent=axis_range, interpolation='spline36', 
-                   cmap=pylab.cm.Reds, 
-                   aspect='auto')
-		if path is not None: pyplot.savefig(path + "trace.png", dpi=300)
-		if show: pyplot.show()
 

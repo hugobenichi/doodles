@@ -11,8 +11,10 @@
 #                                                      #
 ########################################################
 
-import numpy
-import array
+
+import numpy                        # for numpy array
+import array                        # for signed char unpacking
+
 
 def time( sampling, samples ):
 	"""
@@ -20,6 +22,7 @@ def time( sampling, samples ):
 	specified by the sampling rate (in sec) and the number of sumples
 	"""
 	return numpy.linspace(0, sampling*samples, samples)
+
 
 def freq( sampling, samples ):
 	"""
@@ -30,6 +33,7 @@ def freq( sampling, samples ):
 	"""
 	return numpy.linspace(0, 1.0/(2*sampling), (samples)/2+1 )
 
+
 def time2freq( time ):
 	"""
 	return the frequency domain representation of a numpy array of time points,
@@ -37,6 +41,7 @@ def time2freq( time ):
 	"""
 	sampling = time[-1] / len(time)  # do not use time[1] -> float division roundoff error
 	return numpy.linspace( 0, 1.0/(2*sampling) , len(time)/2+1 )
+
 
 def freq2time( freq ):
 	"""
@@ -46,6 +51,7 @@ def freq2time( freq ):
 	sampling = 1.0/(2*freq[-1])
 	length = (len(freq)-1)*2
 	return numpy.linspace( 0, length*sampling, length )
+
 
 def read_binary( path, length = 1000, frame = -1 ):
 	"""

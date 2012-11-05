@@ -11,9 +11,11 @@
 #                                                      #
 ########################################################
 
+
 import sys                # for clean exit and stderr
 import numpy              # for array calculation
 import scipy.optimize     # for non-lin mean-square fit
+
 
 """
 this module works in 2 steps
@@ -21,6 +23,7 @@ this module works in 2 steps
   2. estimate the amplitude of individual waveform from the estimated
      timing characteristic
 """
+
 
 def pulse(length, amplitude, origin, rise, fall):
 	"""
@@ -35,6 +38,7 @@ def pulse(length, amplitude, origin, rise, fall):
 	exp_rise[:origin] = 0
 	exp_fall[:origin] = 0
 	return amplitude * ( exp_fall - exp_rise ) 
+
 
 def fit_all_parameters( avg_waveform, dc ):
 	"""
@@ -61,6 +65,7 @@ def fit_all_parameters( avg_waveform, dc ):
 		sys.exit(125)
 	return parameters
 
+
 def fit_amplitude( raw_waveform, ref_waveform, dc ):
 	"""
 	fit a single noisy waveform to the model given 
@@ -78,11 +83,13 @@ def fit_amplitude( raw_waveform, ref_waveform, dc ):
 	[amplitude], covar = scipy.optimize.leastsq( difference, [amplitude] )
 	return amplitude
 
+
 def fit_autoweight_amplitude( raw_waveform, ref_waveform, dc ):
 	def difference(a): return ref_waveform * (raw_waveform - a * ref_waveform)
 	amplitude = max( raw_waveform )
 	[amplitude], covar = scipy.optimize.leastsq( difference, [amplitude] )
 	return amplitude
+
 
 def initial_guess( raw_waveform, dc ):
   """
