@@ -81,8 +81,8 @@ def read_binary(path, length=1000, frame=-1):
     frame_read = 0
     try:
         while (frame < 0 or frame > frame_read):
-            byte_waveform = file.read(length)
-            if not byte_waveform: break
+            byte_waveform = file.read(length)       # read after eof returns empty string
+            if not byte_waveform: break             # which evals to False in the "if" context
             yield numpy.fromiter(array.array('b', byte_waveform), dtype=numpy.int)
             frame_read += 1
     finally:
