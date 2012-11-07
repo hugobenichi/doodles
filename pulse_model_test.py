@@ -24,7 +24,7 @@ from   tes import histogram
 input  = sys.argv[1]
 output = sys.argv[3]
 length = 1000
-frame  = -1 #2000
+frame  = 10000#-1 #2000
 rate   = 5 * 1e-9
 dc     = -87
 
@@ -78,7 +78,7 @@ hist_fitd = tes.histogram.builder(fitting(weight2))
 for waveform in tes.waveform.read_binary( path=input, length=length, frame=frame):
     dc_wfm = waveform-dc
     #dc_wfm = filter_band(dc_wfm)
-    #dc_wfm = filter_optm(dc_wfm)
+    dc_wfm = filter_optm(dc_wfm)
     e0 = hist_raw.add(dc_wfm)  - dc
     e1 = hist_fit.add(dc_wfm)  - dc
     e2 = hist_fitw.add(dc_wfm) - dc
@@ -91,8 +91,8 @@ for waveform in tes.waveform.read_binary( path=input, length=length, frame=frame
 
 volt = numpy.arange(0,256)
 tes.plot.waveform( [volt,hist_raw.bins, hist_fit.bins], xlim=(50,250))#, save=output + "_fit_")
-tes.plot.waveform( [volt,hist_raw.bins, hist_fitw.bins], xlim=(50,250))#, save=output + "_fitw_")
-tes.plot.waveform( [volt,hist_raw.bins, hist_fitd.bins], xlim=(50,250))#, save=output + "_fitd_")
+#tes.plot.waveform( [volt,hist_raw.bins, hist_fitw.bins], xlim=(50,250))#, save=output + "_fitw_")
+#tes.plot.waveform( [volt,hist_raw.bins, hist_fitd.bins], xlim=(50,250))#, save=output + "_fitd_")
 
 
 print( "raw:                   ", hist_raw.visibility(8) )

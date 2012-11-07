@@ -72,21 +72,6 @@ class builder(object):
         return mean_vis / mean_num
 
 
-def peaks(histo, rng=range(0,255)):
-    for lmax_at, lmax in enumerate(histo):
-        if lmax == max(histo): break
-    peaks = [lmax_at]
-    prev_peak = lmax_at
-    next_peak = lmax_at
-    while prev_peak in rng:
-        prev_peak, _ = _prev_max(histo, _prev_min(histo, prev_peak)[0])
-        peaks = [prev_peak] + peaks
-    while next_peak in rng:
-        next_peak,_ = _next_max(histo, _next_min(histo, next_peak)[0])
-        peaks.append(next_peak)
-    return peaks
-
-
 def _next_min(histo, where):
     """locate the next local minimal value in an array starting from <where>."""
     local_min = histo[where]
