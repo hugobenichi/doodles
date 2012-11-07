@@ -66,7 +66,7 @@ def freq_index(freq, where):
 
 
 # TODO(hugo) use decorator to pass this into asyn fetcher
-def read_binary(path, length=1000, frame=-1):
+def read_binary(path, length=1000, frame=-1, dc=0):
     """
     reads a file of binary waveforms (signed char format)
     and converts them to numpy arrays, one waveform at a time.
@@ -83,7 +83,7 @@ def read_binary(path, length=1000, frame=-1):
         while (frame < 0 or frame > frame_read):
             byte_waveform = file.read(length)       # read after eof returns empty string
             if not byte_waveform: break             # which evals to False in the "if" context
-            yield numpy.fromiter(array.array('b', byte_waveform), dtype=numpy.int)
+            yield numpy.fromiter(array.array('b', byte_waveform), dtype=numpy.int) - dc
             frame_read += 1
     finally:
         file.close()

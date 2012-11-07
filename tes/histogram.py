@@ -20,8 +20,8 @@ class builder(object):
         self.bins = numpy.zeros(2 ** (8 * bytes))
         self._reduction = reduction
 
-    def add(self, waveform):
-        where = self._reduction(waveform)
+    def add(self, waveform, offset=0):
+        where = offset + self._reduction(waveform)
         try:
             self.bins[where] += 1
         except IndexError:

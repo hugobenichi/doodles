@@ -49,7 +49,28 @@ def derivate(length, amplitude, origin, rise, fall):
     exp_rise[:origin] = 0
     exp_fall[:origin] = 0
     return amplitude * (exp_rise - exp_fall)
-    
+
+
+def fit_amplitude(raw_waveform, ref_waveform, weight=None):
+    """fit a single noisy waveform to the model given 
+    previously estimated timing characteristic
+        since the shape and timing characteristic are already set
+        the x axis for the non-lin mean square fit is directly
+        a model pulse, and the optimization function is simply
+        a multiplier (it s a linear mean square fit)
+
+        !! eventually can do this better with a per-frame
+           optimized dc level.
+    """
+    if weight is None:
+        #def difference(a): return raw_waveform - a * ref_waveform
+        difference = lambda a: (raw_waveform - a * ref_waveform)
+    else:
+        #def difference(a): return weight * (raw_waveform - a * ref_waveform)
+        difference = lambda a: (raw_waveform - a * ref_waveform) * weight
+    [amplitude], covar = scipy.optimize.leastsq(difference, [max(raw_waveform)])
+    return amplitude
+
 
 def fit_all_parameters(avg_waveform, dc):
     """fit an averaged waveform to the model by
@@ -57,7 +78,7 @@ def fit_all_parameters(avg_waveform, dc):
     the pulse, given the background dc level.
     the model provides the shape to optimize.
     """
-    parameters = initial_guess(avg_waveform, dc)
+    parameters = _initial_guess(avg_waveform, dc)
     # 4-dim optimization is going to be really expensive ...
     # maybe do dc and amplitude optimization first
     # nested inside an origin, rising, falling optimization
@@ -74,27 +95,7 @@ def fit_all_parameters(avg_waveform, dc):
     return parameters
 
 
-def fit_amplitude(raw_waveform, ref_waveform, weight=None):
-    """fit a single noisy waveform to the model given 
-    previously estimated timing characteristic
-        since the shape and timing characteristic are already set
-        the x axis for the non-lin mean square fit is directly
-        a model pulse, and the optimization function is simply
-        a multiplier (it s a linear mean square fit)
-
-        !! eventually can do this better with a per-frame
-           optimized dc level.
-    """
-    if weight is None:
-        def difference(a): return raw_waveform - a * ref_waveform
-    else:
-        def difference(a): return weight * (raw_waveform - a * ref_waveform)
-    amplitude = max(raw_waveform)
-    [amplitude], covar = scipy.optimize.leastsq(difference, [amplitude])
-    return amplitude
-
-
-def initial_guess(raw_waveform, dc):
+def _initial_guess(raw_waveform, dc):
     """do a guess on all parameters according to the raw 
     averaged waveform in a "smart" way, provided the
     background dc voltage.
