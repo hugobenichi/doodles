@@ -107,7 +107,6 @@ def spectrum(spectrum_data, **kwargs):
     default yaxis settings assume spectrum data is given in decibels."""
     _clear()
     _xlim_to(spectrum_data)
-    #matplotlib.pyplot.xscale('log')
     _plot(spectrum_data)
 
 
@@ -115,8 +114,7 @@ def spectrum(spectrum_data, **kwargs):
 @view
 @label("time", "amplitude")
 def trace(trace_data, **kwargs):
-    """
-    plots a trace of waveforms stacked together inside a matrix (ndarray).
+    """plots a trace of waveforms stacked together inside a matrix (ndarray).
     trace_data should be a 2-tuple whose 1st element are the x-axis frequency values
     and whose second element is the trace matrix to display."""
     _clear()

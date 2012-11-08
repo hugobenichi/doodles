@@ -28,6 +28,8 @@ def in_frequency(transformation):
 
 
 def from_transfer(transfer):
+    """generate a filter function from a transfer function specified as an ndarray.
+    the returned function takes as input a waveform at a time (ndarray)."""
     @in_frequency
     def mult(wfm): return wfm * transfer
     return mult
@@ -64,7 +66,7 @@ class optimal:          # just a namespace
         pulse  = tes.waveform.average.from_collection(waveform_col)
         signal = tes.waveform.spectrum.from_collection([pulse])
         noise  = tes.waveform.spectrum.from_collection(noise_col)
-        return optimal_from_spectrum(signal, noise)
+        return optimal.from_spectrum(signal, noise)
     
     def from_spectrum(signal,noise):
         slin, nlin = numpy.power(signal/10, 10), numpy.power(noise/10, 10)
