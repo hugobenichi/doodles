@@ -12,6 +12,7 @@
 #                                                      #
 ########################################################
 
+
 help = """
   this script attempts to read a binary file of waveforms
   encoded in signed char and computes its mean fft spectrum
@@ -41,11 +42,13 @@ help = """
   additional info @ github.com/hugobenichi/tes
 """
 
+
 import sys
 import getopt
 import numpy
-import tes.waveform
-import tes.plot
+import tes
+from   tes import waveform
+from   tes import plot
 
 try:
     input = sys.argv[1]
@@ -90,7 +93,7 @@ spectrum_data = [ tes.waveform.freq(rate, length), spectrum.compute() ]
 wfmtrace_data = [ tes.waveform.time(rate, length), wfmtrace.compute() ]
 
 tes.plot.spectrum( spectrum_data, save=output, show=to_plot )
-tes.plot.waveform( mean_wfm_data, save=output, show=to_plot )
+tes.plot.waveform( mean_wfm_data, save=output, show=to_plot)
 tes.plot.trace( wfmtrace_data, save=output, show=to_plot )
 
 if output is not None:
