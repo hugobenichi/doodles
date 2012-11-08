@@ -80,21 +80,21 @@ except TypeError:
 
 mean_wfm = tes.waveform.average()
 spectrum = tes.waveform.spectrum()
-wfmtrace = tes.waveform.trace()
+#wfmtrace = tes.waveform.trace()
 
 
 for waveform in tes.waveform.read_binary( path=input, length=length, frame=frame):
     mean_wfm.add(waveform)
     spectrum.add(waveform)
-    wfmtrace.add(waveform)
+ #   wfmtrace.add(waveform)
 
 mean_wfm_data = [ tes.waveform.time(rate, length), mean_wfm.compute() ]
 spectrum_data = [ tes.waveform.freq(rate, length), spectrum.compute() ]
-wfmtrace_data = [ tes.waveform.time(rate, length), wfmtrace.compute() ]
+#wfmtrace_data = [ tes.waveform.time(rate, length), wfmtrace.compute() ]
 
-tes.plot.spectrum( spectrum_data, save=output, show=to_plot )
-tes.plot.waveform( mean_wfm_data, save=output, show=to_plot)
-tes.plot.trace( wfmtrace_data, save=output, show=to_plot )
+#tes.plot.spectrum( spectrum_data, save=output, show=to_plot )
+#tes.plot.waveform( mean_wfm_data, save=output, show=to_plot)
+#tes.plot.trace( wfmtrace_data, save=output, show=to_plot )
 
 if output is not None:
     numpy.savetxt( output + "average"  + ".val", mean_wfm_data )

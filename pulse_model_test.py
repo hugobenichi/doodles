@@ -85,14 +85,14 @@ for wfm in tes.waveform.read_binary(path=input_data, length=length, frame=frame,
     e3, lvl = tes.model.fit.floating_amplitude(wfm, ref_wfm, weight0)
     #e3, lvl = tes.model.fit.floating_amplitude(opt, ref_wfm, weight0)
     
-    hist_opt_fit2.add(e3, offset)
+    hist_opt_fit2.add(e3+lvl, offset)
     
     #e3, lvl = hist_opt_fit2.add(opt, offset)
     #if 150 > e2:
         #tes.plot.waveform( (time, wfm, opt, ref_wfm*e2), ylim = (-10,200) )
         #tes.plot.waveform( (time, wfm, weight2*e2, weight0*e3), ylim = (-10,200) )
-    print(e2, e3, lvl, e2 - e3)
-    tes.plot.waveform( (time, wfm, weight0*e2, weight0*(e3)+lvl), ylim = (-10,200) )
+    #print(e2, e3, lvl, e2 - e3)
+    #tes.plot.waveform( (time, wfm, weight0*e2, weight0*(e3)+lvl), ylim = (-10,200) )
 
 volt = numpy.arange(0,256)
 #tes.plot.waveform( [volt,hist_raw.bins, hist_opt.bins, hist_opt_fit.bins], xlim=(50,250))
