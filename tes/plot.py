@@ -14,11 +14,6 @@ import numpy                        # for numpy array
 import pylab                        # for color maps
 import matplotlib
 from   matplotlib import pyplot     # for plotting
-#from   matplotlib import matplotlib.pyplot as matplotlib.pyplot
-
-
-# TODO(hugo) rewrite module by using decorator to factorize all the common stuff
-#            for example, can factorize saving graph, saving data, ploting graph
 
 
 def label(x="", y=""):
