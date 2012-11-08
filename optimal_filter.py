@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 ########################################################
 #                                                      #
 #   script to test tes.filter.optimal() and to         #
@@ -15,10 +15,11 @@
 
 import sys
 import numpy
-import tes.waveform
-import tes.plot
-import tes.filter
-import tes.model
+import tes
+from   tes import waveform
+from   tes import plot
+from   tes import filter
+from   tes import model
 
 
 input  = sys.argv[1]
@@ -30,36 +31,27 @@ to_plot= False
 rate   = 5e-9
 cutoff = 2e7
 
+dc = -87
 
 freq = tes.waveform.freq(rate, length)
 time = tes.waveform.time(rate, length)
 
-if False:
-	filt, sign, noiz = tes.filter.optimal(
-		tes.waveform.read_binary( path=input, length=length, frame=frame),
-		tes.waveform.read_binary( path=noise, length=length, frame=frame),
-		dc
-	)
+wfm_stream   = tes.waveform.read_binary( path=input, length=length, frame=frame, dc=dc)
+noise_stream = tes.waveform.read_binary( path=noise, length=length, frame=frame, dc=dc)
 
-	filt[tes.waveform.freq_index(freq, cutoff):] = 0
+pulse  = tes.waveform.average.from_collection(wfm_stream)
+signal = tes.waveform.spectrum.from_collection([pulse-dc])
+noise  = tes.waveform.spectrum.from_collection(noise_stream)
+optim  = tes.filter.optimal.from_spectrum(signal, noise)
 
-	tes.plot.spectrum( (freq, sign, noiz), save=output+"_spec")
-	tes.plot.spectrum( (freq, filt), ylim=(0,1), save=output+"_filter")
-	numpy.savetxt( output + "_filter.val", filt )
+optim[tes.waveform.freq_index(freq, cutoff):]=0
+optim /= max(optim)
+
+tes.plot.spectrum((freq, optim), ylim=(0,1), ylabel="amplitude")
+tes.plot.waveform((time, pulse))
 
 
-if True:
-	ampl = 106*2
-	orig = 320
-	rise = 1.0 / 0.13e-6
-	fall = 1.0 / 0.6e-6
-	dc   = -87
-	model = tes.model.pulse( len(time), ampl, orig, rise * rate, fall * rate ) + dc
-	deriv = tes.model.derivate( len(time), ampl, orig, rise * rate, fall * rate )
-	#tes.plot.waveform((time,model,deriv, numpy.abs(model*deriv)) )
-	m = -min(deriv)
-	for (i,x) in enumerate(deriv):
-		if x > m: deriv[i] = m
-	tes.plot.waveform((time,numpy.abs(deriv)) )
-	#tes.plot.waveform((time,model,deriv) )
+numpy.savetxt( output + "_filter.val", optim )
+numpy.savetxt( output + "_pulse.val", pulse )
+
 

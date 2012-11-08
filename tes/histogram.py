@@ -16,7 +16,7 @@ import numpy                        # for numpy array
 
 class builder(object):
 
-    def __init__(self, reduction, bytes=1):
+    def __init__(self, reduction=lambda x: x, bytes=1):
         self.bins = numpy.zeros(2 ** (8 * bytes))
         self._reduction = reduction
 

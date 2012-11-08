@@ -66,13 +66,12 @@ class optimal:          # just a namespace
         pulse  = tes.waveform.average.from_collection(waveform_col)
         signal = tes.waveform.spectrum.from_collection([pulse])
         noise  = tes.waveform.spectrum.from_collection(noise_col)
-        return optimal.from_spectrum(signal, noise)
+        return (optimal.from_spectrum(signal, noise), signal, noise)
     
     def from_spectrum(signal,noise):
         slin, nlin = numpy.power(signal/10, 10), numpy.power(noise/10, 10)
         optimal = slin / (slin+nlin)
-        optimal /= max(optimal)
-        return (optimal, signal, noise)
+        return optimal
 
 
 def moving_average(array, n):
