@@ -1,11 +1,11 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 ########################################################
 #                                                      #
 #   script to generate the mean fft spectrum           #
 #   and mean waveform from a binary file of            #
 #   waveforms (signed char)                            #
 #                                                      #
-#	  creation:    2012/10/30                            #   
+#   creation:    2012/10/30                            #
 #   based on:    github.com/hugobenichi/tes            #
 #   copyright:   hugo benichi 2012                     #
 #   contact:     hugo[dot]benichi[at]m4x[dot]org       #
@@ -48,10 +48,10 @@ import tes.waveform
 import tes.plot
 
 try:
-	input = sys.argv[1]
+    input = sys.argv[1]
 except IndexError:
-	sys.stderr.write( "no path argument to input binary file\n" )
-	sys.exit(22)
+    sys.stderr.write( "no path argument to input binary file\n" )
+    sys.exit(22)
 
 output = None
 frame  = -1
@@ -63,28 +63,27 @@ opt_short, opt_long = "r:f:l:s:ph", [ "rate=", "frame=", "length=", "save=", "pl
 options, args = getopt.getopt( sys.argv[2:], opt_short, opt_long )
 
 try:
-	for option, value in options:
-		if option in ('-h', '--help'):
-			print(help)
-			sys.exit(0)
-		if option in ('-p', '--plot'):      to_plot = True
-		if option in ('-l', '--length'):    length  = int(value)
-		if option in ('-f', '--frame'):     frame   = int(value)
-		if option in ('-s', '--save'):      output  = value
-		if option in ('-r', '--rate'):      rate    = float(value)
+    for option, value in options:
+        if option in ('-h', '--help'):      print(help); sys.exit(0)
+        if option in ('-p', '--plot'):      to_plot = True
+        if option in ('-l', '--length'):    length  = int(value)
+        if option in ('-f', '--frame'):     frame   = int(value)
+        if option in ('-s', '--save'):      output  = value
+        if option in ('-r', '--rate'):      rate    = float(value)
 except TypeError:
-	sys.stderr.write("bad argument")
-	sys.exit(22)
+    sys.stderr.write("bad argument")
+    sys.exit(22)
 
 
 mean_wfm = tes.waveform.average()
 spectrum = tes.waveform.spectrum()
 wfmtrace = tes.waveform.trace()
 
+
 for waveform in tes.waveform.read_binary( path=input, length=length, frame=frame):
-	mean_wfm.add(waveform)
-	spectrum.add(waveform) 
-	wfmtrace.add(waveform)
+    mean_wfm.add(waveform)
+    spectrum.add(waveform)
+    wfmtrace.add(waveform)
 
 mean_wfm_data = [ tes.waveform.time(rate, length), mean_wfm.compute() ]
 spectrum_data = [ tes.waveform.freq(rate, length), spectrum.compute() ]
@@ -94,9 +93,9 @@ tes.plot.spectrum( spectrum_data, save=output, show=to_plot )
 tes.plot.waveform( mean_wfm_data, save=output, show=to_plot )
 tes.plot.trace( wfmtrace_data, save=output, show=to_plot )
 
-if output is not None: 
-	numpy.savetxt( output + "average"  + ".val", mean_wfm_data )
-	numpy.savetxt( output + "spectrum" + ".val", spectrum_data )
-	numpy.savetxt( output + "trace"    + ".val", wfmtrace_data[1] )
+if output is not None:
+    numpy.savetxt( output + "average"  + ".val", mean_wfm_data )
+    numpy.savetxt( output + "spectrum" + ".val", spectrum_data )
+    numpy.savetxt( output + "trace"    + ".val", wfmtrace_data[1] )
 
 

@@ -53,7 +53,7 @@ def highpass(waveform, lower_index):
     return waveform
 
 
-class optimal:
+class optimal:          # just a namespace
     """Computes and returns (ndarray) the Wiener optimal linear filter from a collection of 
     waveforms to average which represents the signal, and a collection of waveform of the 
     background noise.
@@ -66,7 +66,7 @@ class optimal:
         noise  = tes.waveform.spectrum.from_collection(noise_col)
         return optimal_from_spectrum(signal, noise)
     
-    def from_spectrum(signal,noise)
+    def from_spectrum(signal,noise):
         slin, nlin = numpy.power(signal/10, 10), numpy.power(noise/10, 10)
         optimal = slin / (slin+nlin)
         optimal /= max(optimal)
