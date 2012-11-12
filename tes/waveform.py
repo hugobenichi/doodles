@@ -12,6 +12,10 @@
 ########################################################
 
 
+import threading
+import queue
+
+
 import numpy                        # for numpy array
 import array                        # for signed char unpacking
 
@@ -65,29 +69,114 @@ def freq_index(freq, where):
     return index
 
 
-# TODO(hugo) use decorator to pass this into asyn fetcher
-def read_binary(path, length=1000, frame=-1, dc=0):
-    """
-    reads a file of binary waveforms (signed char format)
-    and converts them to numpy arrays, one waveform at a time.
-    the 'length' parameter controls the number of points ver waveform.
-    the 'frame' parameter controls the total number of waveforms to read.
-    """
+def binary_reader(path, length):
+    """generators which reads a file of binary waveforms and return one at a time."""
     try:
-        file = open(path, 'rb')     #don't forget 'rb' for reading binary
+        file = open(path, 'rb')
+        while True:
+            bytes = file.read(length)
+            if not bytes: break
+            yield bytes
     except IOError:
         sys.stderr.write("error while opening binary file at %s\n" % path)
         sys.exit(2)
-    frame_read = 0
-    try:
-        while (frame < 0 or frame > frame_read):
-            byte_waveform = file.read(length)       # read after eof returns empty string
-            if not byte_waveform: break             # which evals to False in the "if" context
-            yield numpy.fromiter(array.array('b', byte_waveform), dtype=numpy.int) - dc
-            frame_read += 1
     finally:
         file.close()
 
+
+def reader(path, length=1000, frame=-1, dc=0):
+    """generators which converts binary waveforms to numpy arrays and returns them one at a time
+    binary format: signed int8 
+    the 'length' parameter controls the number of points ver waveform.
+    the 'frame' parameter controls the total number of waveforms to read.
+    the 'dc' parameter translates every waveform by minus this amount.
+    """
+    frame_read = 0
+    reader = binary_reader(path, length)
+    while (frame < 0 or frame > frame_read):
+        for byte_waveform in reader:
+            yield numpy.fromstring(byte_waveform, dtype='int8') - dc  #(signed char format)
+            frame_read += 1
+        break
+
+
+def async_reader(path, length=1000, frame=-1, dc = 0, depth=100, pack=100):
+    """doest not work very well"""
+    """
+    def async_binary_reader(channel, end):
+        try:
+            file = open(path, 'rb')
+            while True:
+                chunk = []
+                for i in range(pack):
+                    bytes = file.read(length)
+                    if not bytes: 
+                        channel.put(end)
+                        chunk = None
+                        break
+                    chunk.append(bytes)
+                if not chunk: break
+                channel.put(chunk)
+        except IOError:
+            sys.stderr.write("error while opening binary file at %s\n" % path)
+            sys.exit(2)
+        finally:
+            file.close()
+    """
+    def async_binary_reader(channel, end):
+        file = open(path, 'rb')
+        while True:
+            chunk = []
+            for i in range(pack):
+                bytes = file.read(length)
+                if not bytes: 
+                    channel.put(end)
+                    chunk = None
+                    break
+                chunk.append(bytes)
+            if not chunk: break
+            channel.put(chunk)
+        file.close()
+
+    done = object()                 # this object serves as to notify the receivers of the end 
+    buff = queue.Queue(depth)       # this queue will buffers objects between threads
+    thread = threading.Thread(      # launch a thread to fetch the items in the background
+        target=async_binary_reader, 
+        args=(buff, done))
+    thread.start()
+
+    frame_read = 0
+    while (frame < 0 or frame > frame_read):
+        byte_waveform = buff.get()
+        if byte_waveform is done: break
+        for bytes in byte_waveform:
+            #yield numpy.fromstring(byte_waveform, dtype='int8') - dc
+            yield numpy.fromstring(bytes, dtype='int8') - dc
+            frame_read += 1
+
+
+def async_prefetch_wrapper(generator, depth=100):
+    """direclty adapted from http://niki.code-karma.com/2011/05/hiding-io-latency-in-generators-by-async-prefetching/"""
+    def enqueue(channel, collection, end):
+        for item in collection: channel.put(item)   # <- input data here
+        channel.put(end)                            # finish with "end" object
+
+    done = object()                 # this object serves as to notify the receivers of the end 
+    buff = queue.Queue(depth)       # this queue will buffers objects between threads
+    thread = threading.Thread(      # launch a thread to fetch the items in the background
+        target=enqueue, 
+        args=(buff, generator, done))
+    thread.start()
+
+    while True:
+        item = buff.get()
+        if item is done: return
+        yield item
+
+
+def read_binary(path, length=1000, frame=-1, dc=0):
+    """deprecated. use reader instead."""
+    reader(path, length, frame, dc)
 
 
 class average:
@@ -136,22 +225,6 @@ class spectrum:
         
 
 
-# TODO(hugo) check if slice_at is uselesss or no
-class slice_at:
-    """glorified array to clean histogram preparation"""
-    
-    def from_collection(index, waveform_collection):    
-        return [waveform[index] for waveform in waveform_collection]
-
-    def __init__(me, index):
-        me.at = index
-        me.values = []
-
-    def add(me, waveform):
-        me.values.append(waveform[me.at])
-
-
-
 class trace:
     """
     compute a matrix which is a stacked image of all waveforms in a set.
@@ -186,4 +259,4 @@ class trace:
         return me.trace
 
 
-# TODO(hugo) for the four above class write with reduce function (using generator reuse)
+# TODO(hugo) for the above classes write with reduce function (using generator reuse)
