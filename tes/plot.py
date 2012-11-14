@@ -82,8 +82,8 @@ def log_scale(default=True):
     return log_scale_decorator
 
 
-@save("waveform")
 @view
+@save("waveform")
 @xlim()
 @ylim()
 @label("time", "amplitude")
@@ -95,8 +95,8 @@ def waveform(waveform_data, **kwargs):
     _plot(waveform_data)
 
 
-@save("spectrum")
 @view
+@save("spectrum")
 @xlim()
 @ylim((0,100))
 @label("frequency", "power (dB)")
@@ -110,8 +110,8 @@ def spectrum(spectrum_data, **kwargs):
     _plot(spectrum_data)
 
 
-@save("trace")
 @view
+@save("trace")
 @label("time", "amplitude")
 def trace(trace_data, **kwargs):
     """plots a trace of waveforms stacked together inside a matrix (ndarray).
@@ -128,8 +128,8 @@ def trace(trace_data, **kwargs):
     )
 
 
-@save("histogram")
 @view
+@save("histogram")
 @label("voltage", "frequency")
 def histogram(to_plot, **kwargs):
     """plots an histogram. Should be made compatible with tes.histogram."""
@@ -148,7 +148,7 @@ def histogram(to_plot, **kwargs):
 
 
 def _plot(plot_data): #shortcut
-    for y in plot_data[1:]: matplotlib.pyplot.plot(plot_data[0],y)
+    for y in plot_data[1:]: matplotlib.pyplot.plot(plot_data[0],y, color="r")
 
 
 def _clear(): # another shortcut
