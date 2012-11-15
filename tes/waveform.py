@@ -95,7 +95,11 @@ def reader(path, length=1000, frame=-1, dc=0):
     reader = binary_reader(path, length)
     while (frame < 0 or frame > frame_read):
         for byte_waveform in reader:
-            yield numpy.fromstring(byte_waveform, dtype='int8') - dc  #(signed char format)
+            yield numpy.zeros(length) + numpy.fromstring(byte_waveform, dtype='int8') - dc
+                    # if the results from numpy.fromstring is directly used, 
+                    # the signed char format is preserved
+                    # -> this can causes havok when adding a dc value which
+                    #    will bring the wfm values outside of the [-128,127] range
             frame_read += 1
         break
 
