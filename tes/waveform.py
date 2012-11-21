@@ -70,39 +70,56 @@ def freq_index(freq, where):
 
 
 def binary_reader(path, length):
-    """generators which reads a file of binary waveforms and return one at a time."""
-    try:
-        file = open(path, 'rb')
+    """opens and reads a binary waveform file one chunk at a time."""
+    with open(path, 'rb') as bytefile:
         while True:
-            bytes = file.read(length)
-            if not bytes: break
+            bytes = bytefile.read(length)
+            if not bytes: break # ! do not test against None ! (but against empty array)
             yield bytes
-    except IOError:
-        sys.stderr.write("error while opening binary file at %s\n" % path)
-        sys.exit(2)
-    finally:
-        file.close()
+
+
+def convert(bytestream):
+    """converts a binary waveform (signed int8) generator to numpy arrays (dtype 'int8')."""
+    return (numpy.fromstring(bytes, dtype='int8') for bytes in bytestream)
+
+
+def to_waveform(bytestream, dc=0):
+    """converts a binary waveform generator to floating point numpy arrays with variable dc level.
+    if the results from numpy.fromstring is directly used, the signed char format is preserved
+    -> causes havok when adding a dc value because of overflow outside the [-128,127] range
+    """
+    arrays = convert(bytestream)
+    first = arrays.__next__()
+    zeros = numpy.zeros(len(first))-dc
+    yield zeros + first
+    for pulse in arrays: yield zeros + pulse
+
+
+def at_max(cap, generator):
+    """stops iterator after at max @cap items have been fetched.
+    no effect if @cap < 0)."""
+    def capped_gen():
+        for got, item in enumerate(generator):
+            if got >= cap: break
+            yield item
+    if cap < 0: return generator
+    else:       return capped_gen()
 
 
 def reader(path, length=1000, frame=-1, dc=0):
-    """generators which converts binary waveforms to numpy arrays and returns them one at a time
-    binary format: signed int8 
-    the 'length' parameter controls the number of points ver waveform.
-    the 'frame' parameter controls the total number of waveforms to read.
-    the 'dc' parameter translates every waveform by minus this amount.
-    """
-    frame_read = 0
-    reader = binary_reader(path, length)
-    while (frame < 0 or frame > frame_read):
-        for byte_waveform in reader:
-            yield numpy.zeros(length) + numpy.fromstring(byte_waveform, dtype='int8') - dc
-                    # if the results from numpy.fromstring is directly used, 
-                    # the signed char format is preserved
-                    # -> this can causes havok when adding a dc value which
-                    #    will bring the wfm values outside of the [-128,127] range
-            frame_read += 1
-        break
+    """connects to_waveform() with at_max() and binary_reader()."""
+    return to_waveform( at_max(frame, binary_reader(path, length)), dc)
 
+
+##prefetch in memory in async thread
+#def prefetch(generator, depth):
+
+##divide one generator in x blocks
+#def divide(generator, blocks):
+
+#def dispatch(generator, list_of_queus):
+##nested double list_of_queus
+#    for item in generator
 
 def async_reader(path, length=1000, frame=-1, dc = 0, depth=100, pack=100):
     """doest not work very well"""

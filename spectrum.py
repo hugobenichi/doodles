@@ -65,6 +65,7 @@ rate   = 5 * 1e-9
 opt_short, opt_long = "r:f:l:s:ph", [ "rate=", "frame=", "length=", "save=", "plot", "help"]
 options, args = getopt.getopt( sys.argv[2:], opt_short, opt_long )
 
+
 try:
     for option, value in options:
         if option in ('-h', '--help'):      print(help); sys.exit(0)
@@ -78,46 +79,36 @@ except TypeError:
     sys.exit(22)
 
 
-mean_wfm = tes.waveform.average()
-spectrum = tes.waveform.spectrum()
-#wfmtrace = tes.waveform.trace()
+waveforms = tes.waveform.reader(path=input, length=length, frame=frame)
 
-
-spectrum = numpy.zeros(length/2+1)
+import multiprocessing
+from   multiprocessing import Pool
 
 def fft_power(wfm): 
     fft = numpy.fft.rfft(wfm)
     return numpy.real(fft * numpy.conjugate(fft))
+    
+ffts = multiprocessing.Pool(4).map(fft_power, waveforms)
 
-#waveforms = [ w for w in tes.waveform.reader(path=input, length=length, frame=frame)]
-
-
-import multiprocessing
-from   multiprocessing import Pool
-#from   multiprocessing import cpu_count
-
-print(multiprocessing.cpu_count())
-
-ffts = multiprocessing.Pool().map(fft_power, 
-#ffts = monoprocessing.Pool().map(fft_power, 
-    tes.waveform.reader(path=input, length=length, frame=frame)
-#    waveforms
-)
-
+spectrum = numpy.zeros(length/2+1)
 for x in ffts: spectrum += x
-spectrum /= frame
+spectrum_data = [ tes.waveform.freq(rate, length), 10 * numpy.log10(spectrum/len(ffts)) ]
 
-#for waveform in tes.waveform.reader( path=input, length=length, frame=frame):
- #   mean_wfm.add(waveform)
- #   spectrum.add(waveform)
- #   wfmtrace.add(waveform)
 
-#mean_wfm_data = [ tes.waveform.time(rate, length), mean_wfm.compute() ]
+#spectrum = tes.waveform.spectrum()
+#mean_wfm = tes.waveform.average()
+#wfmtrace = tes.waveform.trace()
+#for waveform in waveforms:
+#    spectrum.add(waveform)
+##    mean_wfm.add(waveform)
+##    wfmtrace.add(waveform)
+
 #spectrum_data = [ tes.waveform.freq(rate, length), spectrum.compute() ]
-#wfmtrace_data = [ tes.waveform.time(rate, length), wfmtrace.compute() ]
+##mean_wfm_data = [ tes.waveform.time(rate, length), mean_wfm.compute() ]
+##wfmtrace_data = [ tes.waveform.time(rate, length), wfmtrace.compute() ]
 
 #tes.plot.waveform( mean_wfm_data, save=output, show=to_plot)
-#tes.plot.spectrum( spectrum_data, save=output, show=to_plot )
+tes.plot.spectrum( spectrum_data, save=output, show=to_plot )
 #tes.plot.trace( wfmtrace_data, save=output, show=to_plot )
 
 if output is not None:

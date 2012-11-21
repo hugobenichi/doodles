@@ -75,8 +75,11 @@ hist_opt_fit2 = tes.histogram.builder() #lambda x: x)
 
 
 offset = 128+dc
-
-for wfm in tes.waveform.read_binary(path=input_data, length=length, frame=frame, dc=dc):
+for wfm in tes.waveform.reader(path=input_data, length=length, frame=frame, dc=dc):#dc):
+    #tes.plot.waveform( (time, wfm+dc), save="/home/hugo/Desktop/one_"+str(i), ylim=(-128,127) )
+    print(wfm[100],wfm[200],wfm[300],wfm[380],wfm[400])
+    tes.plot.waveform( (time, wfm), ylim=(-128-dc,127-dc) )
+    sys.exit(0)
     opt = filter_optimal(wfm)
     e0 = hist_raw.add(wfm, offset)
     e1 = hist_opt.add(opt, offset)
@@ -92,7 +95,7 @@ for wfm in tes.waveform.read_binary(path=input_data, length=length, frame=frame,
         #tes.plot.waveform( (time, wfm, opt, ref_wfm*e2), ylim = (-10,200) )
         #tes.plot.waveform( (time, wfm, weight2*e2, weight0*e3), ylim = (-10,200) )
     #print(e2, e3, lvl, e2 - e3)
-    #tes.plot.waveform( (time, wfm, weight0*e2, weight0*(e3)+lvl), ylim = (-10,200) )
+    tes.plot.waveform( (time, wfm, weight0*e2, weight0*(e3)+lvl), ylim = (-10,200) )
 
 volt = numpy.arange(0,256)
 #tes.plot.waveform( [volt,hist_raw.bins, hist_opt.bins, hist_opt_fit.bins], xlim=(50,250))
