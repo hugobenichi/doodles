@@ -18,9 +18,11 @@
 
     <target name="jdoc">
         <javadoc    destdir="${jdoc.dir}"
-                    sourcepath="${src.dir}/${project}/"
+                    sourcepath="${src.dir}"
                     packagenames="${project}"
-                    windowtitle="Streams">
+                    windowtitle="Streams"
+                    author="true"
+                    version="true">
         </javadoc>
     </target>
 
