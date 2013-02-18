@@ -1,24 +1,26 @@
 <project>
 
     <property name="project"    value="streams"/>
-
     <property name="src.dir"    value="src"/>
     <property name="build.dir"  value="build"/>
     <property name="class.dir"  value="${build.dir}/classes"/>
     <property name="jar.dir"    value="${build.dir}/jar"/>
     <property name="jar.jar"    value="${jar.dir}/${project}.jar"/>
-    <property name="jdoc.dir"   values="jdoc"/>
-
+    <property name="jdoc.dir"   value="jdoc"/>
     <property name="class.main" value="TestStreamPackage"/>
 
 
     <target name="clean">
         <delete dir="${jdoc.dir}"/>
         <delete dir="${build.dir}"/>
+    </target>
+
 
     <target name="jdoc">
-        <javadoc>
-        
+        <javadoc    destdir="${jdoc.dir}"
+                    sourcepath="${src.dir}/${project}/"
+                    packagenames="${project}"
+                    windowtitle="Streams">
         </javadoc>
     </target>
 
@@ -43,7 +45,7 @@
         <java jar="${jar.jar}" fork="true"/>
     </target>
 
-    <target name="cbuild"   depends="clean,jar"/>
-    <target name="crun"     depends="clean,run"/>
+    <target name="clean-build"   depends="clean,jar"/>
+    <target name="clean-run"     depends="clean,run"/>
 
 </project>
