@@ -78,7 +78,7 @@ public final class Streams {
      * Stream
      * @see AbstractStream#fold
      */
-    public static <E> last(Stream<E> stream) {
+    public static <E> E last(Stream<E> stream) {
         return this.iterator().next();
     }
     
