@@ -53,8 +53,6 @@ public interface Stream<E> extends Iterable<E> {
 
     /**
      * TODO: DOCME!
-     * @param <F>        the type of the output scalar value. May be different
-     * from E.
      * @param folder     a Operator object to compute the reduced scalar value.
      * @param init_state the initial state of the returned scalar value.
      * @return           the final state of the fold operation.

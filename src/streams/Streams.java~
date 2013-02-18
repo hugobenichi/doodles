@@ -69,19 +69,6 @@ public final class Streams {
         return null;
     }
 
-    /**
-     * Return the last value of a Stream. Used by AbstractStream in conjunction
-     * with Stream#map to implement Stream#fold.
-     * @param <E>    the type of the input stream
-     * @param stream a stream
-     * @return       the last value of this Stream or null if it's the empy
-     * Stream
-     * @see AbstractStream#fold
-     */
-    public static <E> last(Stream<E> stream) {
-        return this.iterator().next();
-    }
-    
     public static void foo() { System.out.println("foo"); }
 
 }

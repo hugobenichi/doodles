@@ -76,4 +76,14 @@ public abstract class AbstractStream<E> implements Stream<E> {
         */
     }
 
+    /**
+     * Return the last value of this Stream. Used in conjunction with Stream#map
+     * to implement Stream#fold.
+     * @return      the last value of this Stream or null if it's the empy
+     * Stream
+     */
+    public E last() {
+        return this.iterator().next();
+    }
+
 }
