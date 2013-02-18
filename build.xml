@@ -1,0 +1,49 @@
+<project>
+
+    <property name="project"    value="streams"/>
+
+    <property name="src.dir"    value="src"/>
+    <property name="build.dir"  value="build"/>
+    <property name="class.dir"  value="${build.dir}/classes"/>
+    <property name="jar.dir"    value="${build.dir}/jar"/>
+    <property name="jar.jar"    value="${jar.dir}/${project}.jar"/>
+    <property name="jdoc.dir"   values="jdoc"/>
+
+    <property name="class.main" value="TestStreamPackage"/>
+
+
+    <target name="clean">
+        <delete dir="${jdoc.dir}"/>
+        <delete dir="${build.dir}"/>
+
+    <target name="jdoc">
+        <javadoc>
+        
+        </javadoc>
+    </target>
+
+
+    <target name="compile">
+        <mkdir dir="${class.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${class.dir}" includeantruntime="false"/>
+    </target>
+
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.jar}" basedir="${class.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${class.main}"/>
+            </manifest>
+        </jar>
+    </target>
+
+
+    <target name="run" depends="jar">
+        <java jar="${jar.jar}" fork="true"/>
+    </target>
+
+    <target name="cbuild"   depends="clean,jar"/>
+    <target name="crun"     depends="clean,run"/>
+
+</project>
