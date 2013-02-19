@@ -35,11 +35,17 @@ public final class Streams {
      * @see Stream
      * @see AbstractStream
      */
-    public static <E> Stream<E> from(final Iterable<E> sequence) {
-                           //TODO: why not Iterable< error: reference not found? extends E>
+    public static <E> Stream<E> from(final Iterable<? extends E> sequence) {
         return new AbstractStream<E>() {
-            final Iterable<E> underlying_seq = sequence;
-            public Iterator<E> iterator() { return underlying_seq.iterator(); }
+            final Iterable<? extends E> underlying_seq = sequence;
+            public Iterator<E> iterator() {
+                return new Iterator<E>(){
+                    Iterator<? extends E> iter = underlying_seq.iterator();
+                    public void remove(){}
+                    public boolean hasNext() { return iter.hasNext(); }
+                    public E next() { return iter.next(); }
+                };
+            }
         };
     }
 
@@ -55,7 +61,12 @@ public final class Streams {
      * iteration order.
      */
     public static <E> List<E> take(Stream<E> stream, int n){
-        return new LinkedList<E>();
+        List<E> output_list = new LinkedList<E>();
+        if ( n != 0) {
+            Iterator<E> iter = stream.iterator();
+            while( n-- != 0 && iter.hasNext()) { output_list.add(iter.next()); }
+        }
+        return output_list;
     }
 
     /**
@@ -79,9 +90,11 @@ public final class Streams {
      * @see AbstractStream#fold
      */
     public static <E> E last(Stream<E> stream) {
-        return stream.iterator().next();
+        E last = null;
+        for (E item : stream) { last = item; }
+        return last;
     }
-    
+
     public static void foo() { System.out.println("foo"); }
 
 }
