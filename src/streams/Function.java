@@ -15,6 +15,6 @@ public interface Function<E,F> {
      * @return      an object of type F.
      * @see Stream#map
      */
-    E call(F input);
+    F call(E input);
 
 }
