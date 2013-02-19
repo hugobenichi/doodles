@@ -69,6 +69,7 @@ public final class Streams {
         return output_list;
     }
 
+    // change input type to Iterarable<E> ?
     /**
      * TODO: DOCME!
      * @param <E>    the type of the input stream
