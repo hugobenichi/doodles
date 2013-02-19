@@ -28,7 +28,7 @@ public interface Stream<E> extends Iterable<E> {
      * @return          a new Stream of possibly a different type.
      * @see Function
      */
-    <F> Stream<F> map(Function<? super E,? extends F> transform);
+    <F> Stream<F> map(final Function<? super E,? extends F> transform);
 
     /**
      * Return a substream of this stream filtered from any object which does not
@@ -38,7 +38,7 @@ public interface Stream<E> extends Iterable<E> {
      * @return      a new Stream object of the same type.
      * @see Predicate
      */
-    Stream<E> select(Predicate<? super E> check);
+    Stream<E> select(final Predicate<? super E> check);
 
     // TODO: shouldn t first param of Operator be ? extend E ?
     /**
@@ -50,7 +50,7 @@ public interface Stream<E> extends Iterable<E> {
      * @see Operator
      */
     //<T super E> 
-    Function<?,E> reduce(Operator<E,E> reducer);
+    Function<?,E> reduce(final Operator<E,E> reducer);
 
     /**
      * TODO: DOCME!
@@ -61,6 +61,6 @@ public interface Stream<E> extends Iterable<E> {
      * @return           the final state of the fold operation.
      * @see Operator
      */
-    <F> Function<F,F> fold(Operator<F,E> folder);
+    <F> Function<F,F> fold(final Operator<F,E> folder);
 
 }

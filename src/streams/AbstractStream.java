@@ -28,7 +28,7 @@ public abstract class AbstractStream<E> implements Stream<E> {
      * @return          a new Stream of possibly a different type.
      * @see Function
      */
-    public <F> Stream<F> map(Function<? super E, ? extends F> transform) {
+    public <F> Stream<F> map(final Function<? super E, ? extends F> transform) {
         final Iterable<E> input_stream = this;
         return new AbstractStream<F>() {
             public Iterator<F> iterator() {
@@ -48,7 +48,7 @@ public abstract class AbstractStream<E> implements Stream<E> {
      * @return      a new Stream object of the same type.
      * @see Predicate
      */
-    public Stream<E> select(Predicate<? super E> check) {
+    public Stream<E> select(final Predicate<? super E> check) {
 
         final Iterable<E> input_stream = this;
         return new AbstractStream<E>() {
@@ -98,7 +98,7 @@ public abstract class AbstractStream<E> implements Stream<E> {
      * @return        the final state of the reduce operation.
      * @see Operator
      */
-    public Function<?,E> reduce(Operator<E,E> reducer) {
+    public Function<?,E> reduce(final Operator<E,E> reducer) {
 
         final Stream<E> input_stream = this;
 
@@ -133,14 +133,15 @@ public abstract class AbstractStream<E> implements Stream<E> {
      * @return           the final state of the fold operation.
      * @see Operator
      */
-    public <F> Function<F,F> fold(Operator<F,E> folder) {
+    public <F> Function<F,F> fold(final Operator<F,E> folder) {
 
         final Stream<E> input_stream = this;
 
         return new Function<F,F>() {
             public F call(F input) {
+                final F accumulator_init_state = input;
                 Function<E,F> folding_adapter = new Function<E,F>() {
-                    F accumulator = input;
+                    F accumulator = accumulator_init_state;
                     public F call(E input){
                         accumulator = folder.call(accumulator, input);
                         return accumulator;
