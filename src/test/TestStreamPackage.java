@@ -6,7 +6,6 @@ public class TestStreamPackage {
 
     public static void main(String argv[]) {
 
-        Streams.foo();
         System.exit(0);
 
     }
