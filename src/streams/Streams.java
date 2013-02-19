@@ -96,6 +96,13 @@ public final class Streams {
         return last;
     }
 
+    // helper function for fold and reduce
+    // TODO: DOCME!
+    public static <E,F> F fold_with_map(Stream<E> stream, Function<E,F> folding_adapter) {
+        Stream<F> folding_stream = stream.map(folding_adapter);
+        return Streams.last(folding_stream);
+    }
+
     public static void foo() { System.out.println("foo"); }
 
 }
