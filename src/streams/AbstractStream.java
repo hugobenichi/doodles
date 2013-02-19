@@ -98,7 +98,7 @@ public abstract class AbstractStream<E> implements Stream<E> {
      * @return        the final state of the reduce operation.
      * @see Operator
      */
-    public Function<?,E> reduce(Operator<E, ? super E> reducer) {
+    public Function<?,E> reduce(Operator<E,E> reducer) {
 
         final Stream<E> input_stream = this;
 
@@ -133,7 +133,7 @@ public abstract class AbstractStream<E> implements Stream<E> {
      * @return           the final state of the fold operation.
      * @see Operator
      */
-    public <F> Function<F,F> fold(Operator<F, ? super E> folder) {
+    public <F> Function<F,F> fold(Operator<F,E> folder) {
 
         final Stream<E> input_stream = this;
 
