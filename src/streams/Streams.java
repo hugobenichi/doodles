@@ -103,6 +103,4 @@ public final class Streams {
         return Streams.last(folding_stream);
     }
 
-    public static void foo() { System.out.println("foo"); }
-
 }
