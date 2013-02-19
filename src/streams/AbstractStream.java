@@ -42,6 +42,126 @@ public abstract class AbstractStream<E> implements Stream<E> {
         };
     }
 
+    // TODO: check food type of init_state
+    /**
+     * TODO: DOCME!
+     * @param <F>        the type of the output scalar value. May be different
+     * from E.
+     * @param folder     a Operator object to compute the reduced scalar value.
+     * @param init_state the initial state of the returned scalar value.
+     * @return           the final state of the fold operation.
+     * @see Operator
+     */
+    public <F> Function<F,F> fold(final Operator<F,E> folder) {
+
+        final Stream<E> input_stream = this;
+
+        return new Function<F,F>() {
+            public F call(F input) {
+                final F accumulator_init_state = input;
+                Function<E,F> folding_adapter = new Function<E,F>() {
+                    F accumulator = accumulator_init_state;
+                    public F call(E input){
+                        accumulator = folder.call(accumulator, input);
+                        return accumulator;
+                    }
+                };
+                return Streams.fold_with_map(input_stream, folding_adapter);
+            }
+        };
+
+    }
+
+    // TODO: shouldn t first param of Operator be ? extend E ?
+    /**
+     * TODO: DOCME!
+     * @param reducer a Operator object to compute the reduced scalar value.
+     * @return        the final state of the reduce operation.
+     * @see Operator
+     */
+    public Function<?,E> reduce(final Operator<E,E> reducer) {
+
+        final Stream<E> input_stream = this;
+
+        return new Function<Object,E>() {
+            public E call(Object any_input) {
+                Function<E,E> reducing_adapter = new Function<E,E>() {
+                    boolean is_init = false;
+                    E accumulator = null;
+                    public E call(E input){
+                        if (is_init) {
+                            accumulator = reducer.call(accumulator, input);
+                        } else {
+                            is_init = true;
+                            accumulator = input;
+                        }
+                        return accumulator;
+                    }
+                };
+                return Streams.fold_with_map(input_stream, reducing_adapter);
+            }
+        };
+
+    }
+
+    private static class State<E> {
+        private static final State<Object> NULLSTATE = new State<Object>(null, false);
+        public final E value;
+        public final boolean valid;
+        private State(E value_to_wrap, boolean is_valid) {
+            this.value = value_to_wrap;
+            this.valid = is_valid;
+        }
+        public boolean yes() { return this.valid; }
+        public boolean no() { return !this.valid; }
+        public static <X> State<X> check(X value_to_wrap, boolean is_valid) {
+            return new State<X>(value_to_wrap, is_valid);
+        }
+        public static <X> Function<X,State<X>> adapter(final Predicate<? super X> test) {
+            return new Function<X,State<X>>(){
+                public State<X> call(X input) {
+                    return State.check(input, test.call(input));
+                }
+            };
+        }
+        public static <X> State<X> nullState(){ 
+            @SuppressWarnings("unchecked")
+            State<X> casted_nullstate = (State<X>) State.NULLSTATE;
+            return casted_nullstate;
+        }
+    }
+
+    public Stream<E> select_bis(final Predicate<? super E> check) {
+        final Stream<State<E>> yesno_stream = this.map(State.adapter(check));
+        return new AbstractStream<E>() {
+            public Iterator<E> iterator() {
+                return new Iterator<E>(){
+                    Iterator<State<E>> iter = yesno_stream.iterator();
+                    State<E> next_item = State.nullState();
+                    public void remove(){}
+                    public boolean hasNext() {
+                        find_next_valid();
+                        return next_item != State.nullState();
+                    }
+                    public E next() { 
+                        find_next_valid();
+                        E next_to_consume = next_item.value;
+                        next_item = State.nullState();
+                        return next_to_consume;
+                    }
+                    private void find_next_valid() {
+                        State<E> next_candidate = next_item;
+                        while(next_candidate.no() && iter.hasNext())
+                            next_candidate = iter.next();
+                        if (next_candidate.yes())
+                            next_item = next_candidate;
+                    }
+                };
+            }
+        };
+    }
+
+
     /**
      * TODO: DOCME!
      * @param check a Predicate object which specifies which test to run.
@@ -87,68 +207,6 @@ public abstract class AbstractStream<E> implements Stream<E> {
                 };
             }
 
-        };
-
-    }
-
-    // TODO: shouldn t first param of Operator be ? extend E ?
-    /**
-     * TODO: DOCME!
-     * @param reducer a Operator object to compute the reduced scalar value.
-     * @return        the final state of the reduce operation.
-     * @see Operator
-     */
-    public Function<?,E> reduce(final Operator<E,E> reducer) {
-
-        final Stream<E> input_stream = this;
-
-        return new Function<Object,E>() {
-            public E call(Object any_input) {
-                Function<E,E> reducing_adapter = new Function<E,E>() {
-                    boolean is_init = false;
-                    E accumulator = null;
-                    public E call(E input){
-                        if (is_init) {
-                            accumulator = reducer.call(accumulator, input);
-                        } else {
-                            is_init = true;
-                            accumulator = input;
-                        }
-                        return accumulator;
-                    }
-                };
-                return Streams.fold_with_map(input_stream, reducing_adapter);
-            }
-        };
-
-    }
-
-    // TODO: check food type of init_state
-    /**
-     * TODO: DOCME!
-     * @param <F>        the type of the output scalar value. May be different
-     * from E.
-     * @param folder     a Operator object to compute the reduced scalar value.
-     * @param init_state the initial state of the returned scalar value.
-     * @return           the final state of the fold operation.
-     * @see Operator
-     */
-    public <F> Function<F,F> fold(final Operator<F,E> folder) {
-
-        final Stream<E> input_stream = this;
-
-        return new Function<F,F>() {
-            public F call(F input) {
-                final F accumulator_init_state = input;
-                Function<E,F> folding_adapter = new Function<E,F>() {
-                    F accumulator = accumulator_init_state;
-                    public F call(E input){
-                        accumulator = folder.call(accumulator, input);
-                        return accumulator;
-                    }
-                };
-                return Streams.fold_with_map(input_stream, folding_adapter);
-            }
         };
 
     }
