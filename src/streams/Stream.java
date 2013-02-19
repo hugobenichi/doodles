@@ -28,7 +28,7 @@ public interface Stream<E> extends Iterable<E> {
      * @return          a new Stream of possibly a different type.
      * @see Function
      */
-    <F> Stream<F> map(Function<? extends F,? super E> transform);
+    <F> Stream<F> map(Function<? super E,? extends F> transform);
 
     /**
      * Return a substream of this stream filtered from any object which does not
