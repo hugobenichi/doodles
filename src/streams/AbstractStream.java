@@ -28,10 +28,9 @@ public abstract class AbstractStream<E> implements Stream<E> {
      * @return          a new Stream of possibly a different type.
      * @see Function
      */
-
     public <F> Stream<F> map(Function<? super E, ? extends F> transform) {
+        final Iterable<E> input_stream = this;
         return new AbstractStream<F>() {
-            final Iterable<E> input_stream = this;
             public Iterator<F> iterator() {
                 return new Iterator<F>(){
                     Iterator<E> iter = input_stream.iterator();
@@ -41,7 +40,6 @@ public abstract class AbstractStream<E> implements Stream<E> {
                 };
             }
         };
-
     }
 
     /**
