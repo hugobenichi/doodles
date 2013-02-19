@@ -49,7 +49,7 @@ public interface Stream<E> extends Iterable<E> {
      * @return        the final state of the reduce operation.
      * @see Operator
      */
-    E reduce(Operator<? extends E, ? super E> reducer);
+    Function<?,E> reduce(Operator<E, ? super E> reducer);
 
     /**
      * TODO: DOCME!
@@ -60,12 +60,6 @@ public interface Stream<E> extends Iterable<E> {
      * @return           the final state of the fold operation.
      * @see Operator
      */
-    <F> F fold(Operator<? extends F, ? super E> folder, F init_state);
-
-    //TODO: move to Streams as a static helper function
-    //List<E> take(int n);
-
-    //TODO: move to Streams as a static helper function
-    //Stream<E> buffer();
+    <F> Function<F,F> fold(Operator<F, ? super E> folder, F init_state);
 
 }
