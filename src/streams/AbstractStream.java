@@ -98,23 +98,29 @@ public abstract class AbstractStream<E> implements Stream<E> {
      * @return        the final state of the reduce operation.
      * @see Operator
      */
-    public E reduce(Operator<E, ? super E> reducer) {
+    public Function<?,E> reduce(Operator<E, ? super E> reducer) {
 
-        Function<E,E> reducing_adapter = new Function<E,E>() {
-            boolean is_init = false;
-            E accumulator_state = null;
-            public E call(E input){
-                if (is_init) {
-                    accumulator_state = reducer.call(accumulator_state, input);
-                } else {
-                    is_init = true;
-                    accumulator_state = input;
-                }
-                return accumulator_state;
+        final Stream<E> input_stream = this;
+
+        return new Function<Object,E>() {
+            public E call(Object any_input) {
+                Function<E,E> reducing_adapter = new Function<E,E>() {
+                    boolean is_init = false;
+                    E accumulator = null;
+                    public E call(E input){
+                        if (is_init) {
+                            accumulator = reducer.call(accumulator, input);
+                        } else {
+                            is_init = true;
+                            accumulator = input;
+                        }
+                        return accumulator;
+                    }
+                };
+                return Streams.fold_with_map(input_stream, reducing_adapter);
             }
         };
 
-        return fold_from_map(reducing_adapter);
     }
 
     // TODO: check food type of init_state
@@ -127,24 +133,23 @@ public abstract class AbstractStream<E> implements Stream<E> {
      * @return           the final state of the fold operation.
      * @see Operator
      */
-    public <F> F fold(Operator<F, ? super E> folder, F init_state) {
+    public <F> Function<F,F> fold(Operator<F, ? super E> folder) {
 
-        Function<E,F> folding_adapter = new Function<E,F>() {
-            F accumulator_state = init_state;
-            public F call(E input){
-                accumulator_state = folder.call(accumulator_state, input);
-                return accumulator_state;
+        final Stream<E> input_stream = this;
+
+        return new Function<F,F>() {
+            public F call(F input) {
+                Function<E,F> folding_adapter = new Function<E,F>() {
+                    F accumulator = input;
+                    public F call(E input){
+                        accumulator = folder.call(accumulator, input);
+                        return accumulator;
+                    }
+                };
+                return Streams.fold_with_map(input_stream, folding_adapter);
             }
         };
 
-        return fold_from_map(folding_adapter);
-    }
-
-    // helper function for fold and reduce
-    // TODO: DOCME!
-    private <F> F fold_from_map(Function<E,F> folding_adapter) {
-        Stream<F> folding_stream = this.map(folding_adapter);
-        return Streams.last(folding_stream);
     }
 
 }
