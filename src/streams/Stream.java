@@ -60,6 +60,6 @@ public interface Stream<E> extends Iterable<E> {
      * @return           the final state of the fold operation.
      * @see Operator
      */
-    <F> Function<F,F> fold(Operator<F, ? super E> folder, F init_state);
+    <F> Function<F,F> fold(Operator<F, ? super E> folder);
 
 }
