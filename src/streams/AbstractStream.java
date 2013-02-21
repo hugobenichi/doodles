@@ -7,16 +7,16 @@ import streams.Stream;
 
 /**
  * Abstract class which provides a skeleton implementation of Stream. Clients
- * inheriting from this class only need to provide the iterator method coming
- * from the Iterable interface.
+ * inheriting from this class only need to implement the iterator method from
+ * the Iterable interface.
  * @author hugo benichi
- * @version 0.1.0
+ * @version 0.1.1
  * @see Stream
  */
 public abstract class AbstractStream<E> implements Stream<E> {
 
     /**
-     * Clients implement this.
+     * Clients implement this. Follows the usual Iterator contract.
      */
     public abstract Iterator<E> iterator();
 
@@ -34,7 +34,7 @@ public abstract class AbstractStream<E> implements Stream<E> {
             public Iterator<F> iterator() {
                 return new Iterator<F>(){
                     Iterator<E> iter = input_stream.iterator();
-                    public void remove(){}
+                    public void remove(){ iter.remove(); }
                     public boolean hasNext() { return iter.hasNext(); }
                     public F next() { return transform.call(iter.next()); }
                 };

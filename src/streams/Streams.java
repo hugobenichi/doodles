@@ -10,9 +10,8 @@ import streams.AbstractStream;
 
 /**
  * A static helper class for the Stream interface.
- * TODO: finish comments here
  * @author hugo benichi
- * @version 0.1.0
+ * @version 0.1.1
  * @see Stream
  */
 public final class Streams {
@@ -25,13 +24,14 @@ public final class Streams {
     /**
      * Factory method which takes an Iterable object and wraps it inside a
      * Stream object produced on the fly as an anonymous instance of
-     * AbstractStream. This anonymous instance simply store a reference to the
-     * iterable and implements Iterable#iterator by delegation to the underlying
-     * Iterable object.
-     * @param <E>       the type of the underlying Iterable instance
-     * @param sequence  a instance of Iterable serving as the base for the
-     * constructed Stream
-     * @return          a Stream of the same type of the Iterable
+     * AbstractStream. This anonymous instance simply stores a reference to the
+     * iterable object and implements Iterable#iterator by delegation to the
+     * underlying Iterable object.
+     * @param <E>       the type of the returned Stream.
+     * @param sequence  an instance of Iterable serving as the base for the
+     * returned Stream object. The parameter type of this Iterable can be a
+     * subtype of E.
+     * @return          a Stream object.
      * @see Stream
      * @see AbstractStream
      */
@@ -49,27 +49,27 @@ public final class Streams {
         };
     }
 
-    // TODO: return type ? Iterable<E> ?
     /**
-     * TODO: DOCME!
-     * @param <E>    the type of the input stream
-     * @param stream a\n input stream to buffer into a List
-     * @param n      the number of element to take from stream. If stream has
-     * less than n element, then all the elements of stream are put into the
-     * output list. If n is zero or negative, an empty list is returned.
+     * Takes the first n elements of a Stream and returned them in a static list
+     * in iteration order.
+     * @param <E>    the type of the returned List stream.
+     * @param stream the input stream to buffer into a List. Its type parameter
+     * can be a subtype of E.
+     * @param n      the number of element to take from the stream and put into
+     * the returned list. If stream has less than n element or if n is negative,
+     * then all the elements selected. If n is zero an empty list is returned.
      * @return       a list which contains the first n elements of the stream in
      * iteration order.
      */
-    public static <E> List<E> take(Stream<E> stream, int n){
+    public static <E> List<E> take(Stream<? extends E> stream, int n){
         List<E> output_list = new LinkedList<E>();
         if ( n != 0) {
-            Iterator<E> iter = stream.iterator();
+            Iterator<? extends E> iter = stream.iterator();
             while( n-- != 0 && iter.hasNext()) { output_list.add(iter.next()); }
         }
         return output_list;
     }
 
-    // change input type to Iterarable<E> ?
     /**
      * TODO: DOCME!
      * @param <E>    the type of the input stream
@@ -82,13 +82,14 @@ public final class Streams {
     }
 
     /**
-     * Return the last value of a Stream. Used by AbstractStream in conjunction
-     * with Stream#map to implement Stream#fold.
-     * @param <E>    the type of the input stream
-     * @param stream a stream
-     * @return       the last value of this Stream or null if it's the empy
-     * Stream
+     * Returns the last value of a Stream. Used by AbstractStream in conjunction
+     * with Stream#map and Streams#fold_with_map to implement Stream#fold
+     * and Stream#reduce.
+     * @param <E>    the type of the input stream.
+     * @param stream a Stream object.
+     * @return       the last value of this Stream or null if it is empty.
      * @see AbstractStream#fold
+     * @see Streams#fold_with_map
      */
     public static <E> E last(Stream<E> stream) {
         E last = null;
@@ -96,9 +97,26 @@ public final class Streams {
         return last;
     }
 
-    // helper function for fold and reduce
-    // TODO: DOCME!
-    public static <E,F> F fold_with_map(Stream<E> stream, Function<E,F> folding_adapter) {
+    /**
+     * Helper function for implementation of AbstractStream#fold and #reduce.
+     * Map a stream with a Function object and returns the last object of this
+     * mapped stream. The Function object is actually a closure wrapping a fold
+     * operation and returns the updated state of the fold for every items in
+     * the input stream. Therefore the result of the fold is the last item of
+     * the mapped Stream.
+     * @param <E>              the type of the stream to fold.
+     * @param <F>              the return type of the fold operation.
+     * @param stream           the stream to fold.
+     * @param folding_adapter  a closure wrapping a fold operation and presented
+     * as a Function instance to adapt to Stream#map interface.
+     * @return                 the result of the fold operation.
+     * @see AbstractStream#fold
+     * @see Streams#last
+     */
+    public static <E,F> F fold_with_map(
+        Stream<E> stream,
+        Function<? super E,F> folding_adapter
+    ) {
         Stream<F> folding_stream = stream.map(folding_adapter);
         return Streams.last(folding_stream);
     }

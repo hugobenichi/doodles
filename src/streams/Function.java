@@ -1,10 +1,12 @@
 package streams;
 
 /**
- * Specify an interface for a Function object to pass as argument to Stream#map.
+ * Specify an interface for a Function type to pass as argument to Stream#map.
+ * Instances of Function for types E and F represents a computation taking as
+ * input an instance of type E and returning an instance of type F.
  * @see Stream
  * @author hugo benichi
- * @version 0.1.0
+ * @version 0.1.1
  */
 public interface Function<E,F> {
 

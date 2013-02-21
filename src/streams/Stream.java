@@ -8,58 +8,77 @@ import streams.Operator;
 import streams.Predicate;
 
 /**
- * The main interface of this package. It defines a wrapper for the
- * Iterable interface and add a number of useful functions to apply and chain
- * operations on the underlying iterator, to eventually produce either a scalar
- * value with Stream#reduce or ... TODO: finish comments here
+ * Stream defines a wrapper for the Iterable interface and adds four useful
+ * functions to apply and chain operations on iterators. All operations are
+ * conducted in a lazy fashion: values are computed only when necessary and
+ * and outer wrapping Iterator ask for them. The prefered way to build Stream
+ * object is via the static factory method Streams#from.
  * @author hugo benichi
- * @version 0.1.0
+ * @version 0.1.1
+ * @see Streams#from
  */
 public interface Stream<E> extends Iterable<E> {
 
     /**
-     * Map this stream to another output stream by aplying a caller defined 
+     * Maps this stream to another stream by aplying a caller defined 
      * operation. New values are produced as needed when the output stream is
      * iterated over. The operation is specified by the caller as a Function
      * object and is typically an anonymous instance of the Function interface.
      * @param <F>       the type of the output Stream.
      * @param transform a Function object which specifies how the objects
      * provided by this stream should be transformed.
-     * @return          a new Stream of possibly a different type.
+     * @return          a new Stream object, possibly of a different type.
      * @see Function
      */
     <F> Stream<F> map(final Function<? super E,? extends F> transform);
 
     /**
-     * Return a substream of this stream filtered from any object which does not
-     * pass a called defined test. The test is provided as a Predicate object
-     * and is typically an anonymous instance of the Predicate interface.
-     * @param check a Predicate object which specifies which test to run.
+     * Returns a substream of this stream filtered from any object which does
+     * not pass the boolean test specified by the caller as a Predicate object.
+     * Objects which fails the test are simply ignored by the stream iterator
+     * and skipped. Therefore the stream iterator is typically one object ahead
+     * in order to be able to check if there are remaining valid objects in the
+     * Stream.
+     * @param check a Predicate object specifying the boolean test to run on
+     * objects provided by the stream.
      * @return      a new Stream object of the same type.
      * @see Predicate
      */
     Stream<E> select(final Predicate<? super E> check);
 
-    // TODO: shouldn t first param of Operator be ? extend E ?
     /**
-     * Return a scalar value computed from all the values of this Stream. The
-     * ouput is computed from a caller defined reducer operation specified as a
-     * Operator object with matching accumulator and input types.
-     * @param reducer a Operator object to compute the reduced scalar value.
-     * @return        the final state of the reduce operation.
+     * Returns a Function which can compute a scalar value from all the values
+     * of this Stream. The computation is defined by the caller with a reducer
+     * operation specified as an Operator object with matching accumulator
+     * (left operand) and input (right operand) types. Instead of directly
+     * returning the scalar value, a callable object is returned to delay the 
+     * actual computation as long as possible.
+     * @param reducer an Operator object to compute the reduced scalar value.
+     * @return        A Function object which when its call() method is invoked
+     * return the result of the reduce operation. The Function object takes any
+     * object as input and can be called with null. The result is not buffered
+     * and further invocations of call() will rerun the computation.
      * @see Operator
+     * @see Function
      */
-    //<T super E> 
     Function<?,E> reduce(final Operator<E,E> reducer);
 
     /**
-     * TODO: DOCME!
-     * @param <F>        the type of the output scalar value. May be different
-     * from E.
-     * @param folder     a Operator object to compute the reduced scalar value.
-     * @param init_state the initial state of the returned scalar value.
-     * @return           the final state of the fold operation.
+     * Returns a Function which can compute a scalar value all the values of
+     * this Stream. The computation is defined by the caller with a fold 
+     * operation specified as an Operator object with non-matching accumulator
+     * (left operand) and input (right operand) types. Instead of directly
+     * returning the scalar value, a callable object is returned to delay the 
+     * actual computation as long as possible.
+     * @param <F>        the type of the output scalar value, in general
+     * different from E.
+     * @param folder     an Operator object to compute the folded scalar value.
+     * @return           A Function object which when its call() method is invoked
+     * return the result of the reduce operation. The input argument to call()
+     * is the initial value of the fold operation. The result is not buffered
+     * and further invocations of call() will rerun the computation.
      * @see Operator
+     * @see Function
      */
     <F> Function<F,F> fold(final Operator<F,E> folder);
 
