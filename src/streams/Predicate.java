@@ -7,7 +7,7 @@ package streams;
  * anonymous class.
  * @see Stream
  * @author hugo benichi
- * @version 0.1.1
+ * @version 0.1.2
  */
 public interface Predicate<E> {
 

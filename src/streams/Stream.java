@@ -14,7 +14,7 @@ import streams.Predicate;
  * some outside iteration needs them. The prefered way to build Stream objects
  * is via the static factory method Streams#from.
  * @author hugo benichi
- * @version 0.1.1
+ * @version 0.1.2
  * @see Streams#from
  */
 public interface Stream<E> extends Iterable<E> {

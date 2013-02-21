@@ -7,7 +7,7 @@ package streams;
  * instance of type E.
  * @see Stream
  * @author hugo benichi
- * @version 0.1.1
+ * @version 0.1.2
  */
 public interface Operator<F,E> {
 
