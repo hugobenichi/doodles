@@ -10,9 +10,9 @@ import streams.Predicate;
 /**
  * Stream defines a wrapper for the Iterable interface and adds four useful
  * functions to apply and chain operations on iterators. All operations are
- * conducted in a lazy fashion: values are computed only when necessary and
- * and outer wrapping Iterator ask for them. The prefered way to build Stream
- * object is via the static factory method Streams#from.
+ * conducted in a lazy fashion: values are computed only when necessary until
+ * some outside iteration needs them. The prefered way to build Stream objects
+ * is via the static factory method Streams#from.
  * @author hugo benichi
  * @version 0.1.1
  * @see Streams#from
@@ -20,7 +20,7 @@ import streams.Predicate;
 public interface Stream<E> extends Iterable<E> {
 
     /**
-     * Maps this stream to another stream by aplying a caller defined 
+     * Maps this stream to another stream by applying a caller defined 
      * operation. New values are produced as needed when the output stream is
      * iterated over. The operation is specified by the caller as a Function
      * object and is typically an anonymous instance of the Function interface.
@@ -34,11 +34,11 @@ public interface Stream<E> extends Iterable<E> {
 
     /**
      * Returns a substream of this stream filtered from any object which does
-     * not pass the boolean test specified by the caller as a Predicate object.
-     * Objects which fails the test are simply ignored by the stream iterator
+     * not pass the boolean test represented by the caller given Predicate
+     * object. Objects which fail the test are ignored by the stream iterator
      * and skipped. Therefore the stream iterator is typically one object ahead
-     * in order to be able to check if there are remaining valid objects in the
-     * Stream.
+     * in order to be able to check if there are any remaining valid objects in
+     * the Stream.
      * @param check a Predicate object specifying the boolean test to run on
      * objects provided by the stream.
      * @return      a new Stream object of the same type.
@@ -54,9 +54,9 @@ public interface Stream<E> extends Iterable<E> {
      * returning the scalar value, a callable object is returned to delay the 
      * actual computation as long as possible.
      * @param reducer an Operator object to compute the reduced scalar value.
-     * @return        A Function object which when its call() method is invoked
-     * return the result of the reduce operation. The Function object takes any
-     * object as input and can be called with null. The result is not buffered
+     * @return        a Function object which when its call() method is invoked
+     * returns the result of the reduce operation. The Function object takes any
+     * value as input and can be called with null. The result is not buffered
      * and further invocations of call() will rerun the computation.
      * @see Operator
      * @see Function
@@ -73,10 +73,10 @@ public interface Stream<E> extends Iterable<E> {
      * @param <F>        the type of the output scalar value, in general
      * different from E.
      * @param folder     an Operator object to compute the folded scalar value.
-     * @return           A Function object which when its call() method is invoked
-     * return the result of the reduce operation. The input argument to call()
-     * is the initial value of the fold operation. The result is not buffered
-     * and further invocations of call() will rerun the computation.
+     * @return           a Function object which when its call() method is
+     * invoked returns the result of the reduce operation. The input argument to
+     * call() is the initial value of the fold operation. The result is not
+     * buffered and further invocations of call() will rerun the computation.
      * @see Operator
      * @see Function
      */

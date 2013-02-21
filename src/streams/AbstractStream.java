@@ -7,8 +7,7 @@ import streams.Stream;
 
 /**
  * Abstract class which provides a skeleton implementation of Stream. Clients
- * inheriting from this class only need to implement the iterator method from
- * the Iterable interface.
+ * inheriting from this class only need to implement the Iterable#iterator.
  * @author hugo benichi
  * @version 0.1.1
  * @see Stream
@@ -21,15 +20,21 @@ public abstract class AbstractStream<E> implements Stream<E> {
     public abstract Iterator<E> iterator();
 
     /**
-     * TODO: DOCME!
+     * Creates a new stream by delegating calls to an underlying iterator taken
+     * from the current stream. Function#call is invoked in Iterator#next.
      * @param <F>       the type of the output Stream.
      * @param transform a Function object which specifies how the objects
-     * provided by this stream should be transformed.
+     * provided by this stream should be transformed. Returns null if transform
+     * is null.
      * @return          a new Stream of possibly a different type.
+     * @see Stream#map
      * @see Function
      */
     public <F> Stream<F> map(final Function<? super E, ? extends F> transform) {
+        if (transform == null) return null;
+
         final Iterable<E> input_stream = this;
+
         return new AbstractStream<F>() {
             public Iterator<F> iterator() {
                 return new Iterator<F>(){
@@ -40,65 +45,100 @@ public abstract class AbstractStream<E> implements Stream<E> {
                 };
             }
         };
+
     }
 
-    // TODO: check food type of init_state
     /**
-     * TODO: DOCME!
+     * Creates an anonymous Function instance which wraps a call to
+     * Stream#fold_with_map. In turn, Stream#fold_with_map calls a closure which
+     * wraps the Operator folding operation obtained from the caller. This
+     * allows to use Stream#map to perform the computation.
      * @param <F>        the type of the output scalar value. May be different
      * from E.
-     * @param folder     a Operator object to compute the reduced scalar value.
-     * @param init_state the initial state of the returned scalar value.
-     * @return           the final state of the fold operation.
+     * @param folder     a Operator object to compute the folded scalar value.
+     * Returns null if folder is null.
+     * @return            Function object which when its call() method is
+     * invoked returns the result of the reduce operation. The input argument to
+     * call() is the initial value of the fold operation. The result is not
+     * buffered and further invocations of call() will rerun the computation.
+     * @see Streams#fold_with_map
      * @see Operator
      */
     public <F> Function<F,F> fold(final Operator<F,E> folder) {
+        if (folder == null) return null;
 
         final Stream<E> input_stream = this;
 
         return new Function<F,F>() {
             public F call(F input) {
+
                 final F accumulator_init_state = input;
+
+                /* Closure which wraps the folding operation */
                 Function<E,F> folding_adapter = new Function<E,F>() {
+
+                    /* keep a reference to the accumulator value */
                     F accumulator = accumulator_init_state;
+
+                    /* deleguate to teh folding operation */
                     public F call(E input){
                         accumulator = folder.call(accumulator, input);
                         return accumulator;
                     }
+
                 };
+
+                /* final call to Streams#fold_with_map to get the last value */
                 return Streams.fold_with_map(input_stream, folding_adapter);
+
             }
         };
 
     }
 
-    // TODO: shouldn t first param of Operator be ? extend E ?
     /**
-     * TODO: DOCME!
-     * @param reducer a Operator object to compute the reduced scalar value.
-     * @return        the final state of the reduce operation.
+     * Creates an anonymous Function instance which wraps a call to
+     * Stream#fold_with_map. In turn, Stream#fold_with_map calls a closure which
+     * wraps the Operator reducing operation obtained from the caller. This
+     * allows to use Stream#map to perform the computation.
+     * @param reducer    a Operator object to compute the reduced scalar value.
+     * Returns null if folder is null.
+     * @return           a Function object which when its call() method is invoked
+     * returns the result of the reduce operation. The Function object takes any
+     * value as input and can be called with null. The result is not buffered
+     * and further invocations of call() will rerun the computation.
+     * @see Streams#fold_with_map
      * @see Operator
      */
     public Function<?,E> reduce(final Operator<E,E> reducer) {
+        if (reducer == null) return null;
 
         final Stream<E> input_stream = this;
 
         return new Function<Object,E>() {
             public E call(Object any_input) {
+
                 Function<E,E> reducing_adapter = new Function<E,E>() {
-                    boolean is_init = false;
-                    E accumulator = null;
+
+                    boolean is_init = false;    /* tells if 1st call or not */
+                    E accumulator = null;       /* ref to the reduced value */
+
+                    /* any input will do`, necessary for Function interface*/
                     public E call(E input){
                         if (is_init) {
                             accumulator = reducer.call(accumulator, input);
                         } else {
                             is_init = true;
-                            accumulator = input;
+                            accumulator = input; /*1st call: init accumulator*/
                         }
                         return accumulator;
                     }
+
                 };
+
+                /* final call to Streams#fold_with_map to get the last value */
                 return Streams.fold_with_map(input_stream, reducing_adapter);
+
             }
         };
 

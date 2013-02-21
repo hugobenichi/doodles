@@ -30,18 +30,19 @@ public final class Streams {
      * @param <E>       the type of the returned Stream.
      * @param sequence  an instance of Iterable serving as the base for the
      * returned Stream object. The parameter type of this Iterable can be a
-     * subtype of E.
+     * subtype of E. Returns null if sequence is null.
      * @return          a Stream object.
      * @see Stream
      * @see AbstractStream
      */
     public static <E> Stream<E> from(final Iterable<? extends E> sequence) {
+        if ( sequence == null ) return null;  /* guard against null */
         return new AbstractStream<E>() {
             final Iterable<? extends E> underlying_seq = sequence;
             public Iterator<E> iterator() {
                 return new Iterator<E>(){
                     Iterator<? extends E> iter = underlying_seq.iterator();
-                    public void remove(){}
+                    public void remove(){ iter.remove(); }
                     public boolean hasNext() { return iter.hasNext(); }
                     public E next() { return iter.next(); }
                 };
@@ -50,18 +51,19 @@ public final class Streams {
     }
 
     /**
-     * Takes the first n elements of a Stream and returned them in a static list
-     * in iteration order.
+     * Takes the first n elements of a Stream and returns them in a list in
+     * iteration order.
      * @param <E>    the type of the returned List stream.
      * @param stream the input stream to buffer into a List. Its type parameter
-     * can be a subtype of E.
-     * @param n      the number of element to take from the stream and put into
-     * the returned list. If stream has less than n element or if n is negative,
+     * can be a subtype of E. Returns null is stream is null.
+     * @param n      the number of elements to take from the stream and put into
+     * the returned list. If stream has less than n elements or if n is negative
      * then all the elements selected. If n is zero an empty list is returned.
      * @return       a list which contains the first n elements of the stream in
      * iteration order.
      */
     public static <E> List<E> take(Stream<? extends E> stream, int n){
+        if (stream == null) return null;
         List<E> output_list = new LinkedList<E>();
         if ( n != 0) {
             Iterator<? extends E> iter = stream.iterator();
@@ -71,13 +73,15 @@ public final class Streams {
     }
 
     /**
-     * TODO: DOCME!
-     * @param <E>    the type of the input stream
-     * @param stream a stream to buffer.
+     * Buffers internally a Stream to avoid rerunning expensive operations (not
+     * yet implemented).
+     * @param <E>    the type of the input stream.
+     * @param stream a stream to buffer. Returns null if stream is null.
      * @return       a wrapping stream which will automatically buffer new
      * computed values.
      */
     public static <E> Stream<E> buffer(Stream<E> stream) {
+        if (stream == null) return null;
         return null;
     }
 
@@ -86,12 +90,13 @@ public final class Streams {
      * with Stream#map and Streams#fold_with_map to implement Stream#fold
      * and Stream#reduce.
      * @param <E>    the type of the input stream.
-     * @param stream a Stream object.
+     * @param stream a Stream object. Returns null is stream is null.
      * @return       the last value of this Stream or null if it is empty.
      * @see AbstractStream#fold
      * @see Streams#fold_with_map
      */
     public static <E> E last(Stream<E> stream) {
+        if (stream == null) return null;
         E last = null;
         for (E item : stream) { last = item; }
         return last;
@@ -99,14 +104,15 @@ public final class Streams {
 
     /**
      * Helper function for implementation of AbstractStream#fold and #reduce.
-     * Map a stream with a Function object and returns the last object of this
+     * Maps a stream with a Function object and returns the last object of this
      * mapped stream. The Function object is actually a closure wrapping a fold
      * operation and returns the updated state of the fold for every items in
-     * the input stream. Therefore the result of the fold is the last item of
-     * the mapped Stream.
+     * the input stream. Therefore the result of the fold is found in the last
+     * item of the mapped Stream.
      * @param <E>              the type of the stream to fold.
      * @param <F>              the return type of the fold operation.
-     * @param stream           the stream to fold.
+     * @param stream           the stream to fold. Returns null if stream is
+     * null.
      * @param folding_adapter  a closure wrapping a fold operation and presented
      * as a Function instance to adapt to Stream#map interface.
      * @return                 the result of the fold operation.
@@ -117,6 +123,7 @@ public final class Streams {
         Stream<E> stream,
         Function<? super E,F> folding_adapter
     ) {
+        if (stream == null) return null;
         Stream<F> folding_stream = stream.map(folding_adapter);
         return Streams.last(folding_stream);
     }
