@@ -9,9 +9,9 @@ import streams.Predicate;
 
 /**
  * Stream defines a wrapper for the Iterable interface and adds four useful
- * functions to apply and chain operations on iterators. All operations are
- * conducted in a lazy fashion: values are computed only when necessary until
- * some outside iteration needs them. The prefered way to build Stream objects
+ * functions to apply and chain operations on iterators. All operations shloud
+ * be conducted in a lazy fashion: values are computed only when necessary until
+ * some outside iteration needs them. The preferred way to build Stream objects
  * is via the static factory method Streams#from.
  * @author hugo benichi
  * @version 0.1.2
