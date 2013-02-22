@@ -19,7 +19,7 @@ ant targets
     compile     compiles .java files
     jar         bundles classes in jar file
     jdoc        creates jdoc
-    examples    runs all examples
+    example     runs all examples
 
 
 @author hugo benichi
