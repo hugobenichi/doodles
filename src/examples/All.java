@@ -7,6 +7,9 @@ public class All {
         System.out.printf("\nMap\n\n");
         Map.example();
 
+        System.out.printf("\nSelect\n\n");
+        Select.example();
+
         System.out.printf("\nSumOf\n\n");
         SumOf.example();
 

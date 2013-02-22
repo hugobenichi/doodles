@@ -144,64 +144,6 @@ public abstract class AbstractStream<E> implements Stream<E> {
 
     }
 
-    private static class State<E> {
-        private static final State<Object> NULLSTATE = new State<Object>(null, false);
-        public final E value;
-        public final boolean valid;
-        private State(E value_to_wrap, boolean is_valid) {
-            this.value = value_to_wrap;
-            this.valid = is_valid;
-        }
-        public boolean yes() { return this.valid; }
-        public boolean no() { return !this.valid; }
-        public static <X> State<X> check(X value_to_wrap, boolean is_valid) {
-            return new State<X>(value_to_wrap, is_valid);
-        }
-        public static <X> Function<X,State<X>> adapter(final Predicate<? super X> test) {
-            return new Function<X,State<X>>(){
-                public State<X> call(X input) {
-                    return State.check(input, test.call(input));
-                }
-            };
-        }
-        public static <X> State<X> nullState(){ 
-            @SuppressWarnings("unchecked")
-            State<X> casted_nullstate = (State<X>) State.NULLSTATE;
-            return casted_nullstate;
-        }
-    }
-
-    public Stream<E> select_bis(final Predicate<? super E> check) {
-        final Stream<State<E>> yesno_stream = this.map(State.adapter(check));
-        return new AbstractStream<E>() {
-            public Iterator<E> iterator() {
-                return new Iterator<E>(){
-                    Iterator<State<E>> iter = yesno_stream.iterator();
-                    State<E> next_item = State.nullState();
-                    public void remove(){}
-                    public boolean hasNext() {
-                        find_next_valid();
-                        return next_item != State.nullState();
-                    }
-                    public E next() { 
-                        find_next_valid();
-                        E next_to_consume = next_item.value;
-                        next_item = State.nullState();
-                        return next_to_consume;
-                    }
-                    private void find_next_valid() {
-                        State<E> next_candidate = next_item;
-                        while(next_candidate.no() && iter.hasNext())
-                            next_candidate = iter.next();
-                        if (next_candidate.yes())
-                            next_item = next_candidate;
-                    }
-                };
-            }
-        };
-    }
-
-
     /**
      * TODO: DOCME!
      * @param check a Predicate object which specifies which test to run.
@@ -213,35 +155,41 @@ public abstract class AbstractStream<E> implements Stream<E> {
         final Iterable<E> input_stream = this;
         return new AbstractStream<E>() {
 
+            @SuppressWarnings("unchecked")
+            private final E not_valid_token = (E) new Object();
+
             public Iterator<E> iterator() {
+
                 return new Iterator<E>(){
 
                     Iterator<E> iter = input_stream.iterator();
-                    E next_item = null;
-                    boolean is_next_valid = false;
+                    E next_item = not_valid_token;
 
-                    private boolean find_next_valid() {
-                        while( is_next_valid == false && iter.hasNext() ) {
+                    private void find_next_valid() {
+                        if (next_item != not_valid_token) return;
+                        while( iter.hasNext() ) {
                             E next_candidate = iter.next();
                             if ( check.call(next_candidate) ) {
-                                is_next_valid = true;
                                 next_item = next_candidate;
+                                break;
                             }
                         }
-                        return is_next_valid;
                     }
 
+                    /* don't deleguate: it could remove the wrong object*/
                     public void remove(){}
+
                     public boolean hasNext() {
-                        if (is_next_valid == false)
-                            is_next_valid = find_next_valid();
-                        return is_next_valid;
+                        find_next_valid();
+                        return next_item != not_valid_token;
                     }
 
-                    public E next() { 
-                        if (is_next_valid == false)
-                            is_next_valid = find_next_valid();
-                        return is_next_valid ? next_item : null;
+                    public E next() {
+                        find_next_valid();
+                        if (next_item == not_valid_token) return null;
+                        E next_to_consume = next_item;
+                        next_item = not_valid_token;
+                        return next_to_consume;
                     }
 
                 };
