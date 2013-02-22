@@ -8,7 +8,21 @@ The package provides a skeleton implementation of Stream with the abstract class
 
 Clients of AbstractStream only needs to implement the iterator() method inherited from the Iterator interface.
 
+
+sources files in src/streams/
+
+examples in src/examples
+
+
+ant targets
+    clean       deletes jdoc and build directories
+    compile     compiles .java files
+    jar         bundles classes in jar file
+    jdoc        creates jdoc
+    examples    runs all examples
+
+
 @author hugo benichi
 @copyright copyright 2013, hugo benichi
 @contact hugo[dot]benichi[at]m4x[dot].org
-@version 0.1.2
+@version 0.1.3
