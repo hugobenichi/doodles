@@ -11,7 +11,9 @@ public class ReverseList {
                 return l;
             }
         };
+
         return Streams.from(list).fold(prepend).call(new LinkedList<E>());
+
     }
 
     public static void example() {
@@ -19,7 +21,6 @@ public class ReverseList {
         List<String> strings = Arrays.asList("foo", "bar", "bob", "cafebabe");
 
         for (String s : reverse(strings) ) { System.out.println(s); }
-
 
         List<Integer> numbers = Arrays.asList(0,1,2,3,4,5,6);
 
