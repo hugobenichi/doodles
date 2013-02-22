@@ -19,10 +19,6 @@ public class SumOf {
 
         System.out.println(sum(numbers));
 
-        List<String> strings = Arrays.asList("foo", "bar", "bob", "cafebabe");
-
-        for (String s : reverse(strings) ) { System.out.println(s); }
-
     }
 
     public static void main(String argv[]) {
