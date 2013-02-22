@@ -1,12 +1,15 @@
 public class All {
 
     public static void main(String argv[]) {
+        System.out.printf("\nBuffer\n\n");
+        Buffer.example();
+
         System.out.printf("\nMap\n\n");
         Map.example();
-        
+
         System.out.printf("\nSumOf\n\n");
         SumOf.example();
-        
+
         System.out.printf("\nReverseList\n\n");
         ReverseList.example();
 

@@ -29,24 +29,54 @@ public final class Streams {
      * underlying Iterable object.
      * @param <E>       the type of the returned Stream.
      * @param sequence  an instance of Iterable serving as the base for the
-     * returned Stream object. The parameter type of this Iterable can be a
-     * subtype of E. Returns null if sequence is null.
+     * returned Stream object. Returns null if sequence is null.
      * @return          a Stream object.
      * @see Stream
      * @see AbstractStream
      */
-    public static <E> Stream<E> from(final Iterable<? extends E> sequence) {
+    public static <E> Stream<E> from(final Iterable<E> sequence) {
         if ( sequence == null ) return null;  /* guard against null */
         return new AbstractStream<E>() {
-            final Iterable<? extends E> underlying_seq = sequence;
+            final Iterable<E> underlying_seq = sequence;
             public Iterator<E> iterator() {
+                return underlying_seq.iterator();
+            }
+        };
+    }
+
+    /**
+     * Buffers internally a Stream to avoid rerunning expensive operations more
+     * than once. The first iteration over the returned stream creates on the
+     * fly a LinkedList and adds all elements in the iteration. Further
+     * iterations are then conducted on the buffering list.
+     * @param <E>    the type of the input stream.
+     * @param stream a stream to buffer. Returns null if stream is null.
+     * @return       a wrapping stream which will automatically buffer values
+     * computed for the first time in a LinkedList.
+     */
+    public static <E> Stream<E> buffer(Iterable<E> stream) {
+        if (stream == null) return null;
+        
+        return new AbstractStream<E>() {
+            final Iterable<E> input_stream = stream;
+            List<E> buffer = null;
+
+            public Iterator<E> iterator() {
+                if (buffer != null) return buffer.iterator();
+                
+                buffer = new LinkedList<E>();
                 return new Iterator<E>(){
-                    Iterator<? extends E> iter = underlying_seq.iterator();
+                    Iterator<E> iter = input_stream.iterator();
                     public void remove(){ iter.remove(); }
                     public boolean hasNext() { return iter.hasNext(); }
-                    public E next() { return iter.next(); }
+                    public E next() {
+                        E next_item = iter.next();
+                        buffer.add(next_item);
+                        return next_item;
+                    }
                 };
             }
+
         };
     }
 
@@ -73,19 +103,6 @@ public final class Streams {
     }
 
     /**
-     * Buffers internally a Stream to avoid rerunning expensive operations (not
-     * yet implemented).
-     * @param <E>    the type of the input stream.
-     * @param stream a stream to buffer. Returns null if stream is null.
-     * @return       a wrapping stream which will automatically buffer new
-     * computed values.
-     */
-    public static <E> Stream<E> buffer(Stream<E> stream) {
-        if (stream == null) return null;
-        return null;
-    }
-
-    /**
      * Returns the last value of a Stream. Used by AbstractStream in conjunction
      * with Stream#map and Streams#fold_with_map to implement Stream#fold
      * and Stream#reduce.
@@ -96,9 +113,8 @@ public final class Streams {
      * @see Streams#fold_with_map
      */
     public static <E> E last(Stream<E> stream) {
-        if (stream == null) return null;
         E last = null;
-        for (E item : stream) { last = item; }
+        if (stream != null) for (E item : stream) { last = item; }
         return last;
     }
 
