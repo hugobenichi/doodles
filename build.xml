@@ -11,7 +11,7 @@
     <property name="jdoc.dir"   value="jdoc"/>
 
     <property name="tests"      value="TestStreamPackage"/>
-    <property name="examples"   value="StreamsExample"/>
+    <property name="examples"   value="All"/>
     <property name="class.main" value="${examples}"/>
 
 
@@ -47,16 +47,11 @@
         </jar>
     </target>
 
-
-    <target name="run" depends="jar">
-        <java jar="${jar.jar}" fork="true"/>
-    </target>
-
-    <target name="example" depends="jar">
-        <java jar="${jar.jar}" fork="true"/>
+    <target name="example" depends="compile">
+        <java classname="${examples}" dir="${build.dir}/classes" fork="true"/>
     </target>
 
     <target name="clean-build"   depends="clean,jar"/>
-    <target name="clean-run"     depends="clean,run"/>
+    <target name="clean-example"     depends="clean,example"/>
 
 </project>

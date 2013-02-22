@@ -9,7 +9,7 @@ import streams.Stream;
  * Abstract class which provides a skeleton implementation of Stream. Clients
  * inheriting from this class only need to implement the Iterable#iterator.
  * @author hugo benichi
- * @version 0.1.2
+ * @version 0.1.3
  * @see Stream
  */
 public abstract class AbstractStream<E> implements Stream<E> {

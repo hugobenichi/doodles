@@ -11,7 +11,7 @@ import streams.AbstractStream;
 /**
  * A static helper class for the Stream interface.
  * @author hugo benichi
- * @version 0.1.2
+ * @version 0.1.3
  * @see Stream
  */
 public final class Streams {

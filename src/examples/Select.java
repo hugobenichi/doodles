@@ -36,16 +36,15 @@ public class Select {
         System.out.println( JoinArray.join(less_than(numbers, 4)," ")  );
 
         System.out.print("  even numbers: ");
-        //System.out.println( JoinArray.join(even(numbers), " ")  );
+        System.out.println( JoinArray.join(even(numbers), " ")  );
 
-        List<String> strings = Arrays.asList("foo",null,"bar","cafebabe",null, null);
+        List<String> strings = Arrays.asList("foo", null,"bar","cafebabe", null, null);
 
         System.out.print("from array: ");
         System.out.println( JoinArray.join(strings," ") );
 
         System.out.print("  non nulls: ");
         System.out.println( JoinArray.join(no_null(strings), " ")  );
-
 
     }
 

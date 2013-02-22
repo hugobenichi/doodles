@@ -6,7 +6,7 @@ package streams;
  * input an instance of type E and returning an instance of type F.
  * @see Stream
  * @author hugo benichi
- * @version 0.1.2
+ * @version 0.1.3
  */
 public interface Function<E,F> {
 

@@ -6,7 +6,11 @@ public class JoinArray {
 
     public static <E> Stream<String> to_string(Iterable<E> list) {
         Function<E,String> to_str = new Function<E,String>() {
-            public String call(E input) { return input.toString(); }
+            public String call(E input) { 
+                if (input == null)                        /* check if null */
+                    return String.valueOf((Object)null);  /* otherwise NPE ! */
+                return String.valueOf(input); 
+            }
         };
         return Streams.from(list).map(to_str);
     }
