@@ -56,8 +56,8 @@ The living points for next round are
 
 """
 
-import itertools
 import functools
+import itertools
 
 
 __author__      = "Hugo Benichi"
@@ -68,18 +68,18 @@ __status__      = "toy"
 
 def survive(point, neighbors, is_alive):
     """
-    Returns true if the 2-tuple point argument survives this round, and false
-    otherwise. neighbors is the number of alive neighbors to point. is_alive is
-    a boolean value which says if point was alive one round before.
+    Returns true if the 2-tuple argument "point" survives this round, and false
+    otherwise. "neighbors" is the number of alive neighbors next to point.
+    "is_alive" is a boolean value saying if "point" was alive the round before.
     """
     return neighbors == 3 or (neighbors == 2 and is_alive)
 
 
 def translate(iterable, offset):
     """
-    Returns a generator of 2-tuple representing points and built from the 
-    collection of 2-tuples iterable. Each point returned are translated in x and
-    y by (a,b) = offset.
+    Returns a generator of 2-tuples representing (x,y) points and built from the
+    collection of 2-tuples "iterable". Each point returned are translated in x
+    and y by (a,b) = offset.
     """
     a, b = offset
     for (x,y) in iterable: yield (x-a, y-b)
@@ -88,7 +88,7 @@ def translate(iterable, offset):
 def translate_all(iterable):
     """
     Returns a chain of generators of all possible translations of the collection
-    of 2-tuples iterable by +/- 1 in x and y, excepting the null translation.
+    of 2-tuples "iterable", by +/- 1 in x and y, except the 0 translation.
     """
     offsets = [ (x,y) for x in (-1,0,+1) for y in (-1,0,+1) if x != 0 or y != 0]
     return iter(itertools.chain( *[ translate(iterable, p) for p in offsets ] ))
@@ -96,10 +96,10 @@ def translate_all(iterable):
 
 def update_count(dic, point):
     """
-    Updates the count of appearance of the 2-tuple point. dic stores this integer
-    count value for the key point. If point is found for the first time, the
-    count is set to 1. Return a reference to the dictionary, which allows to use
-    this function with functools.reduce().
+    Updates the count of appearance of the 2-tuple "point". "dic" stores the
+    integer count value for the 2-tuple key. If point is found for the first
+    time, the count is set to 1. Returns a reference to the dictionary, allowing
+    to use update_count() with functools.reduce().
     """
     if dic.get(point) is None: dic[point] = 0
     dic[point] += 1
@@ -108,15 +108,16 @@ def update_count(dic, point):
 
 def update(alives):
     """
-    Updates the set of living points represented as 2-tuple in the set alives.
+    Updates the set of living points represented as 2-tuple in the set "alives".
     Returns a new set with surviving points and new points which came to life.
 
-    First a dictionary of all points with neighbors is generated from translated
-    iterators over the collection alive. The keys of the dictionary are the
-    points with 1 neighbor or more. The value are the number of neighbors.
+    First a dictionary of all points with living neighbors is generated from
+    translated iterators over the collection of points alive on this round. The
+    keys of the dictionary are the points with 1 or more neighbors. The values
+    are the number of neighbors.
 
-    The dictionary is then used to find all surviving points alive at
-    that round and all new points coming to life.
+    The dictionary is then used to find all surviving points already alive and
+    all new living points.
     """
     counts = functools.reduce(update_count, translate_all(alives), dict())
     return set(( p for (p, n) in counts.items() if survive(p, n, p in alives) ))
