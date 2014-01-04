@@ -16,6 +16,7 @@ Vagrant.configure(API_VERSION) do |config|
 
   # host folder sharing
   config.vm.synced_folder ".",      "/home/vagrant/java8_sandbox"
+  config.vm.synced_folder "~/.m2",  "/home/vagrant/.m2"
 
   config.vm.provision :shell do |s| s.path = 'vagrant_init.sh' end
 
