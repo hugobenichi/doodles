@@ -34,4 +34,4 @@ export JAVA_HOME=$java_home
 cd /home/vagrant/jruby-1.7.9/tool/nailgun/ && ./configure && make
 (jruby --ng-server &)
 
-jruby -S jgem install rspec shoulda bundler jbundler
+jruby -S jgem install rake rspec shoulda bundler jbundler
