@@ -4,9 +4,11 @@ require 'pathname'
 project_dir = Pathname.new(__FILE__).dirname
 class_dir = project_dir.to_path + '/build'
 
+# TODO: find a way to hook efficiently to nailgun jruby process
 Dir.chdir project_dir     # unless ng server runs in same dir
 $CLASSPATH << class_dir   # add compile classes directory to java classpath
 
+# TODO: pass this as environment
 dir = {
   :src        => 'src',
   :srcfiles   => FileList['src/**/*.java'],
@@ -15,6 +17,7 @@ dir = {
   :doc        => 'build/doc'
 }
 
+# TODO: pass this as argument to build task
 compile_options = {
   :srcdir   => dir[:src],
   :destdir  => dir[:classes],
@@ -22,6 +25,7 @@ compile_options = {
   :target   => '1.8'
 }
 
+# TODO: pass this as environment conf
 jarname = 'FooBarBaz.jar'
 
 desc 'compile java sources'
@@ -32,11 +36,13 @@ end
 
 desc 'run all tests'
 task :test => :build do
+  # TODO: find a better way to run and rerun test instead of requiring
   require 'test/foo_test-unit'
 #  require 'test/foo_test-spec'
 #  require 'test/foo_test-shoulda'
 end
 
+# TODO: add jar versioning
 desc 'prepare a jar file for the project'
 task :jar => :build do
   ant.jar :destfile => dir[:build] + '/' + jarname
