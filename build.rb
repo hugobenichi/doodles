@@ -2,7 +2,7 @@ require 'ant'
 require 'pathname'
 
 project_dir = Pathname.new(__FILE__).dirname
-class_dir = project_dir.to_path + '/build'
+class_dir = project_dir.to_path + '/build/classes'
 
 # TODO: find a way to hook efficiently to nailgun jruby process
 Dir.chdir project_dir     # unless ng server runs in same dir
