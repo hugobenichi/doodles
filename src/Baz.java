@@ -1,21 +1,34 @@
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.*;
 
 class Baz {
 
+  public static Integer lenOf(String s) { return s.length(); }
+
+  public static Function<String,Integer> lenOfFunc() {
+    return Baz::lenOf;
+  }
+
   public static void main(String[] args) {
 
-    List<String> l = Arrays.asList("foo","bar","etron","tokyo","paris");
+    List<String> sl = Arrays.asList("foo","bar","baz","tokyo","paris");
 
-    l.forEach( s -> System.out.println(s) );
+    sl.forEach( s -> System.out.println(s) );
 
-    l.stream()
-      .map( s -> s.length() )
-      .filter( len -> len > 3 )
-      .forEach( len -> System.out.println(len) );
+    int offset = 0;
 
-    System.out.println("hello java 8");
-    System.exit(0);
+    Stream<Integer> is =
+      sl.stream()
+        //.map( s ->  offset + s.length());
+        //.map( s -> { System.out.println(s); return offset + s.length(); });
+        .map(lenOfFunc());
+
+    System.out.println("ergoherg");
+
+     is.filter( len -> len > 3 )
+       .forEach( len -> System.out.println(len) );
+
   }
 
 }
