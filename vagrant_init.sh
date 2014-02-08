@@ -35,3 +35,6 @@ cd /home/vagrant/jruby-1.7.9/tool/nailgun/ && ./configure && make
 (jruby --ng-server &)
 
 jruby -S jgem install rake rspec shoulda bundler jbundler
+
+# generate shared java library
+sudo java -Xshare:dump
