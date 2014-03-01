@@ -1,0 +1,8 @@
+application: worktimesimu
+version: 1
+runtime: go
+api_version: go1
+
+handlers:
+- url: /sim
+  script: _go_app
