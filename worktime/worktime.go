@@ -16,6 +16,7 @@ func get_days(r *http.Request) int {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
+	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 
 	days := get_days(r)
 	from := Time{9, 30}
