@@ -1,0 +1,42 @@
+    little fun project to build lazy generator in ruby with stateless linked list
+
+  author hugo benichi
+ 	contact hugo[dot]benichi[at]m4x[dot]org
+   	
+  states
+  
+    2012/10/22: testing architecture. works no problemo.
+    
+  current features
+  	make stream, map stream, and filter stream 
+    
+  features to add
+  	add termination condition
+  		then add support for Enumerable
+  	how to deal with side effects streams for example IOs files
+  	
+  	add module for include in custom class
+  	
+  	think about coroutine/fiber approach for concurrency
+  		add a stream concatenation feature with >>
+  		define a stream as a filter/transformer connected to previous stream( used as state )
+  		
+  		define virtual stream	as a filter transformator with a not yet defined state and can connect and unconnect from input stream which provides input state. input stream itself can be virtual 
+  			at that stage each virtual stream can work in its own fiber
+  		
+
+	look at http://pragdave.blogs.pragprog.com/pragdave/2007/12/pipelines-using.html for inspiration
+    redefine | operator for chaining filter
+	  define a .now method which advance asynchreously in its own thread
+      add a :upto argument to control how much advance (and a :all arg)
+    define a .fork which can memoize the generator
+
+    define a mmap and mreduce function with a thread pool
+      mreduce can just be a filter.now implementation
+      mmap needs to preserve order -> use pool thread
+
+		use a GeneralPool.assignthread instead of Thread.new
+      which can be first just a call to Thread.new
+
+fiber = fancy goto
+

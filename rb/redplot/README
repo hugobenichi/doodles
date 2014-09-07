@@ -1,0 +1,254 @@
+##
+ #              Red Plot
+ #
+ #     ( Gnuplot process wrapper )
+ #    
+ #  version     0.1.0
+ #  author      hugo benichi
+ #  email       hugo.benichi@m4x.org
+ #  copyright   2012 hugo benichi
+ #  
+ #  reproduction 
+ #  
+ #    You can use this code without restriction if you mention my name in your project.
+ #    Other than that, you can redistribute and/or modify without restriction.
+ #  
+ #  description 
+ #  
+ #    A simple layer wrapping around a gnuplot process.
+ #    It gives convenience handler methods from and to Ruby objects
+ #    Useful to quickly plot data produced inside Ruby.    
+ #
+ #  installation
+ #
+ #    gem install redplot-x.y.z.gem
+ #
+ ##
+ 
+ Introduction
+============
+
+This is the RedPlot v0.1.2 utility README 
+
+RedPlot provides a simple, clean and OO layer to gnuplot from ruby.
+
+All RedPlot codes live in the module 'RedPlot' and is divided in essentially 4 parts:
+  1) the inclusion code (eigenclass of RedPlot) used to extend objects and classes.
+  2) the ToDraw class which stores access to data in the form of callback proc.
+  3) the Plotter class which wraps a gnuplot process and is used to avoid name conflicts
+  4) an Array class enhancement which adds quick plotting of any data Array object.
+
+
+Install
+=======
+
+That project is just one ruby file.
+Without comments and new lines it is 140 lines long.
+Basically a simple 'require "path/to/redplot"' is all you need.
+You can do 'rake install' to copy 'redplot.rb' to your current ruby 'site' folder.
+
+
+Examples
+========
+
+I) The principle of RedPlot is pretty simple. It just opens a process to gnuplot with popen.
+The data is then send to gnuplot using the process input with commands like:
+  'plot "-" '   # plotting command
+  'x1'          # data line by line
+  'x2'
+  ...
+  'end'         # end of data tag
+
+The drawing always happens in 3 steps
+  First any 'header' command is resend to gnuplot: 'set xrange [a:b]', ...
+  Second the plotting command is send: '(s)plot "-" w l title "smthg"'
+  Third the data is formatted and send line by line.
+
+II) You can use RedPlot in essentially three ways:
+
+  1) With an instance of Array 
+
+    data = Array.new(100) { rand }   # create some data to plot
+    plotter = data.plot!             # 'plot!' will hook a Plotter instance inside 'data' 
+                                     # and return that instance to you
+    plotter.draw                     # draw will send the data to gnuplot
+
+  Notes: a first call to plot on Array instances will fail, you need to hook RedPlot with plot!
+
+  2) Directly with an instance of Plotter
+
+    data    = Array.new(100) { rand }
+    plotter = RedPlot::Plotter.new   # creates the Plotter instance seperately from the data
+    helper  = plotter.todraw         # todraw returns an helper class which will hold the data
+    helper.add { data }              # this tell the helper class to save a callback
+                                     # the callback needs to return the data 
+                                     # any object with an each method is possible
+    plotter.draw                     # now the data is hooked to plotter and we can draw it
+
+  3) With your own custom object
+
+    something = SomeClass.new        # I don't know your class interface but that's ok
+    something.extend RedPlot         # this add a @gnuplot_wrapper attr_reader variable
+                                     # and a 'plot' command which returns the Plotter object 
+    something.plot.todraw.add { something.data }
+    something.plot.draw
+
+  In that case the logical way is to put all that work in the constructor for example.
+  Of course something.data in the callback can be anything and do anything.
+
+
+III) Plot Options
+
+  1) Once you have a plotter object, you can specify settings for gnuplot via the header attr_accessor variables (a normal Ruby Array):
+
+  plotter = RedPlot::Plotter.new
+  plotter.header << 'set xrange [a:b]'    #you need to pass the settings as a String
+  plotter.header << 'set xlabel "x axis"' #be carefull about double quoting, it is needed
+  plotter.header = []                     #reset the settings
+
+  2) You can also pass a setting only once to gnuplot with the .<< operator
+
+  plotter << 'set xrange [a:b]'           #this can be overwritten by what's inside @header
+
+  Finally Plotter instances have ghost methods casting to emulate settings as method chaining
+
+  plotter.set.xlog                        #this is converted to 'set xlog'
+  plotter.set.range '[a:b]'               # <=> 'set xrange [a:b]'
+  plotter.set.xlabel '"x axis"'           # <=> 'set xlabel "x axis"'   (!!! double quoting)
+  plotter.set.label('"something"').at('2,0')
+                                          # you can provide args to each ghost method
+                                          # they will be joined in the whole chain
+
+  3) When adding new data, you can also set the style like this
+
+  plotter.todraw.add('w line title "some plot"') { data_to_plot }
+  
+  4) You can set the plotting command with the @command attr_accessor variables
+
+  plotter.command = "splot"               # or "histogram" also
+  
+    Remember that with splot the formatting of data needs to have empty lines between columns if you draw surfaces from point clouds (you have to code that yourself, cf perlin_map.rb)
+
+  5) You can save to disc your data like this:
+
+  plotter.save_data path                  #this write a "#{path}.dat" file
+                                          #the content is exactely the data which would be send
+                                          #to gnuplot
+
+  You can also write the header part with Plotter#save_script, or use gnuplot to produce eps or png output with Plotter#save_eps and Plotter#save_png
+
+  You can set a default path once and for all with plotter.path = "my/path"
+
+  6) Since all these kinds of settings are pretty common, you can set it when creating the Plotter instance with a configuration block which will get itself executed in the context of the Plotter instance:
+
+  plotter.new( path: 'my/path', command: 'plot' ) do
+    set.xrange '[a:b]'
+    set.yrange '[c:d]'
+    ...
+    todraw.add( 'w line') do
+      Array.new(100) { rand }
+    end
+  end
+
+  7) This pattern is also possible for class extension using RedPlot::insert
+
+  RedPlot::insert(in: TargetClass, as: plotter_name, path: 'my/path', command: 'plot'   ) do
+    set.xrange '[a:b]'
+    set.yrange '[c:d]'
+    ...
+    todraw.add( 'w line') do
+      Array.new(100) { rand }
+    end
+  end
+
+  in that case the Plotter instance will be available as 'plotter_name' instead of the default name 'plot' (besides gnuplot_wrapper of course):
+
+  obj = TargetClass.new
+  obj.plotter_name.is_a? RedPlot::Plotter    # => true
+
+
+IV) Multi columns data
+
+  If your data is in multicolumn, just assign every column to distinct arrays and put them in an Array. Plotter::format_data will transpose the matrice for you:
+
+  time = Array.new(10)  { |i| 2001 + i }
+  sales = Array.new(10) {rand(1000)}
+  
+  plotter = RedPlot::Plotter.new(  ) do
+    set.xlabel 'last ten years'
+    set.ylabel '"$"'
+    todraw.add('w l title "our sales"') { [ time, sales ] }
+  end
+
+
+V) Multi plots
+
+  Every plot needs a distinct call to RedPlot::ToDraw::add
+
+  time       = Array.new(10) { |i| 2001 + i }
+  sales_of_x = Array.new(10) {rand(1000)}
+  sales_of_y = Array.new(10) {rand(1000)}
+  
+  plotter = RedPlot::Plotter.new(  ) do
+    set.xlabel 'last ten years'
+    set.ylabel '"$"'
+    todraw.add('w l title "x sales"') { [ time, sales_of_x ] }
+    todraw.add('w l title "y sales"') { [ time, sales_of_y ] }
+  end
+
+
+Unit Test
+=========
+
+Run 'ruby test/test_redplot.rb' or 'rake test' to run a unit test.
+At the moment (v0.1.2) the test script is incomplete and does not test all features.
+
+
+Requirements
+============
+
+ruby v-1.9.x
+gnuplot v-4.x 
+the 'shoulda' ruby gem for testing
+
+does not work on jruby and rubinius cos of 1.9 syntax (some problems with hashes I think)
+
+
+Documentation
+=============
+
+At the moment there is not any real documentation.
+You can however use the doc created with 'rdoc' and refer to examples.
+
+
+Reporting Bugs
+==============
+
+Bug reports for RedPlot should be sent to: hbenichi@gmail.com.
+When reporting a bug, please include the following information:
+  * a tag '[RedPlot]' in the mail title
+  * the ruby interpreter and interpreter version number and release status of RedPlot
+  * the machine and OS
+  * a description of the bug
+  * a script that recreates the bug reliably
+  * a fix for the bug if you have one!
+
+
+Copyright
+=========
+
+RedPlot is Copyright (c) 2011 Hugo Benichi <hbenichi@gmail.com>
+
+RedPlot is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+RedPlot is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with RedPlot.
+If not, see <http://www.gnu.org/licenses/>.
+
+

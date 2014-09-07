@@ -1,0 +1,3 @@
+gcc -c frames.c
+
+gcc -shared -o libframes.so frames.o -O2

@@ -1,0 +1,30 @@
+# Author:       Hugo Benichi <hugo.benichi@m4x.org>
+#
+# Copyright:    Copyright (c) 2012 Hugo Benichi
+#               You can redistribute and/or modify without restriction.
+#
+# Description:  Various install, test, examples tasks for RedPlot
+#
+# How it works: run 'rake some_task'
+#
+
+
+task :test    do  sh 'ruby -I./lib test/test_redplot.rb' end
+task :walk    do  sh 'ruby -I./lib lib/redplot/examples/random_walk.rb' end
+task :monitor do  sh 'ruby -I./lib lib/redplot/examples/monitor.rb' end
+task :perlin  do  sh 'ruby -I./lib lib/redplot/examples/perlin_map.rb' end
+task :doc     do  sh 'rdoc lib/redplot.rb' end
+
+task :build do  
+  sh "gem build redplot.gemspec"
+end
+
+task :install => :build do 
+  gemfile = Dir.new("./").entries.select{ |f| f =~ /redplot-[\d]+\.[\d]+\.[\d]+.gem/ }[0]
+  sh "gem install " + gemfile
+end
+
+task :default   => :test
+task :examples  => [:walk, :monitor, :perlin]
+
+

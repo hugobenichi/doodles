@@ -1,0 +1,17 @@
+
+
+check rubygems  ->  stream
+                ->  lazy
+                ->  lazylist
+
+
+        find bug in virtual enum
+        write down the code in my notebook for lazy stream
+        adapt to python
+
+try lazy tree traversal ?
+
+filter on Enumerable
+
+composition of filter (pipeline)
+    with operator |, >> and <<
