@@ -1,0 +1,58 @@
+training
+  implement until, unless, else macro
+  write a type
+
+
+object
+  class
+
+numbers
+ inc
+ dec
+  odd?
+  number?
+  even?
+  rem (modulo)
+
+data struct
+  list
+  count
+  first
+  rest
+  last
+  cons
+  concat
+  sort
+
+assign
+  def
+  defn
+
+function
+  fn
+  loop / recur
+
+on_seq
+  map
+  apply
+  filter
+  for
+
+
+lazy sequence
+  cycle / repeat / iterate
+  take / drop / interpose interleave
+
+
+interface and object
+  defprotocol
+  defrecord
+
+macro
+  defmacro
+  macroexpand
+  '
+  #
+  ;
+
+
