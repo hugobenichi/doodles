@@ -1,0 +1,32 @@
+#
+#  gauss_waist
+#
+#  "wais.py" is a simple python 3 script for Gaussian beam waist analysis
+#  It takes as input argument a text file of the form:
+#    z_1 h_1 v_1
+#    z_2 h_2 v-2
+#    z_3 h_3 v_3
+#    ...
+#  where h_i and v_i are the full width 13.5% maximum values 
+#  of the Gaussian profil of your laser beam at position z_i, 
+#  horizontal and vertical. If the standard deviation of the 
+#  Gaussian profil is sigma, then full width 13.5% maximum is 
+#  equal to 4 sigma, or twice the waist at that position.
+#
+#  the script will calculate the beam waist origin z_0 and waist
+#  size w_0 at origin by fitting the data to the standard formula
+#  w_0 * sqrt( 1 + (z-z_0)**2 lambda**2 / pi**2 w_0**2 )
+#
+#  It ouputs on stdout the fitting results, plots the data with
+#  its fitted curves, and save the plot to a png file.
+#  Units: milimeters
+#
+#  The wavelength is right now hard-coded in the script. Don't
+#  forget to customize the script to your wavelength ( and 
+#  include the M2 parameter if needed.)
+#
+#  author      hugo benichi
+#  email       hugo.benichi@m4x.org
+#  copyright   2012 hugo benichi  
+#  version     0.95.1
+#
