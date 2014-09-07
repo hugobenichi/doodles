@@ -1,0 +1,24 @@
+##
+ #  
+ #                          CBuffer 
+ #    
+ #  Simple circular buffer for staging data before writing to disk
+ #  
+ #  author      hugo benichi
+ #  email       hugo.benichi@m4x.org
+ #  copyright   2012 hugo benichi  
+ #  version     0.1.3
+ #
+ ##
+ 
+  installation:  
+ 
+    run in the root directory
+      rake gem_install
+    
+    it will compile the gem library and produce a .gem package for ruby
+    it will then install the .gem automatically
+    
+  usage: 
+  
+    cf test/test_cbuffer.rb
