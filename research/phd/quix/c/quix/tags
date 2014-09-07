@@ -1,0 +1,56 @@
+!_TAG_FILE_FORMAT	2	/supported features/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted/
+!_TAG_PROGRAM_AUTHOR	Steve Kirkendall	/kirkenda@cs.pdx.edu/
+!_TAG_PROGRAM_NAME	Elvis Ctags	//
+!_TAG_PROGRAM_URL	ftp://ftp.cs.pdx.edu/pub/elvis/README.html	/official site/
+!_TAG_PROGRAM_VERSION	2.2.0	//
+DEB	quix.h	24;"	d	ln:24
+EXT	extern.h	7;"	d	ln:7
+EXT	extern.h	9;"	d	ln:9
+N_Thread	parallel.h	9;"	d	ln:9
+N_Thread	parallel.h	14;"	d	ln:14
+PARALLEL	parallel.h	8;"	d	ln:8
+PARALLEL	parallel.h	13;"	d	ln:13
+PI	quix.h	20;"	d	ln:20
+QUIX	quix.h	4;"	d	ln:4
+QUIX_EXTERN	extern.h	4;"	d	ln:4
+QUIX_IF	predicat.h	4;"	d	ln:4
+QUIX_MEMORY	memory.h	4;"	d	ln:4
+QUIX_PARALLEL_H	parallel.h	4;"	d	ln:4
+QUIX_RAND	random.h	4;"	d	ln:4
+TOS	quix.h	23;"	d	ln:23
+_QUIX_MATR_	matr.h	2;"	d	ln:2
+alloc_check	memory.h	29;"	d	ln:29
+allocator	memory.c	/^static  quix_object_allocator       allocator    = quix_default_allocator;$/;"	v	file:	ln:10
+already_free	memory.h	39;"	d	ln:39
+already_null	memory.h	40;"	d	ln:40
+desallocator	memory.c	/^static  quix_object_desallocator    desallocator = quix_default_desallocator;$/;"	v	file:	ln:11
+double_alloc	memory.h	27;"	d	ln:27
+free_if	memory.h	36;"	d	ln:36
+im	matr.h	17;"	ln:17	struct:matr
+job_finish	parallel.c	/^job_finish                  $/;"	f	ln:81
+job_start	parallel.c	/^job_start$/;"	f	ln:17
+job_wait	parallel.c	/^job_wait                     $/;"	f	ln:48
+job_wait_all	parallel.c	/^job_wait_all         $/;"	f	ln:67
+jobs	parallel.c	/^  static    pthread_t         jobs[N_Thread];$/;"	v	file:	ln:10
+jobs_active	parallel.c	/^  static    int               jobs_active = 0;$/;"	v	file:	ln:9
+jobs_attribute	parallel.c	/^  static    pthread_attr_t    jobs_attribute[N_Thread];$/;"	v	file:	ln:11
+likely	predicat.h	8;"	d	ln:8
+loop	quix.h	27;"	d	ln:27
+matr	matr.h	/^} matr;$/;"	t	ln:17
+n_dbls	matr.h	17;"	ln:17	struct:matr
+n_phot	matr.h	17;"	ln:17	struct:matr
+now	random.c	/^static int now = -1;$/;"	v	file:	ln:6
+proto_matr	matr.h	/^typedef struct proto_matr$/;"	s	ln:9
+quix_alloc	memory.h	26;"	d	ln:26
+quix_default_allocator	memory.c	/^quix_default_allocator(int address)$/;"	f	file:	ln:54
+quix_default_desallocator	memory.c	/^quix_default_desallocator(int address)$/;"	f	file:	ln:59
+quix_memory_set_allocator	memory.c	/^quix_memory_set_allocator           $/;"	f	ln:38
+quix_memory_set_desallocator	memory.c	/^quix_memory_set_desallocator        $/;"	f	ln:46
+quix_object_alloc	memory.h	22;"	d	ln:22
+quix_object_alloc_function	memory.c	/^quix_object_alloc_function          $/;"	f	ln:15
+quix_object_free	memory.h	23;"	d	ln:23
+quix_object_free_function	memory.c	/^quix_object_free_function           $/;"	f	ln:28
+re	matr.h	17;"	ln:17	struct:matr
+reinit_seed	random.c	/^void reinit_seed$/;"	f	ln:9
+unlikely	predicat.h	7;"	d	ln:7

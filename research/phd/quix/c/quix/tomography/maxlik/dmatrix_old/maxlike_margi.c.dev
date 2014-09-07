@@ -1,0 +1,260 @@
+#include "maxlike.h"
+
+
+EXT maxlike_margi_wk* maxlike_margi_alloc
+  (int N, marginal* m)
+{
+
+  maxlike_margi_wk* max = (maxlike_margi_wk*) malloc(sizeof(maxlike_margi_wk));
+
+  max-> print     = 0;
+  max-> iteration = 0;
+  max-> data      = m;
+  max-> state     = dmatrix_alloc(N);
+  max-> tester    = NULL;
+
+  dmatrix_to_Id(max-> state);
+
+  return max;
+
+}
+
+
+EXT void maxlike_margi_free
+  (maxlike_margi_wk* max)
+{
+
+  max-> data = NULL;
+  free( max-> state );
+  free( max );
+
+}
+
+
+EXT dmatrix* maxlike_margi_state
+  (maxlike_margi_wk* max)
+{
+
+  return dmatrix_copy(max->state);
+
+}
+
+
+EXT Real* maxlike_margi_iteration
+  (maxlike_margi_wk* max, int J)
+{
+
+  int k, kk, i, j;
+  int K = max-> data-> samples;
+  int K_n = K / cache_p;
+  int N = max-> state-> n;
+  int M = N + 1;
+  Real norm = 1.0 / (max-> data-> samples);
+
+
+  pointers* h_lup = (pointers*) malloc( sizeof(pointers) * K_n );
+  pointers* c_lup = (pointers*) malloc( sizeof(pointers) * K_n );
+  pointers* s_lup = (pointers*) malloc( sizeof(pointers) * K_n );
+
+
+  /*   hermite_lup   */
+  for(k = 0; k < K_n; k++)
+  {
+    for(kk = 0; kk < cache_p; kk++)
+    {
+      Real* p = (Real*) malloc( sizeof(Real) * M );
+      Real  x = max-> data-> quad[ k*cache_p + kk ];
+      p[0]    = exp( - x * x / 2 ) / sqrt( sqrt(PI) );
+      p[1]    = sqrt(2) * x* p[0];
+      for(i = 2; i < M; i++) 
+        p[i] = sqrt( 2.0/i ) * x * p[i-1] - sqrt( (i-1)*1.0/i ) * p[i-2];   
+      h_lup[k][kk] = p;
+    }
+
+  }
+
+
+  /*  cos & sin lup   */
+  for(k = 0; k < K_n; k++) 
+  {
+    for(kk = 0; kk < cache_p; kk++)
+    {
+      Real* c   = (Real*) malloc( sizeof(Real) * M );
+      Real* s   = (Real*) malloc( sizeof(Real) * M );
+      Real  phi = max-> data-> phase[ k*cache_p + kk ];
+      for(i = 0; i < M; i++)
+      {
+        c[i] = cos( i * phi );
+        s[i] = sin( i * phi );
+      }
+      c_lup[k][kk] = c;
+      s_lup[k][kk] = s;
+    }
+  }
+
+
+  /* alloc matrices */
+  dmatrix* operator = dmatrix_alloc(N);
+  dmatrix* prod     = dmatrix_alloc(N);
+  dmatrix* proj     = dmatrix_alloc(N);
+  dmatrix* last     = dmatrix_alloc(N);
+  dmatrix* state    = max-> state;
+
+  matr*  op_mat     = matr_alloc(N);
+
+
+  /* alloc err array */
+  Real* err = (Real*) malloc( J * sizeof(Real) );
+
+
+  /* prep iteration */
+  int iter = max-> iteration;
+  max-> iteration += J;
+  J = max-> iteration;
+
+  while(J - iter) {
+/*
+    i = 0;
+    while(M - i) {
+      j = 0;
+      while(M - j) {
+        last->re[i][j] = state->re[i][j];
+        last->im[i][j] = state->im[i][j];
+        j++;
+      }
+      i++;
+    }  
+*/
+    dmatrix_to_zero(operator);
+printf("TOSTOS\n");
+    matr_zero(op_mat);
+printf("TOSTOS\n");
+    k = 0;
+    while(K_n - k ) {
+
+      Real** h = h_lup[k];
+      Real** c = c_lup[k];
+      Real** s = s_lup[k];
+
+      kk = 0;
+      while(cache_p - kk) {
+
+        Real* this_h_lup = h[kk];
+        Real* this_c_lup = c[kk];
+        Real* this_s_lup = s[kk];
+
+        Real trace = 0.0;
+
+        i = 0;
+        while(M - i) {
+
+          Real h_i = this_h_lup[i];
+
+          j = 0;
+          int ij = i;
+
+          while(M - j) {
+
+            Real x = h_i * this_h_lup[j];
+            Real c_ij, s_ij;
+
+            if ( ij < 0) {
+              c_ij = +this_c_lup[-ij];
+              s_ij = -this_s_lup[-ij];
+            } else {
+              c_ij = +this_c_lup[+ij];
+              s_ij = +this_s_lup[+ij];
+            }
+
+            c_ij *= x;
+            s_ij *= x;
+
+            proj-> re[i][j] = c_ij; 
+            proj-> im[i][j] = s_ij;  
+
+            trace += c_ij * state-> re[i][j] - s_ij * state-> im[i][j];  
+
+            ij--;
+            j++;
+          }
+
+          i++;
+        }
+
+        trace = norm / trace;
+        /* this blocks takes a lot of time */
+        i = 0;
+        while(M - i) {
+
+          j = 0;
+          while(M - j) {
+
+            operator-> re[i][j] += trace * proj-> re[i][j]; 
+            operator-> im[i][j] += trace * proj-> im[i][j]; 
+
+            j++;
+          }
+
+          i++;
+        }
+
+        kk++;
+      }
+
+      k++;
+    }
+
+
+    /* quicker to copy in operator in memory order and transpose at the end */
+/*
+    dmatrix_transpose(operator);             
+    dmatrix_prod(prod, operator, state);
+    dmatrix_prod(state, prod, operator);
+    dmatrix_renorm(state); 
+*/
+
+    /* end of iteration */
+
+    err[iter] = dmatrix_dist_max(state, last);
+
+    if(max-> print) printf("err(%i):%f\n",iter,err[iter]);
+
+    if(max-> tester != NULL) (max-> tester)(iter,state);
+
+    iter++;
+    if( iter % 10 == 0) printf("%i iterations done\n", iter);
+    
+  }
+
+
+  /* cleaning memory */
+
+  dmatrix_free(operator);
+  dmatrix_free(prod);
+  dmatrix_free(proj);
+  dmatrix_free(last);
+
+  matr_free(op_mat);
+
+  for(k = 0; k < K_n; k++)
+  {
+    for(kk = 0; kk < cache_p; kk++)
+    {
+      free(h_lup[k][kk]);
+      free(c_lup[k][kk]);
+      free(s_lup[k][kk]);
+    }
+  }
+
+  free(h_lup);
+  free(c_lup);
+  free(s_lup);
+
+
+  /* return error */
+
+  return err;
+
+}
+
+
