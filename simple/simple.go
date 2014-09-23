@@ -30,6 +30,7 @@ type TypeInfo string
 const (
   TypeInt TypeInfo = "Int"
   TypeFun TypeInfo = "Int -> Int"
+  TypeList TypeInfo = "List"
   //TypeErr TypeInfo = "Error"
 )
 
@@ -112,16 +113,51 @@ type Exp interface {
   Eval(e Env) Val
 }
 
+
+// Vals are Expression that eval to themselves
+// Todo: merge expression and vals (need to add string right?)
+
+// numerical litterals are simply IVals and evals to themselves
+func (i IVal) Eval(e Env) Val {
+  return i
+}
+
+
+// not a closure yet. For that, I would need to include an env by either:
+//  1) copying the env when the function body is declared
+//  2) extract the vars inside the closure and copy only this in a new env
+//  3) extract and replace the vars inside the closure body
+func (fv FVal) Eval(e Env) Val {
+  return fv
+}
+
+
+//  -- List --------------------------------------------------------------------
+//
+// Lists is a Val
+
+type List struct {
+  Head Exp
+  Tail *List
+}
+
+func (l List) Type() TypeInfo { return TypeList }
+
+func (l List) String() string { return "a List" }
+
+// the empty List
+var Nil = List{}
+
+// list creation primitive, need to be in the environment
+func Cons(e Exp, l List) List {
+  return List{ e, &l }
+}
+
 // facility type for returning Env -> Val functions as Exp typed values.
 type ExpFunc func(e Env) Val
 
 func (ef ExpFunc) Eval(e Env) Val {
   return ef(e)
-}
-
-// numerical litterals are simply IVals and evals to themselves
-func (i IVal) Eval(e Env) Val {
-  return i
 }
 
 // this is just for program syntax clarity
@@ -199,14 +235,6 @@ func Let(name string, x, y Exp) Exp {
 
 func Func(body Exp, variables ...string) Exp {
   return FVal { Variables: variables, Body: body }
-}
-
-// not a closure yet. For that, I would need to include an env by either:
-//  1) copying the env when the function body is declared
-//  2) extract the vars inside the closure and copy only this in a new env
-//  3) extract and replace the vars inside the closure body
-func (fv FVal) Eval(e Env) Val {
-  return fv
 }
 
 // types with Exp or Vals ? Exp right !
