@@ -216,21 +216,25 @@ func (v Var) Eval(e Env) Val {
   return value
 }
 
-func Let(name string, x, y Exp) Exp {
+func LetIn(name string, x, y Exp) Exp {
   f := func(e Env) Val {
-    v := x.Eval(e)
-
-    // this allows for recursion in function
-    if fval, is_function := v.(FVal); is_function {
-      fval.Name = name
-    }
-
-    e.Push(name, v)
+    e.Push(name, PrepareVal(name, x, e))
     u := y.Eval(e)
     e.Pop(name)
     return u
   }
   return ExpFunc(f)
+}
+
+// helper function for LetIn
+func PrepareVal(name string, x Exp, e Env) Val {
+    v := x.Eval(e)
+    // this allows for recursion in function
+    if fval, is_function := v.(FVal); is_function {
+      fval.Name = name
+      return fval // needs to return fval and not v (not working with pointers)
+    }
+    return v
 }
 
 func Func(body Exp, variables ...string) Exp {
@@ -287,19 +291,23 @@ func Eval(expression Exp, binding Env) Val {
 */
 
 func main() {
+  /*
   e := EmptyEnv()
   e.Push("foo", IVal(7))
   r := Plus(Mult(Num(4), Var("foo")), Num(7))
-  s := Let("bar", r, Plus(Var("foo"), Var("bar")))
+  s := LetIn("bar", r, Plus(Var("foo"), Var("bar")))
   fmt.Println(s.Eval(e))
+  */
 
+  /*
   f := Func(Plus(Var("x"), Var("y")), "x", "y")
   a := Call(f, Num(1), Num(5))
   b := Call(f, Num(10), Mult(Num(2), Num(5)))
   fmt.Println(a.Eval(e), b.Eval(e))
+  */
 
   n := 3
-  program := Let(
+  program := LetIn(
     "factorial",
     Func(
       If(
