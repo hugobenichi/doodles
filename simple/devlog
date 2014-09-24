@@ -1,6 +1,26 @@
 
+-- value representations -------------------------------------------------------
 
-adding closures
+to get a lisp like interpreter, we need to wrap values and expression, so that
+eval become a function of exp to exp
+
+the base is made of three things (in ML notation)
+Exp = Atom of string
+    | Num of int  // simply an optimisation
+    | List of (Exp, *List) // where * means pointer
+
+composite types:
+
+a function is a List of shape (env names body)
+  where env is the closure environment, names is a list of atoms, and body is
+  an arbitrary Exp
+
+an env is a List of shape (atoms values) where atoms is a list of atoms, and
+values is a list of Exp with the same length as atoms
+
+a call is simply a list that is evaluated
+
+-- adding closures -------------------------------------------------------------
 
 to add closures, we need a way to carry the bindings used in a function body
 from the scope where the function is declared to any place where it is called.
