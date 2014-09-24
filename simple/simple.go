@@ -31,6 +31,7 @@ const (
   TypeInt TypeInfo = "Int"
   TypeFun TypeInfo = "Int -> Int"
   TypeList TypeInfo = "List"
+  TypeAtom TypeInfo = "Atom"
   //TypeErr TypeInfo = "Error"
 )
 
@@ -104,6 +105,12 @@ type FVal struct {
 func (f FVal) Type() TypeInfo { return TypeFun }
 func (f FVal) String() string { return "fun" }
 
+
+type Atom string
+
+func (a Atom) Type() TypeInfo { return TypeAtom }
+func (a Atom) String() string { return fmt.Sprintf("Atom(%s)", string(a)) }
+
 //  -- Exp ---------------------------------------------------------------------
 //
 //  An Expression is a closure typed Env -> Val which when invoked eval itself
@@ -120,6 +127,15 @@ type Exp interface {
 // numerical litterals are simply IVals and evals to themselves
 func (i IVal) Eval(e Env) Val {
   return i
+}
+
+// Atoms evaluate to their binding in the given environment
+func (a Atom) Eval(e Env) Val {
+  value, err := e.Get(string(a))
+  if err != nil {
+    panic(err)
+  }
+  return value
 }
 
 
@@ -145,12 +161,38 @@ func (l List) Type() TypeInfo { return TypeList }
 
 func (l List) String() string { return "a List" }
 
-// the empty List
+// the empty List   !!!! baka, this should be nil !!!!
 var Nil = List{}
 
 // list creation primitive, need to be in the environment
 func Cons(e Exp, l List) List {
   return List{ e, &l }
+}
+
+
+// -- ListEnv ------------------------------------------------------------------
+//
+// A functional version of the environment, with structural sharing, and no
+// internal mutation. This allows to implement closures.
+
+// instead of storing a list of (name, values) tuples,
+// we store a (list atom, list values) tuples, which makes things a bit easier.
+type ListEnv struct {
+  Atoms *List
+  Values *List
+}
+
+func (le ListEnv) Get(a Atom) (Exp, error) {
+  atoms := le.Atoms
+  values := le.Values
+  for atoms != nil && values != nil {
+    if atoms.Head.(Atom) == a {
+      return values.Head, nil
+    }
+    atoms = atoms.Tail
+    values = values.Tail
+  }
+  return nil, UnboundErr(string(a))
 }
 
 // facility type for returning Env -> Val functions as Exp typed values.
@@ -306,7 +348,7 @@ func main() {
   fmt.Println(a.Eval(e), b.Eval(e))
   */
 
-  n := 3
+  n := 5
   program := LetIn(
     "factorial",
     Func(
