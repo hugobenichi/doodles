@@ -1,0 +1,47 @@
+
+
+adding closures
+
+to add closures, we need a way to carry the bindings used in a function body
+from the scope where the function is declared to any place where it is called.
+
+because the environment is implemented as a mutable map of stacks, it is
+unfortunately not as easy as keeping a reference to the set of binding at
+function body declaration site.
+
+with our current interpreter, there are 3 ways that one can think of naturally
+to walk around this problem and get closures:
+1) copy the whole environment at function declaration and associate it to the
+function value. Most simple and easy to implement, but terrible performances.
+Memory and runtime complexity are both O(N) where N is the number of different
+bindings at function declaration site.
+2) inspect the function declaration and extract all Var expressions, then recopy
+only the Var expressions found in this process from the binding environement at
+function declaration body. Much better performances, we know have O(M) space
+complexity where M is the number of used bindings in the closure from the
+environement, and O(K) runtime complexity where K is the size of the function
+expression in term of nodes, with the relation that M <= K.
+3) Turn the environement into an immutable data structure using structural
+sharing, so that we can actually simply save a pointer to the local binding
+when a function is declared. This will give us a O(1) runtime and space complexity
+with the caveeats that there is a potential memory leak if we keep the function
+value around a long time, and inderectly keep a pointer to the closure environment
+that could itself holds lots of stuff. We re going to ignore this for now.
+
+Two reasons to choose solution #3. First, this series of post is "functional-oriented"
+and tries to avoid mutation, so it feels more aligned. Second, it will help us
+consolidate the "runtime". Right now we don't have any intrinsic functions except
+for plus and multiply. Eventually we will want to have a bunch of basic standard
+functions, and the environment is the natural place to put them. In the immutable
+data structur solution, we don't pay a price for this and we keep reusing the
+same values in memory for these standard functions.
+
+How to implement this. It is possible to have immutable hash maps with structural
+sharing that have a bounded number of steps until values access. Here we re going
+to use a much simpler solution and simply have what is essentially a linked list
+of (atom, value) tuples. I know, horrible lookup complexity, but that will do
+for now. For a map with strings for keys, a better implementation would be a
+sorted tree map, or even a trie for much more shallow tree. Tradeoff is between
+puts and gets: on paper a tree map has potentially better sharing and faster
+puts with leaner nodes, and a trie has fatter nodes but less steps down to the
+leaves
