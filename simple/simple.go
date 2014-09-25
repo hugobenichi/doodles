@@ -3,23 +3,21 @@
 //  Simple is a simple interpreter that currently lacks a parser and a syntax.
 package main
 
-import "fmt"
-
+import (
+  "fmt"
+  "errors"
+)
 
 //  -- Errors ------------------------------------------------------------------
 
-type Err string
-
-func (e Err) Error() string{ return string(e) }
-
 /** returned when a lookup in the environement fails. */
 func UnboundErr(name string) error {
-  return Err(fmt.Sprintf("Unbound variable '%s'", name))
+  return errors.New(fmt.Sprintf("Unbound variable '%s'", name))
 }
 
 /** returned when a type-check fails. */
 func TypeErr(found, expected string) error {
-  return Err(fmt.Sprintf("Value of type '%s' instead of '%s'", found, expected))
+  return errors.New(fmt.Sprintf("Value of type '%s' instead of '%s'", found, expected))
 }
 
 
@@ -32,7 +30,6 @@ const (
   TypeFun TypeInfo = "Int -> Int"
   TypeList TypeInfo = "List"
   TypeAtom TypeInfo = "Atom"
-  //TypeErr TypeInfo = "Error"
 )
 
 type Val interface {
