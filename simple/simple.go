@@ -88,10 +88,17 @@ func (e Env) Get(name string) Val {
 
 // -- Concrete Values ----------------------------------------------------------
 
-type IVal int
+// -- Int values ---------------------------------------------------------------
 
-func (i IVal) Type() TypeInfo { return TypeInt }
-func (i IVal) String() string { return fmt.Sprintf("%i", int(i)) }
+type Int int
+
+func (n Int) Type() TypeInfo { return TypeInt }
+func (n Int) String() string { return fmt.Sprintf("%d", int(n)) }
+
+// numerical litterals evaluates to themselves
+func (n Int) Eval(e Env) Val {
+  return n
+}
 
 type FVal struct {
   Variables []string
@@ -116,14 +123,7 @@ type Exp interface {
   Eval(e Env) Val
 }
 
-
 // Vals are Expression that eval to themselves
-// Todo: merge expression and vals (need to add string right?)
-
-// numerical litterals are simply IVals and evals to themselves
-func (i IVal) Eval(e Env) Val {
-  return i
-}
 
 // Atoms evaluate to their binding in the given environment
 func (a Atom) Eval(e Env) Val {
@@ -194,11 +194,6 @@ func (ef ExpFunc) Eval(e Env) Val {
   return ef(e)
 }
 
-// this is just for program syntax clarity
-func Num(x int) Exp {
-  return IVal(x)
-}
-
 type PlusExp struct { x, y Exp }
 
 func Plus(x, y Exp) Exp {
@@ -206,7 +201,7 @@ func Plus(x, y Exp) Exp {
     xval := x.Eval(e)
     yval := y.Eval(e)
     assertType(TypeInt, xval, yval)
-    return xval.(IVal) + yval.(IVal)
+    return xval.(Int) + yval.(Int)
   })
 }
 
@@ -215,7 +210,7 @@ func Mult(x, y Exp) Exp {
     xval := x.Eval(e)
     yval := y.Eval(e)
     assertType(TypeInt, xval, yval)
-    return xval.(IVal) * yval.(IVal)
+    return xval.(Int) * yval.(Int)
   })
 }
 
@@ -224,16 +219,16 @@ func Less(x, y Exp) Exp {
     xval := x.Eval(e)
     yval := y.Eval(e)
     assertType(TypeInt, xval, yval)
-    if xval.(IVal) < yval.(IVal) {
-      return IVal(1)
+    if xval.(Int) < yval.(Int) {
+      return Int(1)
     }
-    return IVal(0)
+    return Int(0)
   })
 }
 
 func If(cond, x, y Exp) Exp {
   return ExpFunc(func(e Env) Val {
-    if cond.Eval(e) == IVal(0) {
+    if cond.Eval(e) == Int(0) {
       return y.Eval(e)
     }
     return x.Eval(e)
@@ -308,14 +303,14 @@ func Call(funexp Exp, values ...Exp) Exp {
 
 func main() {
   e := EmptyEnv()
-  e.Push("foo", IVal(7))
-  r := Plus(Mult(Num(4), Var("foo")), Num(7))
+  e.Push("foo", Int(7))
+  r := Plus(Mult(Int(4), Var("foo")), Int(7))
   s := LetIn("bar", r, Plus(Var("foo"), Var("bar")))
   fmt.Println(s.Eval(e))
 
   f := Func(Plus(Var("x"), Var("y")), "x", "y")
-  a := Call(f, Num(1), Num(5))
-  b := Call(f, Num(10), Mult(Num(2), Num(5)))
+  a := Call(f, Int(1), Int(5))
+  b := Call(f, Int(10), Mult(Int(2), Int(5)))
   fmt.Println(a.Eval(e), b.Eval(e))
 
   n := 5
@@ -326,13 +321,13 @@ func main() {
         Var("x"),
         Mult(
           Var("x"),
-          Call(Var("factorial"), Plus(Var("x"), Num(-1))),
+          Call(Var("factorial"), Plus(Var("x"), Int(-1))),
         ),
-        Num(1),
+        Int(1),
       ),
       "x",
     ),
-    Call(Var("factorial"), Num(n)),
+    Call(Var("factorial"), Int(n)),
   )
   fmt.Println(program.Eval(EmptyEnv()))
 }
