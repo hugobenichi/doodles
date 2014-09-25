@@ -1,3 +1,19 @@
+-- idea behind Lisp ------------------------------------------------------------
+
+So we ve got basic Value types, with Atoms, Ints and Functions. We ve got also
+Exp to represent the abstract syntax tree. Each Exp can be evaluated into a Val.
+
+We saw that Val is a natural subtype of Exp, since a Val be evaluated to itself
+for instance. Although in the case of Atom, we gave Evaluation a different
+meaning, and in the case of Function, we gave Evaluation the meaning of Binding
+the Function to the Environment into a Closure.
+
+Now, what if we made Exp a subtype of Vals ? That is the basic of Lisp idea
+of having code as data, and data as code. In other words, if Val is a subtype of
+Exp, and Exp is a subtype of Val, then Val and Exp are the same thing !
+
+So, we know how to represent data as code, how can we represent code as data.
+Let's look at S expressions.
 
 -- value representations -------------------------------------------------------
 
