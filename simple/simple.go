@@ -93,6 +93,7 @@ func (a Atom) Eval(e Env) Val {
 type FVal struct {
   Variables []Atom
   Body Exp
+  Binding Env
   Name Atom
 }
 
@@ -114,6 +115,7 @@ type Exp interface {
 //  2) extract the vars inside the closure and copy only this in a new env
 //  3) extract and replace the vars inside the closure body
 func (fv FVal) Eval(e Env) Val {
+  fv.Binding = e
   return fv
 }
 
@@ -243,7 +245,7 @@ func Call(funexp Exp, values ...Exp) Exp {
     fun := funval.(FVal)
 
     // create a new env for the call frame
-    funenv := EmptyEnv()
+    funenv := fun.Binding //EmptyEnv()
 
     // bind the func to the new env if it has a name (recursion)
     if fun.Name != Atom("") {
@@ -292,4 +294,24 @@ func main() {
     Call(Atom("factorial"), Int(n)),
   )
   fmt.Println(program.Eval(EmptyEnv()))
+
+  program2 := LetIn(
+    Atom("x"),
+    Int(n),
+    Call(
+      Func(Plus(Atom("x"), Atom("y")), Atom("y")),
+      Int(3),
+    ),
+  )
+  fmt.Println(program2.Eval(EmptyEnv()))
+
+  program3 := LetIn(
+    Atom("Adder"),
+    Func(
+      Func(Plus(Atom("x"), Atom("y")), Atom("y")),
+      Atom("x"),
+    ),
+    Call(Call(Atom("Adder"), Int(1)), Int(2)),
+  )
+  fmt.Println(program3.Eval(EmptyEnv()))
 }
