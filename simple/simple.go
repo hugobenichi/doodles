@@ -77,12 +77,12 @@ func (e Env) Pop(name string) {
   e[name] = v[0:len(v)-1]
 }
 
-func (e Env) Get(name string) (Val, error) {
+func (e Env) Get(name string) Val {
   v, ok := e[name]
   if !ok {
-    return IVal(0), UnboundErr(name)
+    panic(UnboundErr(name))
   }
-  return v[len(v)-1], nil
+  return v[len(v)-1]
 }
 
 
@@ -101,7 +101,6 @@ type FVal struct {
 
 func (f FVal) Type() TypeInfo { return TypeFun }
 func (f FVal) String() string { return "fun" }
-
 
 type Atom string
 
@@ -128,11 +127,7 @@ func (i IVal) Eval(e Env) Val {
 
 // Atoms evaluate to their binding in the given environment
 func (a Atom) Eval(e Env) Val {
-  value, err := e.Get(string(a))
-  if err != nil {
-    panic(err)
-  }
-  return value
+  return e.Get(string(a))
 }
 
 
@@ -179,17 +174,17 @@ type ListEnv struct {
   Values *List
 }
 
-func (le ListEnv) Get(a Atom) (Exp, error) {
+func (le ListEnv) Get(a Atom) Exp {
   atoms := le.Atoms
   values := le.Values
   for atoms != nil && values != nil {
     if atoms.Head.(Atom) == a {
-      return values.Head, nil
+      return values.Head
     }
     atoms = atoms.Tail
     values = values.Tail
   }
-  return nil, UnboundErr(string(a))
+  panic(UnboundErr(string(a)))
 }
 
 // facility type for returning Env -> Val functions as Exp typed values.
@@ -248,11 +243,7 @@ func If(cond, x, y Exp) Exp {
 type Var string
 
 func (v Var) Eval(e Env) Val {
-  value, err := e.Get(string(v))
-  if err != nil {
-    panic(err)
-  }
-  return value
+  return e.Get(string(v))
 }
 
 func LetIn(name string, x, y Exp) Exp {
@@ -315,35 +306,17 @@ func Call(funexp Exp, values ...Exp) Exp {
   return ExpFunc(f)
 }
 
-/*
-func Eval(expression Exp, binding Env) Val {
-  var v Val = nil
-  switch e := expression.(type) {
-  default:
-    v = Ival(-1)
-  case IVal:
-    v = e
-  case PlusExp:
-  }
-  return v
-}
-*/
-
 func main() {
-  /*
   e := EmptyEnv()
   e.Push("foo", IVal(7))
   r := Plus(Mult(Num(4), Var("foo")), Num(7))
   s := LetIn("bar", r, Plus(Var("foo"), Var("bar")))
   fmt.Println(s.Eval(e))
-  */
 
-  /*
   f := Func(Plus(Var("x"), Var("y")), "x", "y")
   a := Call(f, Num(1), Num(5))
   b := Call(f, Num(10), Mult(Num(2), Num(5)))
   fmt.Println(a.Eval(e), b.Eval(e))
-  */
 
   n := 5
   program := LetIn(
