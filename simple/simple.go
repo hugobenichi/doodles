@@ -57,41 +57,10 @@ func assertType(needed TypeInfo, values ...Val) {
 type Env interface {
   Get(a Atom) Val
   Push(a Atom, v Val) Env
-  Pop(a Atom) Env
 }
-
-type MEnv map[Atom][]Val
 
 func EmptyEnv() Env {
-  //return MEnv(make(map[Atom][]Val))
   return ListEnv { }
-}
-
-func (e MEnv) Push(a Atom, v Val) Env {
-  if _, has := e[a]; !has {
-    e[a] = make([]Val, 0, 10)
-  }
-  e[a] = append(e[a], v)
-  return e
-}
-
-func (e MEnv) Pop(a Atom) Env {
-  v, ok := e[a]
-  if !ok { return e }
-  if len(v) == 0 {
-    delete(e, a)
-    return e
-  }
-  e[a] = v[0:len(v)-1]
-  return e
-}
-
-func (e MEnv) Get(a Atom) Val {
-  v, ok := e[a]
-  if !ok {
-    panic(UnboundErr(string(a)))
-  }
-  return v[len(v)-1]
 }
 
 
@@ -195,11 +164,6 @@ func (le ListEnv) Push(a Atom, v Val) Env {
   return ListEnv{ le.Atoms.Cons(a), le.Values.Cons(v) }
 }
 
-func (le ListEnv) Pop(a Atom) Env {
-  if le.Atoms == nil { return le }
-  return ListEnv{ le.Atoms.Tail, le.Values.Tail }
-}
-
 // facility type for returning Env -> Val functions as Exp typed values.
 type ExpFunc func(e Env) Val
 
@@ -250,9 +214,7 @@ func If(cond, x, y Exp) Exp {
 
 func LetIn(a Atom, x, y Exp) Exp {
   f := func(e Env) Val {
-    u := y.Eval(e.Push(a, PrepareVal(a, x, e)))
-    e.Pop(a) // soon not necessary
-    return u
+    return y.Eval(e.Push(a, PrepareVal(a, x, e)))
   }
   return ExpFunc(f)
 }
