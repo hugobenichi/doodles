@@ -63,7 +63,8 @@ type Env interface {
 type MEnv map[Atom][]Val
 
 func EmptyEnv() Env {
-  return MEnv(make(map[Atom][]Val))
+  //return MEnv(make(map[Atom][]Val))
+  return ListEnv { }
 }
 
 func (e MEnv) Push(a Atom, v Val) Env {
@@ -153,20 +154,15 @@ func (fv FVal) Eval(e Env) Val {
 // Lists is a Val
 
 type List struct {
-  Head Exp
+  Head Val
   Tail *List
 }
 
-func (l List) Type() TypeInfo { return TypeList }
+func (l *List) Type() TypeInfo { return TypeList }
+func (l *List) String() string { return fmt.Sprintf("%#v", l) }
 
-func (l List) String() string { return "a List" }
-
-// the empty List   !!!! baka, this should be nil !!!!
-var Nil = List{}
-
-// list creation primitive, need to be in the environment
-func Cons(e Exp, l List) List {
-  return List{ e, &l }
+func (l *List) Cons(v Val) *List {
+  return &List{ v, l }
 }
 
 
@@ -182,7 +178,7 @@ type ListEnv struct {
   Values *List
 }
 
-func (le ListEnv) Get(a Atom) Exp {
+func (le ListEnv) Get(a Atom) Val {
   atoms := le.Atoms
   values := le.Values
   for atoms != nil && values != nil {
@@ -193,6 +189,15 @@ func (le ListEnv) Get(a Atom) Exp {
     values = values.Tail
   }
   panic(UnboundErr(string(a)))
+}
+
+func (le ListEnv) Push(a Atom, v Val) Env {
+  return ListEnv{ le.Atoms.Cons(a), le.Values.Cons(v) }
+}
+
+func (le ListEnv) Pop(a Atom) Env {
+  if le.Atoms == nil { return le }
+  return ListEnv{ le.Atoms.Tail, le.Values.Tail }
 }
 
 // facility type for returning Env -> Val functions as Exp typed values.
@@ -245,9 +250,8 @@ func If(cond, x, y Exp) Exp {
 
 func LetIn(a Atom, x, y Exp) Exp {
   f := func(e Env) Val {
-    e.Push(a, PrepareVal(a, x, e))
-    u := y.Eval(e)
-    e.Pop(a)
+    u := y.Eval(e.Push(a, PrepareVal(a, x, e)))
+    e.Pop(a) // soon not necessary
     return u
   }
   return ExpFunc(f)
@@ -281,31 +285,25 @@ func Call(funexp Exp, values ...Exp) Exp {
 
     // bind the func to the new env if it has a name (recursion)
     if fun.Name != Atom("") {
-      funenv.Push(fun.Name, fun)
+      funenv = funenv.Push(fun.Name, fun)
     }
 
     // bind variables names from the func expression to the passed values
     minLen := len(values)
     if len(fun.Variables) < minLen { minLen = len(fun.Variables) }
     for i := 0; i < minLen; i++ {
-      funenv.Push(fun.Variables[i], values[i].Eval(e))
+      funenv = funenv.Push(fun.Variables[i], values[i].Eval(e))
     }
 
     // function body execution
-    x := fun.Body.Eval(funenv)
-
-    // unbind variables from the env
-    //for i := 0; i < minLen; i++ {
-    //  funenv.Pop(fun.Variables[i])
-    //}
-    return x
+    return fun.Body.Eval(funenv)
   }
   return ExpFunc(f)
 }
 
 func main() {
-  e := EmptyEnv()
-  e.Push(Atom("foo"), Int(7))
+
+  e := EmptyEnv().Push(Atom("foo"), Int(7))
   r := Plus(Mult(Int(4), Atom("foo")), Int(7))
   s := LetIn(Atom("bar"), r, Plus(Atom("foo"), Atom("bar")))
   fmt.Println(s.Eval(e))
