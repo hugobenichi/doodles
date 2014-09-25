@@ -54,33 +54,41 @@ func assertType(needed TypeInfo, values ...Val) {
 //  env is implemented as a map[string,stack], with stacks implemented directly
 //  with builtin slices and append().
 
-type Env map[string][]Val
+type Env interface {
+  Get(a Atom) Val
+  Push(a Atom, v Val) Env
+  Pop(a Atom) Env
+}
+
+type MEnv map[Atom][]Val
 
 func EmptyEnv() Env {
-  return Env(make(map[string][]Val))
+  return MEnv(make(map[Atom][]Val))
 }
 
-func (e Env) Push(name string, v Val) {
-  if _, has := e[name]; !has {
-    e[name] = make([]Val, 0, 10)
+func (e MEnv) Push(a Atom, v Val) Env {
+  if _, has := e[a]; !has {
+    e[a] = make([]Val, 0, 10)
   }
-  e[name] = append(e[name], v)
+  e[a] = append(e[a], v)
+  return e
 }
 
-func (e Env) Pop(name string) {
-  v, ok := e[name]
-  if !ok { return }
+func (e MEnv) Pop(a Atom) Env {
+  v, ok := e[a]
+  if !ok { return e }
   if len(v) == 0 {
-    delete(e, name)
-    return
+    delete(e, a)
+    return e
   }
-  e[name] = v[0:len(v)-1]
+  e[a] = v[0:len(v)-1]
+  return e
 }
 
-func (e Env) Get(name string) Val {
-  v, ok := e[name]
+func (e MEnv) Get(a Atom) Val {
+  v, ok := e[a]
   if !ok {
-    panic(UnboundErr(name))
+    panic(UnboundErr(string(a)))
   }
   return v[len(v)-1]
 }
@@ -109,13 +117,13 @@ func (a Atom) String() string { return fmt.Sprintf("Atom(%s)", string(a)) }
 
 // Atoms evaluate to the value they are pointing to in the given environment
 func (a Atom) Eval(e Env) Val {
-  return e.Get(string(a))
+  return e.Get(a)
 }
 
 type FVal struct {
-  Variables []string
+  Variables []Atom
   Body Exp
-  Name string
+  Name Atom
 }
 
 func (f FVal) Type() TypeInfo { return TypeFun }
@@ -235,28 +243,28 @@ func If(cond, x, y Exp) Exp {
   })
 }
 
-func LetIn(name string, x, y Exp) Exp {
+func LetIn(a Atom, x, y Exp) Exp {
   f := func(e Env) Val {
-    e.Push(name, PrepareVal(name, x, e))
+    e.Push(a, PrepareVal(a, x, e))
     u := y.Eval(e)
-    e.Pop(name)
+    e.Pop(a)
     return u
   }
   return ExpFunc(f)
 }
 
 // helper function for LetIn
-func PrepareVal(name string, x Exp, e Env) Val {
+func PrepareVal(a Atom, x Exp, e Env) Val {
     v := x.Eval(e)
     // this allows for recursion in function
     if fval, is_function := v.(FVal); is_function {
-      fval.Name = name
+      fval.Name = a
       return fval // needs to return fval and not v (not working with pointers)
     }
     return v
 }
 
-func Func(body Exp, variables ...string) Exp {
+func Func(body Exp, variables ...Atom) Exp {
   return FVal { Variables: variables, Body: body }
 }
 
@@ -272,7 +280,7 @@ func Call(funexp Exp, values ...Exp) Exp {
     funenv := EmptyEnv()
 
     // bind the func to the new env if it has a name (recursion)
-    if fun.Name != "" {
+    if fun.Name != Atom("") {
       funenv.Push(fun.Name, fun)
     }
 
@@ -297,19 +305,19 @@ func Call(funexp Exp, values ...Exp) Exp {
 
 func main() {
   e := EmptyEnv()
-  e.Push("foo", Int(7))
+  e.Push(Atom("foo"), Int(7))
   r := Plus(Mult(Int(4), Atom("foo")), Int(7))
-  s := LetIn("bar", r, Plus(Atom("foo"), Atom("bar")))
+  s := LetIn(Atom("bar"), r, Plus(Atom("foo"), Atom("bar")))
   fmt.Println(s.Eval(e))
 
-  f := Func(Plus(Atom("x"), Atom("y")), "x", "y")
+  f := Func(Plus(Atom("x"), Atom("y")), Atom("x"), Atom("y"))
   a := Call(f, Int(1), Int(5))
   b := Call(f, Int(10), Mult(Int(2), Int(5)))
   fmt.Println(a.Eval(e), b.Eval(e))
 
   n := 5
   program := LetIn(
-    "factorial",
+    Atom("factorial"),
     Func(
       If(
         Atom("x"),
@@ -319,7 +327,7 @@ func main() {
         ),
         Int(1),
       ),
-      "x",
+      Atom("x"),
     ),
     Call(Atom("factorial"), Int(n)),
   )
