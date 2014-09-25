@@ -100,6 +100,18 @@ func (n Int) Eval(e Env) Val {
   return n
 }
 
+// -- Atom values --------------------------------------------------------------
+
+type Atom string
+
+func (a Atom) Type() TypeInfo { return TypeAtom }
+func (a Atom) String() string { return fmt.Sprintf("Atom(%s)", string(a)) }
+
+// Atoms evaluate to the value they are pointing to in the given environment
+func (a Atom) Eval(e Env) Val {
+  return e.Get(string(a))
+}
+
 type FVal struct {
   Variables []string
   Body Exp
@@ -109,11 +121,6 @@ type FVal struct {
 func (f FVal) Type() TypeInfo { return TypeFun }
 func (f FVal) String() string { return "fun" }
 
-type Atom string
-
-func (a Atom) Type() TypeInfo { return TypeAtom }
-func (a Atom) String() string { return fmt.Sprintf("Atom(%s)", string(a)) }
-
 //  -- Exp ---------------------------------------------------------------------
 //
 //  An Expression is a closure typed Env -> Val which when invoked eval itself
@@ -121,13 +128,6 @@ func (a Atom) String() string { return fmt.Sprintf("Atom(%s)", string(a)) }
 
 type Exp interface {
   Eval(e Env) Val
-}
-
-// Vals are Expression that eval to themselves
-
-// Atoms evaluate to their binding in the given environment
-func (a Atom) Eval(e Env) Val {
-  return e.Get(string(a))
 }
 
 
@@ -235,12 +235,6 @@ func If(cond, x, y Exp) Exp {
   })
 }
 
-type Var string
-
-func (v Var) Eval(e Env) Val {
-  return e.Get(string(v))
-}
-
 func LetIn(name string, x, y Exp) Exp {
   f := func(e Env) Val {
     e.Push(name, PrepareVal(name, x, e))
@@ -304,11 +298,11 @@ func Call(funexp Exp, values ...Exp) Exp {
 func main() {
   e := EmptyEnv()
   e.Push("foo", Int(7))
-  r := Plus(Mult(Int(4), Var("foo")), Int(7))
-  s := LetIn("bar", r, Plus(Var("foo"), Var("bar")))
+  r := Plus(Mult(Int(4), Atom("foo")), Int(7))
+  s := LetIn("bar", r, Plus(Atom("foo"), Atom("bar")))
   fmt.Println(s.Eval(e))
 
-  f := Func(Plus(Var("x"), Var("y")), "x", "y")
+  f := Func(Plus(Atom("x"), Atom("y")), "x", "y")
   a := Call(f, Int(1), Int(5))
   b := Call(f, Int(10), Mult(Int(2), Int(5)))
   fmt.Println(a.Eval(e), b.Eval(e))
@@ -318,16 +312,16 @@ func main() {
     "factorial",
     Func(
       If(
-        Var("x"),
+        Atom("x"),
         Mult(
-          Var("x"),
-          Call(Var("factorial"), Plus(Var("x"), Int(-1))),
+          Atom("x"),
+          Call(Atom("factorial"), Plus(Atom("x"), Int(-1))),
         ),
         Int(1),
       ),
       "x",
     ),
-    Call(Var("factorial"), Int(n)),
+    Call(Atom("factorial"), Int(n)),
   )
   fmt.Println(program.Eval(EmptyEnv()))
 }
