@@ -8,18 +8,6 @@ import (
   "errors"
 )
 
-//  -- Errors ------------------------------------------------------------------
-
-/** returned when a lookup in the environement fails. */
-func UnboundErr(name string) error {
-  return errors.New(fmt.Sprintf("Unbound variable '%s'", name))
-}
-
-/** returned when a type-check fails. */
-func TypeErr(found, expected string) error {
-  return errors.New(fmt.Sprintf("Value of type '%s' instead of '%s'", found, expected))
-}
-
 
 //  -- Types -------------------------------------------------------------------
 
@@ -40,7 +28,9 @@ type Val interface {
 func assertType(needed TypeInfo, values ...Val) {
   for _, v := range values {
     if found := v.Type(); found != needed {
-      panic(TypeErr(string(needed), string(found)))
+      f := string(found)
+      e := string(needed)
+      panic(errors.New(fmt.Sprintf("Value of type '%s' instead of '%s'", f, e)))
     }
   }
 }
@@ -159,7 +149,7 @@ func (le ListEnv) Get(a Atom) Val {
     atoms = atoms.Tail
     values = values.Tail
   }
-  panic(UnboundErr(string(a)))
+  panic(errors.New(fmt.Sprintf("Unbound variable '%s'", string(a))))
 }
 
 func (le ListEnv) Push(a Atom, v Val) Env {
@@ -244,9 +234,7 @@ func Call(funexp Exp, values ...Exp) Exp {
     assertType(TypeFun, funval)
     fun := funval.(FVal)
 
-    // create a new env for the call frame
-    funenv := fun.Binding //EmptyEnv()
-
+    funenv := fun.Binding
     // bind the func to the new env if it has a name (recursion)
     if fun.Name != Atom("") {
       funenv = funenv.Push(fun.Name, fun)
