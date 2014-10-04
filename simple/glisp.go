@@ -18,30 +18,22 @@ import (
 
 
 // tag interface to define the ensemble of possible values
-type Val interface {
-  implement()
-  String() string
-}
-
+type Val interface { String() string }
 
 type Atom string
-func (a Atom) implement() { }
 func (a Atom) String() string { return fmt.Sprintf("Atom(%s)", string(a)) }
 
 type Num int
-func (n Num) implement() { }
 func (n Num) String() string { return fmt.Sprintf("%d", int(n)) }
 
 type List struct {
   Head Val
   Tail *List
 }
-func (l *List) implement() { }
 func (l *List) String() string { return fmt.Sprintf("%#v", l) }
 func (l *List) Cons(v Val) *List { return &List{ v, l } }
 
 type Intrinsic func(environment Val, args *List) Val
-func (i Intrinsic) implement() { }
 func (i Intrinsic) String() string { return "Intrinsic" }
 
 
@@ -183,11 +175,6 @@ var let  = Atom("let")
 var null = Atom("nil")
 var fn   = Atom("fn")
 
-type Binding struct {
-  a Atom
-  v Val
-}
-
 var base_env Val = nil
 
 func NewEnv() Val {
@@ -216,7 +203,6 @@ func list(vals ...Val) Val {
 }
 
 func main() {
-
   x, y := Atom("x"), Atom("y")
 
   p1 := list(plus, Num(3), Num(10))
@@ -242,5 +228,4 @@ func main() {
             Num(5)),
           Num(4))
   fmt.Println(Eval(NewEnv(), p6))
-
 }
