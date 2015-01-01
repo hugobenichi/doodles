@@ -96,3 +96,21 @@ gv              last selection
 o               go to other end of selection
 
 xx|             go to column xx
+
+
+
+‘%’ goes to matching {[(
+
+:ls lists all buffers open
+
+:bu <file_name> goes to buffer window
+
+comment a block of code ctrl+V select block, shift-i, #, <ESC>, watch the magic.
+
+grep within vim: :grep -r blabla ., then do :cw to get back to results
+
+to wrap a word with quotes:
+  cw: del word and drop in insert mode;
+  ‘: put first quote;
+  ctrl+”: paste content of del register, bringing back word;
+  ‘Esc: put second quote and exit insert mode.
