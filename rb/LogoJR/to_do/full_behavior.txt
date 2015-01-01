@@ -1,0 +1,42 @@
+
+
+I) movement
+
+forward fd
+backward bk
+right rt
+left lt
+goto 
+home 
+undo
+
+
+show
+hide
+clear
+
+
+
+II) drawing
+
+pendown down pd
+penup up pu
+
+color
+width
+style
+
+pen?
+color?
+width?
+style?
+
+
+III) query
+
+position?
+distance_to?
+angle_to?
+visible?
+
+

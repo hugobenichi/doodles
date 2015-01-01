@@ -1,0 +1,9 @@
+
+This project is a simple Turtle graphics Logo like program
+
+The program itself is written in Ruby and runs on a JVM
+
+The JVM is used for rendering via Java2D and is running a JRuby interpreter 
+ 
+at the moment in early production stage
+
