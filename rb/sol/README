@@ -1,0 +1,24 @@
+
+
+Introduction
+============
+
+a numerical library using native code for efficient vectorial calculation in Ruby
+
+
+
+Versions
+========
+
+
+development versions
+
+0.0.11-04-11  added a module Algebra where all operators are defined independantely of types
+              corrected the tree rake task to ignore .git subdir
+              quick hack to make MemoryPointer in the Vec class
+              autowrapper detects all types in ext/types/
+              rake builds all types in ext/types/
+
+0.0.11/04/08  first commit
+
+

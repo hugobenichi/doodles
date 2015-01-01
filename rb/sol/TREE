@@ -1,0 +1,103 @@
+- syntax.rb
+- mod.rb
+- README
+- TREE
+- rakefile.rb
+
++ doc
+  - index.html
+  - SoL.html
+  - rdoc.css
+  - Array.html
+
+  + images
+    - tag_green.png
+    - macFFBgHack.png
+    - loadingAnimation.gif
+    - package.png
+    - wrench_orange.png
+    - page_green.png
+    - date.png
+    - page_white_text.png
+    - brick_link.png
+    - brick.png
+    - bullet_toggle_plus.png
+    - ruby.png
+    - bullet_toggle_minus.png
+    - find.png
+    - plugin.png
+    - zoom.png
+    - bullet_black.png
+    - bug.png
+    - wrench.png
+    - page_white_width.png
+
+  + SoL
+    - AutoWrapper.html
+
+  + js
+    - darkfish.js
+    - quicksearch.js
+    - jquery.js
+    - thickbox-compressed.js
+
++ rakelib
+  - build.rb
+  - tree.rb
+  - test.rb
+
++ experiments
+
+  + loop_test
+    - scalar.o
+    - loop.rb
+    - scalar.c
+    - loop.rbc
+    - copy
+    - loop.o
+    - libloop.so
+    - bench
+    - copy.c
+    - loop.c
+    - rakefile.rb
+
+  + memory_allocator
+    - lock-free_memory_alloc.c
+    - lock-free-vector.pdf
+    - Scalable lock-free dynamic memory allocation.pdf
+
++ lib
+  - sol.rb
+
+  + sol
+    - vector.rb
+    - autowrapper.rbc
+    - array.rb
+    - autowrapper.rb
+    - algebra.rb
+
++ ext
+  - table.gnumeric
+
+  + types
+    - double.c
+
+  + objects
+    - double.o
+
+  + struct
+    - vector.h
+
+  + macro
+    - reduce_operator.h
+    - linear_operator.h
+    - loop_template.h
+
+  + bin
+    - libsol.so
+
++ test
+  - test_plus.rb
+  - test_simple.rbc
+  - test_sol.rb
+  - test_simple.rb
