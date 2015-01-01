@@ -1,0 +1,98 @@
+vimcast.org
+
+episode #1
+:so% reload .vimrc
+:set list/nolist show/hide invisible chars
+:set list! toggle showing/hiding
+nmap <leader>l :set list!<CR>
+enter unicode in insert mode: ctrl-v uxxxx
+enter tab in insert mode: ctrl-v ctrl-i
+
+episode #4
+set retab!      change space indentation back into tabs
+:%s/\s\+$//e    eliminate trailing whitespace
+:g/^$/d         eliminate all blank lines
+
+episode #5
+gv              get back last visual selection
+==              autoindent current line
+=               autoindent current selection
+gg=G            autoindent the full file
+vi}             select inside a {} block
+va}             select a {} block
+=i}             autoindent a {} block
+
+plugin to install
+    Tim Pope's commentary
+
+vit             select between > and <, for xml
+C               replace end of line starting from cursor            c$
+S               replace line                                        ^C
+s               replace char                                        cl
+
+;               repeat last f{} search
+,               repeat last f{} search backwards
+&               repeat last substitute
+
+{,}             next,last paragraph
+
+qx{changes}q    sequence of change
+@x              repeat last sequence of change
+
+<C-a>/<C-x>     find next number on line and add/sub 1 to it
+
+K               show man page of word under current cursoor
+J               join current and next line together
+
+operator: to look how to make own operator  -> :h :map-operator
+
+c               change
+d               delete
+y               yank
+g{~/u/U}        change case / lowersase / uppercase
+</>             indent left / right
+=               autoindent
+!               filter
+v               select
+
+motion: to see how to create custom motion -> :H omap-info
+
+l               character
+w               word
+W               until next space ? until current word ?
+p               paragraph
+
+aw              current word
+a               all
+
+f/t             next char, cursor on / cursor off
+F/T             previous char, cursor on / cursor off
+
+
+Insert Mode:
+
+also available in command line mode
+<C-h>           delete back one char
+<C-w>           delete back one word
+<C-u>           delete back entire line
+
+<C-[>           back to Normal mode
+<C-o>           into Insert-Normal mode
+
+<C-r>0          copy yank register
+<C-r>=          copy expression register
+
+
+R               replace mode
+<ins>           toggle insert/replace
+
+
+Visual Mode
+
+v               character-visual mode
+V               line visual mode
+<C-v>           column-visual mode
+gv              last selection
+o               go to other end of selection
+
+xx|             go to column xx
