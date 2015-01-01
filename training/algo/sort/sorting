@@ -1,0 +1,15 @@
+sort
+  comparison
+    ! insertion n**2 / n**2 (in place)
+      ! iterative
+      ! recursive
+      ! stack
+      ! llist
+    merge n log n/ n log n
+      array
+      llist
+    heapsort n log n
+    quicksort n**2 | n log n
+  counting sort (integers in [0,N]) k+n / k+n
+  radix sort (d-digits with k possible vals) d(n+k) / d(n+k)
+  bucket sort (uniform distribution) n**2 / n

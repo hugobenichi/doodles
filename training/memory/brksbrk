@@ -1,0 +1,29 @@
+mmap
+
+    map files or device to physical memory
+    actual read from resource is lazy:
+        first only associate virtual memory
+        load in physical memory on page fault when access
+
+    anonymous mapping: (not POSIX)
+        map vmem to nothing
+        similar to malloc
+
+    file-backed mapping: default mode
+
+    can be shared across a fork
+
+    synchronization with msync for flushing ram content to disk
+
+    can use mmap for IPC (cf shm_open / shm_unlink)
+        shm_open to open file descriptor to "/myregion\0"
+        set size with ftruncate
+        map to vmem with mmap
+
+        can use posix thread synch across process (mutex, cond, sem, lock)
+
+brk / sbrk
+
+    basic memory management system calls
+    control dynamically amount of memory allocated to data segment of process
+

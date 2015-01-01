@@ -1,0 +1,37 @@
+CPUs:
+  branch mispredict     3ns (pipeline depth ?)  # 3 GHz -> 0.3ns -> 9 cycles
+  register access:  1 cycle
+
+L1 cache
+  size          32 kb / core
+  speed         1ns / 1 GHz / 3 cycles
+
+L2 cache
+  size          256 kb / core
+  speed         4ns / 250 MHz / 12 cycles
+
+L3 cache
+  size          ~ 10MB
+  speed         15ns / 66 MHz / 45 cycles
+
+Mutex (un)lock  17ns / 58 MHz
+
+Exchange cache line ?
+
+Main mem ref
+  speed         100ns / 10 MHz
+                            ~ x25 slower than L2, ~ x100 slower than L1
+                            ~ 500 cpu cycles !
+  read 1MB seq  20us
+
+SSD
+  random read:  16us        ~ x160 slower than ram, x250 faster than disk
+  read 1MB seq  300us       ~ x15 slower than ram, x6 faster than disk
+
+Disk
+  disk seek:    4ms         = read 2MB seq, x40000 slower than ram
+  read 1MB seq  2ms         ~ x100 slower than ram
+
+
+1 GB network
+  latency:      200us

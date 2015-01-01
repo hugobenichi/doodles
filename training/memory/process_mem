@@ -1,0 +1,25 @@
+
+process memory layout
+
+    data segment: r/w and ro data + heap
+
+    data
+        portion of process vmem containing global and static variables
+        bss section: globals and statics vars without explicit values
+
+    heap
+        dynamically allocated mem
+        shared by all dynamically loaded modules in a process
+        managed by malloc/free (using brk/sbrk)
+
+    code segment
+        read only 
+
+    stack
+        higher parts of memory
+        stack pointer keeps track of top of the stack
+        stack overflow error if all space consummed
+
+    on x86, stack grows towards 0. 
+        more recent items deeper in call chain are closer to the heap
+

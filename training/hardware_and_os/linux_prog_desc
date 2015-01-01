@@ -1,0 +1,9 @@
+valgrind someprog
+	decompile the binary to IR, let tool modify the IR, recompile to machine code
+	cachegrind look at cache misses
+	
+strace someprog
+	show system calls made by someprog
+	
+ltrace someprog
+  runs someprog and records the dynamic library calls made by someprog

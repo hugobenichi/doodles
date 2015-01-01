@@ -1,0 +1,17 @@
+
+recently accessed elements are quick to access again
+    -> perform better for nonrandom sequence of operations
+
+splaying tree for some node: rearrange tree so that node is at root
+
+    top-down algorithm can do lookup and splaying at the same time
+
+
+average O(log n) for lookup/insert/del
+worst case amortized O(log n) for lookup/insert/del
+
+
+self optimization:
+    frequently accessed nodes will more nearer to the root
+
+persistent data structure underlying possible for functional programming

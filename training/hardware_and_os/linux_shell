@@ -1,0 +1,64 @@
+
+expr / bc
+
+dirname / basename
+
+halt, shutdown, reboot ?
+
+| less
+  scrolling output
+
+head
+  head -50
+
+tail
+  tail -50
+
+grep
+
+  grep -r "nantoka" /path/to/dir
+  grep -r "nantoka" /path/to/dir  #only file name  
+
+  cat /var/log/syslog | grep 'postfix' | grep 'removed' | wc -l
+  grep -c 'postfix' /var/log/syslog
+
+tar
+  tar -cf archive.tar foo bar  # Create archive.tar from files foo and bar.
+  tar -tvf archive.tar         # List all files in archive.tar verbosely.
+  tar -xf archive.tar          # Extract all files from archive.tar.
+
+permissions
+  chmod code file|dir
+  chown user file|dir
+
+sort
+
+ls
+  -a hidden files
+  ls -lt | head                 #10 newest files in the directory
+
+shell execute
+  . .bashrc
+  source nantoka                #execute nantoka in the current shell environment (so keep vars definitions)
+
+shopt
+  shopt login_shell             #check if bash runs in login (~/.bash_profile) or non-login (~/.bashrc)
+
+> 
+  redirect output and rewrite
+  1>&2 #writing to stderr
+  echo "Wrong number of parameters" 2>msg 1>&2 #output to stderr which is redirected to msg
+
+>>
+  redirect output and append
+
+du  #disk usage
+  du | sort -nr           # display list of directories, how much spac ethey consume, from largest to shortest
+
+
+kill 
+  kill -15 then -2, then -1, not -9
+
+exit code
+  echo $?
+  SIGSEGV signal handler which then calls exit normally

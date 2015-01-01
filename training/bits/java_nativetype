@@ -1,0 +1,34 @@
+
+byte (8 bits, signed)
+short (16 bits, signed two's complement)
+int (32 bits, signed)
+long (64 bits, signed)
+
+int literal are type int except if finished with L or l;
+
+float (32 bits IEEE single precision
+double (64 bits IEEE double precision)
+
+float literals are double except if finished with F or f;
+
+boolean true or false
+
+char (16 bit single unicode character) min value of '\u0000' and max of '\uffff'
+
+how to detect overflow in java / c
+
+
+int dec = 26;
+int hex = 0x1a;
+int bin = 0b11010;
+
+in java &, can insert _ in literals to improve readibility
+
+
+im memory representation inside JVM
+
+    32bit stack cell.
+        boolean, byte, short are padded to int
+        double and long takes 2 cells
+
+    arrays of primitives are optimized to take less than 1 cell per element (down to 1 byte)

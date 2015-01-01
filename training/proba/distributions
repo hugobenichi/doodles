@@ -1,0 +1,17 @@
+
+
+exponential (lambda > 0)  W(lambda)
+
+  p(X=x) = lambda exp[ -lambda x]
+  
+  p(X<x) = 1 - exp[ -lambda x]
+
+gamma (lambda > 0, n > 0)   Gamma(n,lambda)
+
+  p(X=x) = lambda (lambda x)^{n-1} exp[ -lambda x]  / Gamma(n)
+  
+  sum_{i=0}^n W_i(lambda) = Gamma(n,lambda)  proof: recurrence + partial integration (convolution)
+  
+  p( X < x ) 
+    = p( sum W_i(lambda) < x ) 
+    = 1 - exp[ -lambda x] sum_{k=0}^n  (lambda x)^k  /k!    proof: recurrence + convolution

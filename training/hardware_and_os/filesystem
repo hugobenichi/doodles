@@ -1,0 +1,81 @@
+software and firmware for abstraction to store retrieve and update a set of files / or ressources
+
+filename
+
+directories / folder
+
+metadata: length, permission, type
+
+virtal file system: abstraction layer on top of another file system
+
+
+from http://linuxgazette.net/105/pitcher.html
+
+unix file 2 part:
+    data part (associated with inode):
+                               .---------------> ! data ! ! data ! etc
+                              /                  +------+ !------+
+        ! permbits, etc ! data addresses !
+        +------------inode---------------+
+
+    filename part (name and associated inode):
+                         .--------------> ! permbits, etc ! addresses !
+                        /                 +---------inode-------------+
+        ! filename ! inode # !
+        +--------------------+
+
+
+POSIX inode description: 
+    attributes: size byte, device / user / group id, file mode, timestamp, link count
+    retrieve info with the stat command
+
+
+hard link: several different filename can reference the same inode
+
+        ! filename ! inode # !
+        +--------------------+
+                        \
+                         >--------------> ! permbits, etc ! addresses !
+                        /                 +---------inode-------------+
+        ! othername ! inode # !
+        +---------------------+
+
+
+
+symbolic link: special filename whose inode is a path poiting to another filename
+
+        ! filename ! inode # !
+        +--------------------+
+                        \
+                         .-------> ! permbits, etc ! addresses !
+                                   +---------inode-------------+
+                                                      /
+                                                     /
+                                                    /
+    .----------------------------------------------'
+   ( 
+    '-->  !"/path/to/some/other/file"! 
+          +---------data-------------+
+                  /                      }
+    .~ ~ ~ ~ ~ ~ ~                       }-- (redirected at open() time)
+   (                                     }
+    '~~> ! filename ! inode # !
+         +--------------------+
+                         \
+                          '------------> ! permbits, etc ! addresses !
+                                         +---------inode-------------+
+                                                            /
+                                                           /
+     .----------------------------------------------------'
+    (
+     '->  ! data !  ! data ! etc.
+          +------+  +------+ 
+
+
+build hardlink and softlink with ln
+
+
+
+
+
+

@@ -1,0 +1,28 @@
+
+
+sets
+  type of operations
+    queries, modifying operations
+
+  searc(S,o), insert(S,o), delete(S,o), min(S), max(S), 
+  next(S,key) -> o with key' following key if key is from a totally ordered set
+
+
+type of sets (dynamic in prog lang not fonctionnal)
+
+  dictionnary
+    insert, remove, include? 
+
+  heap aka priority queues
+
+  stack, queue, llist, rooted tree
+  hash table
+  binary tree
+  red-black trees
+  B-tree
+
+  reverse a llist
+    ! recurrence
+    iterative
+    in_place
+

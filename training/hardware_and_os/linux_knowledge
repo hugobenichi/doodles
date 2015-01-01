@@ -1,0 +1,56 @@
+chroot
+  change the apparent root directory
+  one kernel, several distributions
+
+lxc
+  linux containers
+
+-> virtualization
+
+
+
+learn emacs (lol)
+
+learn more of make, automake, autoconfigure
+
+syslog, xargs, split, rsync, sed
+  find crawl_dir/ -type f -print0 | xargs -n1 -0 -P32 ./process
+  
+  file locking on linux
+    fcntl, flock, lockf
+  
+  upstart to babysit process
+  
+  PostgreSQL
+
+named pipe
+  unix: mkfifo my_pipe mkfifo()
+  
+  pigz parallel GZIP
+  
+  
+  executable format and elf format
+  
+  
+valgrind memory profiler  
+
+
+check yacc language parser generator & lex lexical analyzer generator
+  
+uuencode
+
+command
+	cut & paste
+	
+xmltk
+
+pyxie
+
+	zip (compression + archive)   vs   tar (archive) + gzip (compression)
+		gzip better compression, zip easy to extract 1 file
+		
+inetd superserver which listens on ports and forwards inward connection sockets to handlers
+
+
+
+which true false [ #all programs, true and false change the value of $?

@@ -1,0 +1,32 @@
+sha1
+  US Secure Hash Algorithm 1
+
+greatest common divisor
+
+	imperative
+
+	int gcd(int x, int y) {
+		while( x != y ) {
+		  if (x<y) { y = y-x; } else { x = x-y; } 
+		}
+		return x;
+	}
+
+	recursive way
+
+		gcd :: int -> int ->
+		gcd a b | a == b = a
+		        | a < b = gcd b a
+		        | otherwise = gcd b ( a - b )
+          
+          
+AKS primality test
+
+
+
+sleeve of prime number
+
+
+two's complement
+	bitwise carry addition works with opposite sign numbers automatically
+	can detect overflow error if the first two bits of the carry are different (10 or 01, use a xor)

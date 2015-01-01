@@ -1,0 +1,6 @@
+#include <dlfcn.h>
+
+void* dlopen    (const char*, int flag)
+char* dlerror   (void)
+void* dlsym     (void* handle, const char* symbol)
+int   dlclose   (void* handle)

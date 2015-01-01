@@ -1,0 +1,6 @@
+
+
+Zipian distribution
+  frequency of apparition of worlds in the English language by rank k
+  f = k^{-s} / ( sum_n  n^{-s} ) with k: rank, N: total number of elements, s: exposent
+  hold if p(f) = alpha f^{-1-1/s} power law distribution

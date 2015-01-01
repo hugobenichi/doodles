@@ -1,0 +1,57 @@
+non blocking algorithms:
+
+    threads competing for shared resource do not fall in deadlock because of mutual exclusion
+
+    lock free if guaranteed system-wide progress
+
+    walt free us guaranteed perthread progress
+
+    implementation techniques
+
+        uses atomic read-modify write primitives
+            compare and swap (CAS):
+                compare value in memory to old value,
+                    only if they are the same update to new value
+
+        software transactional memory
+
+        asynchronous programming
+            with shared data structures (stacks, fifo, sets, hash)
+
+        weak data structure without atomic primitives
+
+            single reader single writer ring buffer FIFO
+
+            read-copy update:
+                single writer multiple reader
+
+    lock-based synchronisation
+
+
+properties:
+
+    wait-freedom: strongest non-blocking guarantee of progress
+        gives starvation-freedom
+        guarantees system-wide throughput
+        wait free if every operation time completion is bounded
+
+    lock-freedom
+        allows thread starvation
+        four phases:
+            complete own operation
+            obstructing operation
+            abort obstructing operation
+            waiting
+        contention manager decides when to abort wait or pursue
+
+    obstruction-free
+        weakest non-blocking system
+        obstruction free if at any point a thread can complete in bounded time
+
+
+Lock-Free synchronization:
+
+    asynchronous programming + lockfree primitive like Compare_and_Swap
+
+
+

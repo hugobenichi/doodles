@@ -1,0 +1,28 @@
+
+like a redblack tree with additional rule:
+
+red node can only be left child of parent
+
+therefore need to consider only two shapes
+
+    a           a
+     \           \
+      b           b
+                   \
+                    c
+
+use levelinterger at every node for balancing.
+
+level rules
+
+    level of leaf is 1
+    level of left child is level of parent - 1
+    level of right child is = parent or = parent - 1
+    level of right granchild is strictly less than grandparent
+    every node with level > 1 has two children
+
+
+compared to redblack
+    more rotation but simpler algorithm
+    similar performances
+    AA trees are flatter -> slightly faster time

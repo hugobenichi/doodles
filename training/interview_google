@@ -1,0 +1,34 @@
+interview 1 zac:
+  talk about phd topics, background
+  find the n most common words in a file
+    what if the amount of data to crawl is gigantic, how would you shard this on
+    different machine.
+  explain complexity of a hashmap and tradeoff with treemap
+  map with cities and labels on cities, heuristic to decide to draw the labels
+    or not. Calculate the total area taken by the labels.
+
+interview 2 rubix cube geek guy:
+  reexplain the labels on map thing
+  graph of friends to friends, write a function that tells if two people are
+    connected through a chain of common friends
+  write an api for rubix cube.
+
+interview 3 search short guy:
+  millions of documents, eliminates all strictly identical documents,
+    heuristic to eliminate very likely documents.
+  explain what is a set, and what possible implementation
+  count the number of possible shapes for a binary tree of n nodes
+
+interview 4 cycliste du tour de france:
+  talk a bit about phd subject
+  given a list of (double,double) tuples of coordinates, set up data structure
+  to find the closest existing (double,double) in the list
+    solve with kd-tree, but directly hashing into a sparse array may be better ?
+  how would you design a search suggestion systems, caching, and so on.
+
+interview 5 search shy girl:
+  stream of int, keep the last n ints in the stream, find the max int
+    how to test this function
+  list of words in a document, find the smallest range that contains all docs
+    first solve with 2 words
+    then solve with n words

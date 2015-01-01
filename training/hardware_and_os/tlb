@@ -1,0 +1,22 @@
+TLB shootdown
+
+    action of one processor causing the TLBs to be flushed on other processors
+
+    TLB translation lookaside buffer
+        hardware cache of the virtual memory table of addresses to physical mem
+        accelarates memory addresses lookup
+
+    shared memory between processor
+    one processor lock a page of shared memory
+        -> all processors have to flush their TLBs
+
+    when a processor changes virtual to physical mapping, the other processors
+    needs to invalidate their mapping in their TLB cache.
+        1) processor #1 performs the change
+        2) flags shootdown request
+        3) triggers Inter-Processor Interrupt (IPI) to other procs
+
+    TLB rebuilt is cost-effective is amortized over time
+        -> frequent TLB makes virtual memory to perform poorly
+
+

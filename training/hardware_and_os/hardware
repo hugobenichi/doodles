@@ -1,0 +1,103 @@
+
+
+designs
+
+  instruction: opcode + operands
+    operand: registers, value son stack, memory values, I/O ports
+    
+  addressing modes
+
+  Harvard memory model
+    instruction stream and data stream seperate (seperate cache)
+      pure: seperate address space
+      modified: one underlying address space
+    
+  von Neumann architecture
+    keep dada and program in a single read-write RAM
+  
+  register windows
+    used to optimize procedure calls
+    register window overflow
+
+  RISC reduced instruction set computing
+    ARM, SPARC
+    reduced == work per instruction is low
+    seperate instructions for I/O and data processing
+    lower transistor in core logic
+    optimization
+      opcode same bit positions for every instructions
+      simple addressing (complex addressing through arithmetic & load/store)
+      few hardware data type
+    lower consumption
+    
+  CISC complex instruction set computing
+    single instruction can execute several low-level operation
+    multistep addressing modes in a single instructions
+    complex instructions, smaller programs, save in storage
+    
+  superscalar
+    manipulate/transform several data in one clock cycle
+
+existing architecture
+    
+  x86
+    CPUID additional opcodes set, 
+      implicitly use the EAX register
+      learn about the cpu hardware
+  
+  x86-64 extension of 32bits x86 to 64 bits by AMD
+  itanium (64bits)
+  amd64
+  
+  sparc (Scalable Processor Architecture)
+    risk
+    160 general purpose register / 32 software available 24 stack + 7 global + 0
+    stack registers cut in windows with 8 local and 8 shared before and 8 shared after
+    number of windows can scale
+    
+  arm (advanced risk machine)
+    32-bit instruction sets
+    architecture can be liscenced (tegra, nitendo ds, lego mindstorm)
+    CPU modes (events/interrupts/programmatically)
+    conditional execution
+    add-shift wrap
+    leaf function calls optimization
+  
+  microblaze / softCPU for xilinx fpga
+    many features can be configured (cache size, pipeline depth, bus interface, ...)
+    gnu toolchain
+
+  tegra
+    motherboard-like "system on a chip"
+      ARM core
+      GPU
+      north/south bridge chips
+      memory controller
+    
+data
+
+  big endian / msb first
+    sparc up to 9
+
+  little endian / lsb first
+    x86, x86-64
+    
+  bi-endian 
+    sparc v9+
+    arm 3+
+    power-pc
+    
+other hardware
+
+  mother board
+  
+    north bridge/south bridge
+      north handles communication between CPU to RAM/AGP/PCI express/South Bridge
+      south handles PCI/USB/BIOS/Legacy to North
+      now memory controller into the CPU die
+      north base frequency controls CPU frequency
+      
+      
+      
+      
+

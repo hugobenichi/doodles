@@ -1,0 +1,40 @@
+
+virtual mem
+
+    memory management for multitasking kernel
+    
+    virtualize memory ressource
+        processes see only one kind of continuous memory
+        
+        each process has own address space (overlay dealt by os)
+
+
+implementation
+
+    divide virtual address space into pages
+
+    page table
+        translate process virtual address to physical address
+        used by memory management unit (hardware)
+
+page fault exception
+
+    hardware cannot find real address from virtual address in page table
+    os paging supervisor find/alloc page
+    minor page fault:
+        page physically loaded but not market
+        just update page table and resume
+        shared pages or secondary page caching mech
+    major page fault:
+        (not loaded in physical memory)
+        free used page
+    if illegal access 
+        -> seg fault
+        -> bus error
+        -> core dump
+
+deman paging
+
+    os first only create vmem page, no entries in vmem table
+    lazy read into physical mem
+    os copies disk page to physical memory only when page faul exception

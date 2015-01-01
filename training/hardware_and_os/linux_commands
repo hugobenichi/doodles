@@ -1,0 +1,39 @@
+
+cmp     # compare file bytes by bytes
+
+sed
+  's/day/night/' < input > output
+  's/day/night/g' < input > output
+  \( \) + \1
+
+awk
+
+
+find
+  find file by name, owner, group, type, permissions, date, ...
+  
+locate
+  locate file dir
+  locate -n 15 file
+  locate -i (case sensitive)
+
+xargs
+
+
+strings     # prints the strings of printable characters in files
+
+vis         # converts character to visual representatils (space, tab, \n, ...)
+
+split
+  break files in pieces according to linesize
+
+csplit  
+  break files in pieces according to criteria
+  
+  
+readelf
+dumpelf, objdump
+file
+
+
+expand / unexpand                                converts tabs to/from space

@@ -1,0 +1,27 @@
+
+height difference of left and right subtrees of any node is 0 or 1
+
+O(log n) worst case lookup/insert/delete
+O(n) space for nodes + O(n) for balance factor
+
+insertion and deletion requires tree rotation
+
+next and previous node lookup in amortized constant time
+
+
+
+
+each node stores the a balance factor = height(left-subtree) - (right-subtree)
+
+balance factor can be update after insertion and deletion
+
+if balance factor is not {-1,0,+1}, do tree rotation to rebalance
+
+    rebalance after insertion
+
+        left left -> one right rotation
+        right right -> one left rotation
+
+        left right -> one left rotation -> case left left
+
+        right left -> one right rotation -> case right right

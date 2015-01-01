@@ -1,0 +1,172 @@
+interview check list
+
+
+I) about phone interview:
+
+
+phone interview antipattern:
+    candidate does most of the talking
+    one-trick ponies only know one trick
+
+5 universal, quick, predictive tests for phone interview:
+
+    a) simple coding with correct syntax in C, C++, Java
+    b) OO design, basic OO concepts, model problem with classes
+    c) scripting and regexes, find phone numbers in 50000 HTML pages
+    d) data structure, knowledge of the most common
+    d) bits and bytes
+
+    a) includes:
+        is simple and you solved it,
+        has loops or recursion,
+        has formatted output,
+        has text-file I/O
+
+    b) non-comprehensive list of items
+
+        terminology and concept
+            ok class, object
+            ok instantiation
+            ok method (as opposed to, say, a C function)
+            ok virtual method, pure virtual method
+            ok class/static method
+            ok static/class initializer
+            ok constructor
+            ok destructor/finalizer
+            ok superclass or base class
+            ok subclass or derived class
+            ok inheritance
+            ok encapsulation
+            multiple inheritance (and give an example)
+            ok delegation/forwarding
+            composition/aggregation
+            ok abstract class
+            ok interface/protocol (and different from abstract class)
+            ok method overriding
+            ok method overloading (and difference from overriding)
+            polymorphism (without resorting to examples)
+            is-a versus has-a relationships (with examples)
+            ok method signatures (what's included in one)
+            ok method visibility (e.g. public/private/other)
+
+        OO design
+            What classes they would define.
+            What methods go in each class (including signatures).
+            What the class constructors are responsible for.
+            What data structures the class will have to maintain.
+            Whether any Design Patterns are applicable to this problem.
+
+        Problem examples
+            Design a deck of cards that can be used for different card game applications.
+            Model the Animal kingdom as a class system, for use in a Virtual Zoo program.
+            Create a class design to represent a filesystem.
+            Design an OO representation to model HTML.
+            Design a parking garage.
+            Design a bank of elevators in a skyscraper.
+            Model the monorail system at Disney World.
+            Design a restaurant-reservation system.
+            Design a hotel room-reservation system.
+
+    c) scripting and regular expression
+
+        scan 50k html files in a directory tree and list files with contains format xxx-xxxx
+
+        reformat parentheses to exactly " ( " and " ) " in source code file
+
+    d) understanding of common data structure and fundamentals of big-O
+
+        know about insert / delete / access in java.util data structures
+
+        the no knowledge no-go list
+            native arrays
+            vectors and arraylist
+            linkedlist
+            hastable
+            trees
+            graph
+
+        what you use them for (real-life examples)
+        why you prefer them for those examples
+        operations they provide and bigO perf
+        how to traverse them
+        at least one typical implementation
+
+        diff between abstract type such as stack, map, list, set and concrete struct
+        such as single linked-list or hashtable, and possible implementation
+
+    e) bits and bytes
+
+        questions:
+            Tell me how to test whether the high-order bit is set in a byte.
+            Write a function to count all the bits in an int value; e.g. the function with the signature int countBits(int x)
+            Describe a function that takes an int value, and returns true if the bit pattern of that int value is the same if you reverse it (i.e. it's a palindrome); i.e. boolean isPalindrome(int x)
+
+
+
+II) about on-site interview
+
+
+warmups
+
+    long term warmup: study practice for 1~2 weeks before int
+        study data-structure and algorithm books
+            Steven Skiena's The Algorithm Design Manual
+            Introduction to Algorithms
+        friend interview
+
+    short term warmup: rest day before + 
+
+
+mental prep
+    humble, open-minded, and focused.
+    don't change subject, don't divert, don't bluff
+    propose to write code, ask about syntax care or not ?
+    ask clarifying questions, verify occasionally good track or not
+    bring own whiteboard dry-erase marker, don't let marker dry out
+
+
+more on data structures
+
+    hashtable: know how to implement with arrays
+
+    trees:
+        basic tree construction, traversal, manipulation
+        DFS, BFS, inorder, postorder, preorder traversal
+        know about binary trees, n-ary trees, trie-trees
+        flavor of balanced trees, red/black tree, splay tree, AVL trees
+
+    graphs
+        memory representation: pros and cons, implementation
+            object and pointers,
+            matrix,
+            adjacency list
+        DFS and BFS traversal complexity, tradeoff
+        study Dijkstra and A*
+
+
+II) interview requirement
+
+
+list of NP problems
+
+discrete math: combinatoric and probability
+
+
+III) The Joel Test: 12 Steps to Better Code
+
+Do you use source control?
+Can you make a build in one step?
+Do you make daily builds?
+Do you have a bug database?
+Do you fix bugs before writing new code?
+Do you have an up-to-date schedule?
+Do you have a spec?
+Do programmers have quiet working conditions?
+Do you use the best tools money can buy?
+Do you have testers?
+Do new candidates write code during their interview?
+Do you do hallway usability testing?
+
+
+
+

@@ -1,0 +1,49 @@
+balancing by painting each node red or black (2 colors)
+
+not perfect but good enought for worstcase O(log n) lookup/insert/del
+
+space O(n) for nodes
+
+rules:
+    node is red or black
+    root is black
+    all leaves (nil) are black
+    left and right children or red nodes are black
+    every path from one node to any leaf contains as many black nodes
+        therefore
+            path from root to furthest leaf
+            no more than twice
+            path from root to closest leaf
+
+
+agsint AVL:  less strict balancing
+    RB tree faster update operations because less rebalancing
+    AVL faster lookup because more strict balancing and flatter
+
+
+
+
+for balancing
+
+    needs to consider 7 shapes
+
+    a      a    a    a      a      a   a
+     \    /    / \    \    /      /     \
+      b  b    b   c    b  b      b       b
+                      /    \    /         \
+                     c      c  c           c
+
+    max 2 rotations for rebalancing after insertion + O(log n) recoloring
+    max 3 rotations for rebalancing after deletion + O(log n) recoloring
+
+
+insertion:  insert node and paint it red
+
+    case 1: inserted node is root -> repaint black, does not change path properties
+
+    case 2: inserted node parent is black -> nothing to do, path property preserved
+
+    case 3: 
+
+
+

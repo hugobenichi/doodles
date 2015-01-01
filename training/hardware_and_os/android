@@ -1,0 +1,55 @@
+
+
+Android software stack
+
+  0 Linux Kernel 2.6+ and 3.+ since ICS 4.0
+    device, memory, process, networking management
+  1 Android native libraries C/C++ (call through Java)
+    2d, 3d lib, sql, surface manager
+  2 Android runtime
+    Dalvik VM
+    Java core libraries
+  3 Application Framework Toolkit
+    activity manager, window manager, etc...
+  4 Application
+
+Dalvik
+
+  traditional jvm stack machine
+    while(true) {
+      char c = fetch_and_decode();
+      switch (c)
+      {
+        case '#': doPush(getNumber());  break;
+        case '+': doAdd();              break;
+        case '-': doSub();              break;
+        ...
+      }
+    }
+
+  dalvik register machine
+    all temp val in registers
+    implicit invocation stack
+    custom instruction set (optimized for less instructions, higher sementic density)
+    no compression of dex files
+
+  example
+    System.out.println("hello");
+      JVM ->  getstatic java.lang.System.out Ljava/io/printstream
+              ldc "hello"
+              invoke java/io/printstream/println(L...;)V
+              return
+      DEX ->  sget-object v0, java.lang.System.out Ljava/io/PrintStream;
+              const-string v1, "hello"
+              invoke-virtual {v0, v1}, java/io/PrintStream/println(L...;)V
+              return-void
+
+SDK
+  install
+  run emulator
+  make helloworld app
+  Android Debug Bridge (adb)
+
+learn about the graphics stacks
+
+
