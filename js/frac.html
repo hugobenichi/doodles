@@ -1,0 +1,233 @@
+<header>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+  <script src='geom.js'></script>
+</header>
+<body>
+  <canvas id='cnv' width='400px' height='400px'>
+
+<script>
+
+var allocd = 0;
+var free = 0;
+var borrowed = 0;
+var released = 0;
+var head = undefined;
+
+var release = function(n) {
+  if (!n) {
+    return;
+  }
+  released++;
+  n.next = head;
+  head = n;
+  free++;
+};
+
+var borrow = function() {
+  borrowed++;
+  if (!head) {
+    head = {x: 0, y: 0};
+    allocd++;
+    free++;
+  }
+  var picked = head;
+  head = head.next;
+  free--;
+  return picked;
+};
+
+var memstats = function() {
+  return {
+    free:     free,
+    allocd:   allocd,
+    borrowed: borrowed,
+    released: released
+  };
+};
+
+var draw = function(node, ctx) {
+  ctx.beginPath();
+  ctx.moveTo(node.x, node.y);
+  while (node.next) {
+    node = node.next;
+    ctx.lineTo(node.x, node.y);
+  }
+  ctx.stroke();
+};
+
+// return a new Node with no next
+var node = function(x,y) {
+  var n = borrow();
+  n.x = x;
+  n.y = y;
+  n.next = undefined;
+  return n;
+};
+
+// link nb as 'next' to node na. everything that comes after na is lost
+var link = function(na, nb) {
+  na.next = nb;
+  return na;
+};
+
+// insert list starting at nb just after na. all nodes after na get appened to
+// the end of nb.
+var insert = function(na, nb) {
+  var tail = na.next;
+  na.next = nb;
+  var end = nb;
+  while (end.next) {
+    end = end.next;
+  }
+  end.next = tail;
+  return na;
+};
+
+var fracIt = function(n) {
+  var nxt = n.next;
+  var x = nxt.x - n.x;
+  var y = nxt.y - n.y;
+  var a = node(n.x + x/3, n.y + y/3);
+  var c = node(n.x + 2*x/3, n.y + 2*y/3);
+  var b = equi(a,c);
+  return link(n, link(a, link(b, link(c, nxt))));
+};
+
+var fracAll = function(n) {
+  var first = n;
+  var nxt = n.next;
+  while (nxt) {
+    fracIt(n);
+    n = nxt;
+    nxt = nxt.next;
+  }
+  return first;
+};
+
+var fractr = function(d) {
+  return function(n) {
+    while(n.next) {
+      while(dist(n,n.next) > d) {
+        fracIt(n);
+      }
+      n = n.next;
+    }
+  };
+};
+
+var drophead = function(n) {
+  if (!n) {
+    return n;
+  }
+  while (!visible(n.next)) {
+    var nxt = n.next;
+    release(n);
+    n = nxt;
+  }
+  return n;
+};
+
+var findlast = function(n) {
+  if (!n) {
+    return n;
+  }
+  while (visible(n.next)) {
+    n = n.next;
+  }
+  return n.next;
+};
+
+var droptail = function(n) {
+  if (!n) {
+    return;
+  }
+  var last = n;
+  n = last.next;
+  last.next = undefined;
+  while (n) {
+    var a = n.next;
+    release(n);
+    n = a;
+  }
+}
+
+var drop = function(n) {
+  var first = drophead(n);
+  if (first) {
+    var last = first;
+    for (i = 0; i < borrowed/2; i++) {
+      if (last) {
+        last = last.next;
+      }
+    }
+  }
+  return first;
+};
+
+var lolim = -50;
+var hilim = 450;
+var visible = function(n) {
+  return n && lolim <= n.x && n.x < hilim && lolim <= n.y && n.y < hilim;
+};
+
+var main = function() {
+
+  var cnv = document.getElementById('cnv');
+  var ctx = cnv.getContext('2d');
+
+/*
+  // snowflake
+  var a = node(100, 250);
+  var c = node(300, 250);
+  var b = equi(a,c);
+  var d = node(100, 250);
+  var line = link(a, link(b, link(c, d)));
+*/
+
+  var half1 = link(node(400,0), node(0,400));
+  fracAll(half1);
+
+  var center = half1.next.next;
+  var n4 = center.next;
+  var n5 = center.next.next;
+  center.next = undefined;
+  n4.next = undefined;
+  n5.next = undefined;
+
+  var half2 = link(n5, link(n4, node(center.x, center.y)));
+
+  var sclr = scaler(node(center.x,center.y), 1.2);
+  var frtr = fractr(5);
+
+  var redraw = function() {
+/*
+    scaleAll(sclr, line);
+    line = drop(line);
+    theline = line;
+    frtr(line);
+    ctx.clearRect(0,0,400,400);
+    draw(line, ctx);
+*/
+    scaleAll(sclr, half1);
+    scaleAll(sclr, half2);
+    half1 = drop(half1);
+    half2 = drop(half2);
+    frtr(half1);
+    frtr(half2);
+    ctx.clearRect(0,0,400,400);
+    draw(half1, ctx);
+    draw(half2, ctx);
+  };
+
+  redraw();
+  cnv.addEventListener('click', redraw);
+};
+
+main();
+
+</script>
+</body>

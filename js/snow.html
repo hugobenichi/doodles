@@ -1,0 +1,82 @@
+<html>
+  <style>
+    .box {
+      width: 1200px;
+      height: 600px;
+      background-color: black;
+      border: solid 2px gray;
+    }
+
+    .flake {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(white, rgba(0,0,0,0), rgba(0,0,0,0));
+    }
+  </style>
+  <body>
+    <div id='box' class='box'>
+
+    </div>
+  </body>
+  <script>
+
+    var trajectory = function(origin) {
+      var traj_x = function(time) {
+        return origin.x0 + origin.amplitude * Math.sin(origin.omega * time);
+      };
+      var traj_y = function(time) {
+        return origin.y0 + origin.speed * time;
+      }
+      return {x: traj_x, y: traj_y};
+    };
+
+    var updater = function(flake, trajectory) {
+      var origin = (new Date()).getTime();
+      return function(t) {
+        var time = (new Date()).getTime() - origin;
+        flake.style.left = trajectory.x(time);
+        flake.style.top = trajectory.y(time);
+      };
+    };
+
+    var randOrigin = function() {
+      var s = Math.random() / 10;
+      return {
+        x0: Math.floor(Math.random() * 1200),
+        y0: 0,
+        speed: s,
+        amplitude: 40 * s,
+        omega: 0.002
+      };
+    };
+
+    var newFlake = function() {
+      var flake = document.createElement('div');
+      flake.className = 'flake';
+      flake.style.top = 0 + 'px';
+      flake.style.left = 200 + 'px';
+
+      var origin = randOrigin();
+      var traj = trajectory(origin);
+  var s = origin.speed;
+  flake.style.width = Math.floor(s * 300) + 'px';
+  flake.style.height = Math.floor(s * 300) + 'px';
+      return {flake: flake, update: updater(flake, traj) };
+    };
+
+    var main = function() {
+      var box = document.getElementById('box');
+
+      var attachFlake = function() {
+        var flakeInfo = newFlake();
+        box.appendChild(flakeInfo.flake);
+        window.setInterval(flakeInfo.update, 30);
+      };
+
+      window.setInterval(attachFlake, 100);
+    };
+
+    main();
+  </script>
+</html>

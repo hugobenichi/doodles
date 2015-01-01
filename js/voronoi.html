@@ -1,0 +1,173 @@
+<header>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+</header>
+<body>
+  <canvas id='cnv' width='400px' height='400px'>
+
+<script>
+
+
+/******************************************************************************/
+//  constants
+
+
+  // corners
+  var TL = {x:   0, y:   0};
+  var TR = {x: 400, y:   0};
+  var BL = {x:   0, y: 400};
+  var BR = {x: 400, y: 400};
+
+
+/******************************************************************************/
+//  geometry
+
+
+  var randI = function () {
+    return Math.floor(Math.random()*401);
+  };
+
+  var P = function (x, y) { return {x: x, y: y}; };
+
+  var randP = function () { return P(randI(), randI()); };
+
+  var mid = function (a,b) { return P((a.x + b.x)/2, (a.y + b.y)/2); };
+
+  var dist = function (a,b) {
+    var dx = a.x - b.x;
+    var dy = a.y - b.y;
+    return Math.sqrt(dx*dx + dy*dy);
+  };
+
+  // returns closest point to a between b and c
+  var closer = function (a, b, c) {
+    return (dist(a, b) < dist(a, c)) ? b : c;
+  };
+
+  var unitV = function (a,b) {
+    var dx = a.x - b.x;
+    var dy = a.y - b.y;
+    var u = Math.sqrt(dx*dx + dy*dy);
+    return {x: dx / u, y: dy / u};
+  };
+
+  var orthV = function (v) {
+    return {x: v.y, y: -v.x};
+  };
+
+  // returns the point on the input line = (point, vec) with given x coord.
+  var pointAtX = function (a, v, x) {
+    return P(x, a.y + (x - a.x) * v.y / v.x);
+  };
+
+  // returns the point on the input line = (point, vec) with given x coord.
+  var pointAtY = function (a, v, y) {
+    return P(a.x + (y - a.y) * v.x / v.y, y);
+  };
+
+  // returns intersections of input line = (point,vec) with the canvas borders.
+  var borders = function (a,v) {
+    // deal with horz and vert lines first
+    if (v.x === 0) {
+      return [P(a.x, 0), P(a.x, 400)];
+    }
+
+    if (v.y === 0) {
+      return [P(0, a.y), P(400, a.y)];
+    }
+
+    var b1 = closer(a, pointAtX(a,v,0), pointAtY(a,v,0));
+    var b2 = closer(a, pointAtX(a,v,400), pointAtY(a,v,400));
+
+    return [b1, b2];
+  };
+
+
+/******************************************************************************/
+//  drawing
+
+
+  var drawP = function (ctx,a) {
+    ctx.beginPath();
+    ctx.arc(a.x, a.y, 2, 0, 2 * Math.PI, false);
+    ctx.stroke();
+  };
+
+  var drawPoly = function (ctx,points) {
+    if (points.length === 0) { return; }
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (i = 1; i < points.length; i++) {
+      var p = points[i];
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+  };
+
+  var drawS = function (ctx,a,b) {
+    drawPoly(ctx,[a,b]);
+  };
+
+  var drawL = function (ctx,a,v) {
+    var from = {x: a.x - 1000 * v.x, y: a.y - 1000 * v.y};
+    var to = {x: a.x + 1000 * v.x, y: a.y + 1000 * v.y};
+    drawS(ctx,from,to);
+  };
+
+  var drawMed = function (ctx,a,b) {
+    var m = mid(a,b);
+    var u = orthV(unitV(a,b));
+    drawP(ctx, m);
+    var bds = borders(m,u);
+    drawP(ctx, bds[0], bds[1]);
+    drawL(ctx,m,u);
+  };
+
+
+/******************************************************************************/
+//  script
+
+
+var main = function() {
+
+  // context
+  var cnv = document.getElementById('cnv');
+  var ctx = cnv.getContext('2d');
+
+  var a = randP();
+  var b = randP();
+  drawP(ctx,a);
+  drawP(ctx,b);
+  drawMed(ctx,a,b);
+
+  //drawP(ctx, randP());
+
+  /*
+  var points = [];
+  for (i = 0; i < 3; i++) {
+    points.push(randP());
+    drawP(ctx,points[i]);
+    for (j = 0; j < i; j++) {
+      drawMed(ctx,points[i], points[j]);
+    }
+  }
+  */
+
+  var pnts = [
+    P(20, 220),
+    P(40, 300),
+    P(140, 270),
+    P(140, 120),
+    P(20, 220)
+  ];
+
+  drawPoly(ctx, pnts);
+
+};
+
+main();
+</script>
+</body>
