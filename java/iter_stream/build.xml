@@ -1,0 +1,57 @@
+<project>
+
+    <property name="project"    value="streams"/>
+
+    <property name="src.dir"    value="src"/>
+    <property name="build.dir"  value="build"/>
+    <property name="class.dir"  value="${build.dir}/classes"/>
+
+    <property name="jar.dir"    value="${build.dir}/jar"/>
+    <property name="jar.jar"    value="${jar.dir}/${project}.jar"/>
+    <property name="jdoc.dir"   value="jdoc"/>
+
+    <property name="tests"      value="TestStreamPackage"/>
+    <property name="examples"   value="All"/>
+    <property name="class.main" value="${examples}"/>
+
+
+    <target name="clean">
+        <delete dir="${jdoc.dir}"/>
+        <delete dir="${build.dir}"/>
+    </target>
+
+
+    <target name="jdoc">
+        <javadoc    destdir="${jdoc.dir}"
+                    sourcepath="${src.dir}"
+                    packagenames="${project}"
+                    windowtitle="Streams"
+                    author="true"
+                    version="true">
+        </javadoc>
+    </target>
+
+
+    <target name="compile">
+        <mkdir dir="${class.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${class.dir}" includeantruntime="false"/>
+    </target>
+
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.jar}" basedir="${class.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${class.main}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="example" depends="compile">
+        <java classname="${examples}" dir="${build.dir}/classes" fork="true"/>
+    </target>
+
+    <target name="clean-build"   depends="clean,jar"/>
+    <target name="clean-example"     depends="clean,example"/>
+
+</project>
