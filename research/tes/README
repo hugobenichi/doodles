@@ -1,0 +1,55 @@
+=========
+TES analysis
+=========
+
+This python package is a collection of scripts for analysis of time waveforms produced by photon number resolving transition edge detectors. However, if you have any interest in this package's routines, you can easily adapt them to your application and data.
+
+Package features
+=========
+
+* binary input data read, output textual data writes and graph plotting using matplotlib.
+
+* waveform average and waveform stack traces
+
+* waveform linear filtering with numpy.fft
+
+* fft spectrum computation
+
+Package organization
+=========
+
+* ./tes/waveform.py
+    binary input reader
+    waveform average computation 
+    stacked trace computation 
+    power spectrum computation
+    generation of time and frequency domain axis points
+
+* ./tes/plot.py
+    waveform plotting
+    fft spectrum plotting
+    histogram plotting
+    trace image plotting
+
+* ./tes/filter.py
+    currently very crude linear filtering
+    arbitrary filtering (must compute your own filter coefficients)
+
+* ./spectrum.py
+    a script which computes the average waveform, stacked trace image and fft
+    power spectrum
+
+* ./wfm_filter.py
+    apply some filter to the waveform and looks at the average and stacked
+    trace image
+
+All the modules are written for python3. Using the plotting functions will require to compile matplotlib from the github head available at https://github.com/matplotlib/matplotlib
+
+
+Other info
+=========
+
+author      hugo benichi
+email       hugo[dot]benichi[at]m4x[dot]com
+copyright   hugo benichi 2012
+creation    2012/10/26
