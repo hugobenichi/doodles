@@ -1,0 +1,83 @@
+-- idea behind Lisp ------------------------------------------------------------
+
+So we ve got basic Value types, with Atoms, Ints and Functions. We ve got also
+Exp to represent the abstract syntax tree. Each Exp can be evaluated into a Val.
+
+We saw that Val is a natural subtype of Exp, since a Val be evaluated to itself
+for instance. Although in the case of Atom, we gave Evaluation a different
+meaning, and in the case of Function, we gave Evaluation the meaning of Binding
+the Function to the Environment into a Closure.
+
+Now, what if we made Exp a subtype of Vals ? That is the basic of Lisp idea
+of having code as data, and data as code. In other words, if Val is a subtype of
+Exp, and Exp is a subtype of Val, then Val and Exp are the same thing !
+
+So, we know how to represent data as code, how can we represent code as data.
+Let's look at S expressions.
+
+-- value representations -------------------------------------------------------
+
+to get a lisp like interpreter, we need to wrap values and expression, so that
+eval become a function of exp to exp
+
+the base is made of three things (in ML notation)
+Exp = Atom of string
+    | Num of int  // simply an optimisation
+    | List of (Exp, *List) // where * means pointer
+
+composite types:
+
+a function is a List of shape (env names body)
+  where env is the closure environment, names is a list of atoms, and body is
+  an arbitrary Exp
+
+an env is a List of shape (atoms values) where atoms is a list of atoms, and
+values is a list of Exp with the same length as atoms
+
+a call is simply a list that is evaluated
+
+-- adding closures -------------------------------------------------------------
+
+to add closures, we need a way to carry the bindings used in a function body
+from the scope where the function is declared to any place where it is called.
+
+because the environment is implemented as a mutable map of stacks, it is
+unfortunately not as easy as keeping a reference to the set of binding at
+function body declaration site.
+
+with our current interpreter, there are 3 ways that one can think of naturally
+to walk around this problem and get closures:
+1) copy the whole environment at function declaration and associate it to the
+function value. Most simple and easy to implement, but terrible performances.
+Memory and runtime complexity are both O(N) where N is the number of different
+bindings at function declaration site.
+2) inspect the function declaration and extract all Var expressions, then recopy
+only the Var expressions found in this process from the binding environement at
+function declaration body. Much better performances, we know have O(M) space
+complexity where M is the number of used bindings in the closure from the
+environement, and O(K) runtime complexity where K is the size of the function
+expression in term of nodes, with the relation that M <= K.
+3) Turn the environement into an immutable data structure using structural
+sharing, so that we can actually simply save a pointer to the local binding
+when a function is declared. This will give us a O(1) runtime and space complexity
+with the caveeats that there is a potential memory leak if we keep the function
+value around a long time, and inderectly keep a pointer to the closure environment
+that could itself holds lots of stuff. We re going to ignore this for now.
+
+Two reasons to choose solution #3. First, this series of post is "functional-oriented"
+and tries to avoid mutation, so it feels more aligned. Second, it will help us
+consolidate the "runtime". Right now we don't have any intrinsic functions except
+for plus and multiply. Eventually we will want to have a bunch of basic standard
+functions, and the environment is the natural place to put them. In the immutable
+data structur solution, we don't pay a price for this and we keep reusing the
+same values in memory for these standard functions.
+
+How to implement this. It is possible to have immutable hash maps with structural
+sharing that have a bounded number of steps until values access. Here we re going
+to use a much simpler solution and simply have what is essentially a linked list
+of (atom, value) tuples. I know, horrible lookup complexity, but that will do
+for now. For a map with strings for keys, a better implementation would be a
+sorted tree map, or even a trie for much more shallow tree. Tradeoff is between
+puts and gets: on paper a tree map has potentially better sharing and faster
+puts with leaner nodes, and a trie has fatter nodes but less steps down to the
+leaves
