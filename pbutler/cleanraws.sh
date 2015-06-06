@@ -13,4 +13,4 @@ function has_jpg {
   done
 }
 
-find $targ/raw -type f | has_jpg | xargs -n 1 rm
+find $targ/raw -name *$rawe -type f | has_jpg | xargs -n 1 rm
