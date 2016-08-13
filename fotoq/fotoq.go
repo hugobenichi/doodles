@@ -2,6 +2,7 @@ package main
 
 import (
 	"./importing"
+	"./selecting"
 )
 
 func main() {
@@ -11,6 +12,9 @@ func main() {
 
 	c := cfg[env]
 	c.Do(cmd)
+
+	c2 := selecting.Config{}
+	c2.Do(selecting.Diff)
 }
 
 var (
