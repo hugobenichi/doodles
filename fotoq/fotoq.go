@@ -13,7 +13,6 @@ import (
 	status:
 		list, scan, copy works
 	next steps
-		introduce Cmd enum for list, scan, copy
 		add timezone shift in Config
 		create test populating function,
 			how to exercice different modtime ?
@@ -22,46 +21,74 @@ import (
 */
 
 func main() {
-	//c := prod_cfg
-	c := test_cfg
+	env := "test"
+	//env := "prod"
+	cmd := Scan // Copy
 
-	//c.cmd_list()
-	c.cmd_scan()
-	//c.cmd_copy()
-}
-
-type Config struct {
-	source_root  string
-	staging_root string
-	exts         []string
-	dir_of_ext   map[string]string
+	c := cfg[env]
+	c.Do(cmd)
 }
 
 var (
-	test_cfg = Config{
-		source_root:  "/tmp/fotoq/test/in",
-		staging_root: "/tmp/fotoq/test/out",
-		exts: []string{
-			"JPG",
-			"RAF",
+	cfg = map[string]Config{
+		"test": {
+			Source: "/tmp/fotoq/test/in",
+			Output: "/tmp/fotoq/test/out",
+			Exts: []string{
+				"JPG",
+				"RAF",
+			},
+			DirOfExt: map[string]string{
+				"RAF": "/raw",
+			},
 		},
-		dir_of_ext: map[string]string{
-			"RAF": "/raw",
-		},
-	}
-
-	prod_cfg = Config{
-		source_root:  "/Volumes/Untitled/DCIM/",
-		staging_root: "/Users/hugobenichi/Desktop/photos/staging",
-		exts: []string{
-			"JPG",
-			"RAF",
-		},
-		dir_of_ext: map[string]string{
-			"RAF": "/raw",
+		"prod": {
+			Source: "/Volumes/Untitled/DCIM/",
+			Output: "/Users/hugobenichi/Desktop/photos/staging",
+			Exts: []string{
+				"JPG",
+				"RAF",
+			},
+			DirOfExt: map[string]string{
+				"RAF": "/raw",
+			},
 		},
 	}
 )
+
+type Config struct {
+	Source   string
+	Output   string
+	Exts     []string
+	DirOfExt map[string]string
+}
+
+type ItemInfo struct {
+	item    string
+	ext     string
+	staging string
+	modtime time.Time
+}
+
+type Cmd string
+
+// TODO: change to enum
+var (
+	List = Cmd("list")
+	Scan = Cmd("scan")
+	Copy = Cmd("copy")
+)
+
+func (c *Config) Do(cmd Cmd) {
+	switch cmd {
+	case List:
+		c.cmd_list()
+	case Scan:
+		c.cmd_scan()
+	case Copy:
+		c.cmd_copy()
+	}
+}
 
 func (c *Config) cmd_list() {
 	for _, inf := range c.import_list() {
@@ -91,17 +118,10 @@ func (c *Config) cmd_copy() {
 	}
 }
 
-type ItemInfo struct {
-	item    string
-	ext     string
-	staging string
-	modtime time.Time
-}
-
 func (c *Config) info_of(item string) ItemInfo {
 	info, err := os.Stat(item)
 	die_if(err)
-	t := info.ModTime() // TODO: try to use creation time ?
+	t := info.ModTime() // TODO: parametrize this for tests
 	e := c.suffix_of(item)
 	return ItemInfo{
 		item:    item,
@@ -111,13 +131,9 @@ func (c *Config) info_of(item string) ItemInfo {
 	}
 }
 
-func (inf *ItemInfo) new_path_of() string {
-	return inf.staging + "/" + filepath.Base(inf.item)
-}
-
 func (c *Config) import_list() []ItemInfo {
 	items := []ItemInfo{}
-	for _, e := range c.exts {
+	for _, e := range c.Exts {
 		ms, err := filepath.Glob(c.pattern_of(e))
 		die_if(err)
 		for _, m := range ms {
@@ -128,21 +144,25 @@ func (c *Config) import_list() []ItemInfo {
 }
 
 func (c *Config) pattern_of(ext string) string {
-	return c.source_root + "/*/*." + ext
+	return c.Source + "/*/*." + ext
 }
 
 func (c *Config) suffix_of(item string) string {
-	for _, e := range c.exts {
+	for _, e := range c.Exts {
 		if strings.HasSuffix(item, e) {
 			return e
 		}
 	}
-	panic(fmt.Errorf("%s has no suffix in %v", item, c.exts))
+	panic(fmt.Errorf("%s has no suffix in %v", item, c.Exts))
 }
 
 func (c *Config) staging_dir_of(t time.Time, ext string) string {
 	// TODO: apply timezone shift
-	return c.staging_root + t.Format("/2006-01-02") + c.dir_of_ext[ext]
+	return c.Output + t.Format("/2006-01-02") + c.DirOfExt[ext]
+}
+
+func (inf *ItemInfo) new_path_of() string {
+	return inf.staging + "/" + filepath.Base(inf.item)
 }
 
 func group_by_staging(items []ItemInfo) map[string][]ItemInfo {
