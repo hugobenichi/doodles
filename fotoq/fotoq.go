@@ -10,10 +10,15 @@ func main() {
 	env := "prod"
 	cmd := importing.Scan // Copy
 
-	c := cfg[env]
-	c.Do(cmd)
+	if false {
+		c := cfg[env]
+		c.Do(cmd)
+	}
 
-	c2 := selecting.Config{}
+	c2 := selecting.Config{
+		Staging: "/tmp/fotoq/test/out",
+		//Staging: "/Users/hugobenichi/Desktop/photos/staging",
+	}
 	c2.Do(selecting.Diff)
 }
 
