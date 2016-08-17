@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"../cmd"
 	"../conf"
 )
 
@@ -38,19 +39,20 @@ var (
 	Copy = Cmd("copy")
 )
 
-func Do(cfg conf.C, cmd Cmd) {
+func Init(cfg conf.C) {
 	c := Config(cfg)
-	switch cmd {
-	case List:
-		c.cmd_list()
-	case Scan:
-		c.cmd_scan()
-	case Copy:
-		c.cmd_copy()
-	default:
-		fmt.Printf("Unknown import command %s\n", cmd)
-		os.Exit(1)
+	acts := []cmd.Action{
+		{Name: string(List), Fn: c.cmd_list},
+		{Name: string(Scan), Fn: c.cmd_scan},
+		{Name: string(Copy), Fn: c.cmd_copy},
 	}
+	cmd.Register(acts)
+}
+
+func Do(cfg conf.C, command Cmd) {
+	Init(cfg)
+	fn := cmd.Dispatch([]string{string(command)})
+	fn()
 }
 
 func (c *Config) cmd_list() {
