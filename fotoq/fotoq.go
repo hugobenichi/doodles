@@ -1,32 +1,53 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
+	"./conf"
 	"./importing"
 	"./selecting"
 )
 
 func main() {
-	//env := "test"
-	env := "prod"
-	cmd := importing.Scan // Copy
-
-	if false {
-		c := cfg[env]
-		c.Do(cmd)
+	if len(os.Args) < 3 {
+		fmt.Println("Need 2 arguments")
+		fmt.Println("TODO: usage")
+		os.Exit(1)
 	}
+	Do(Cmd(os.Args[1]))
+}
 
-	c2 := selecting.Config{
-		Staging: "/tmp/fotoq/test/out",
-		//Staging: "/Users/hugobenichi/Desktop/photos/staging",
+type Cmd string
+
+var (
+	Import = Cmd("import")
+	Select = Cmd("select")
+	Test   = Cmd("test")
+)
+
+func Do(cmd Cmd) {
+	c := cfg["test"]
+	//c := cfg["prod"]
+	switch cmd {
+	case Import:
+		importing.Do(c, importing.Cmd(os.Args[2]))
+	case Select:
+		selecting.Do(c, selecting.Cmd(os.Args[2]))
+	case Test:
+		// integration tests
+	default:
+		fmt.Printf("Unknown main command %s\n", cmd)
+		fmt.Println("TODO: usage")
+		os.Exit(1)
 	}
-	c2.Do(selecting.Diff)
 }
 
 var (
-	cfg = map[string]importing.Config{
+	cfg = map[string]conf.C{
 		"test": {
-			Source: "/tmp/fotoq/test/in",
-			Output: "/tmp/fotoq/test/out",
+			Source:  "/tmp/fotoq/test/in",
+			Staging: "/tmp/fotoq/test/out",
 			Exts: []string{
 				"JPG",
 				"RAF",
@@ -36,8 +57,8 @@ var (
 			},
 		},
 		"prod": {
-			Source: "/Volumes/Untitled/DCIM/",
-			Output: "/Users/hugobenichi/Desktop/photos/staging",
+			Source:  "/Volumes/Untitled/DCIM/",
+			Staging: "/Users/hugobenichi/Desktop/photos/staging",
 			Exts: []string{
 				"JPG",
 				"RAF",

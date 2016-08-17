@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"../conf"
 )
 
 /*
@@ -18,12 +20,7 @@ import (
 		write integration tests
 */
 
-type Config struct {
-	Source   string
-	Output   string
-	Exts     []string
-	DirOfExt map[string]string
-}
+type Config conf.C
 
 type ItemInfo struct {
 	item    string
@@ -41,7 +38,8 @@ var (
 	Copy = Cmd("copy")
 )
 
-func (c *Config) Do(cmd Cmd) {
+func Do(cfg conf.C, cmd Cmd) {
+	c := Config(cfg)
 	switch cmd {
 	case List:
 		c.cmd_list()
@@ -49,6 +47,9 @@ func (c *Config) Do(cmd Cmd) {
 		c.cmd_scan()
 	case Copy:
 		c.cmd_copy()
+	default:
+		fmt.Printf("Unknown import command %s\n", cmd)
+		os.Exit(1)
 	}
 }
 
@@ -120,7 +121,7 @@ func (c *Config) suffix_of(item string) string {
 
 func (c *Config) staging_dir_of(t time.Time, ext string) string {
 	// TODO: apply timezone shift
-	return c.Output + t.Format("/2006-01-02") + c.DirOfExt[ext]
+	return c.Staging + t.Format("/2006-01-02") + c.DirOfExt[ext]
 }
 
 func (inf *ItemInfo) new_path_of() string {

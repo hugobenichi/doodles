@@ -2,14 +2,15 @@ package selecting
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"../conf"
 )
 
-type Config struct {
-	Staging string
-}
+type Config conf.C
 
 type Cmd string
 
@@ -18,12 +19,16 @@ var (
 	Clean = Cmd("clean")
 )
 
-func (c *Config) Do(cmd Cmd) {
+func Do(cfg conf.C, cmd Cmd) {
+	c := Config(cfg)
 	switch cmd {
 	case Diff:
 		c.cmd_diff()
 	case Clean:
 		c.cmd_clean()
+	default:
+		fmt.Printf("Unknown import command %s\n", cmd)
+		os.Exit(1)
 	}
 }
 
@@ -34,6 +39,9 @@ func (c *Config) cmd_diff() {
 }
 
 func (c *Config) cmd_clean() {
+	for _, r := range c.list_of_unpaired_raws() {
+		fmt.Println(r)
+	}
 }
 
 func (c *Config) list_of_unpaired_raws() []string {
@@ -55,9 +63,10 @@ func (c *Config) all_dated_directories() []string {
 func (c *Config) unpaired_raws_at(dir string) []string {
 	// TODO: parametrize this
 	jpgs := c.all_of(dir, "JPG")
-	raws := c.all_of(dir+"/raw", "RAF")
+	rawdir := dir + c.DirOfExt["RAF"]
+	raws := c.all_of(rawdir, "RAF")
 	fn := func(s string) string {
-		return dir + "/raw/" + s + "." + "RAF"
+		return fmt.Sprintf("%s/%s.RAF", rawdir, s)
 	}
 	return map_strings(fn, subtract(raws, jpgs))
 }
