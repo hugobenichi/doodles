@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"../cmd"
+	"../cmd2"
 	"../conf"
 )
 
@@ -24,6 +25,16 @@ func Init(cfg conf.C) {
 		cmd.ActionWithoutArgs(Clean, c.cmd_clean),
 	}
 	cmd.Register(acts)
+}
+
+func Actions(cfg conf.C) cmd2.Dispatchable {
+	c := Config(cfg)
+	return cmd2.Select{
+		Actions: map[string]cmd2.Dispatchable{
+			Diff:  cmd2.ActionWithoutArgs(c.cmd_diff),
+			Clean: cmd2.ActionWithoutArgs(c.cmd_clean),
+		},
+	}
 }
 
 func (c *Config) cmd_diff() {

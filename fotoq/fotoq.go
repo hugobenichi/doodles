@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"./cmd"
+	"./cmd2"
 	"./conf"
 	"./importing"
 	"./selecting"
@@ -17,9 +18,24 @@ func main() {
 		os.Exit(1)
 	}
 	c := cfg["test"]
-	importing.Init(c)
-	selecting.Init(c)
-	Do(os.Args[1])
+
+	if false {
+		importing.Init(c)
+		selecting.Init(c)
+		Do(os.Args[1])
+	}
+
+	cmd2.Dispatch(get_dis(c), os.Args[1:])()
+}
+
+func get_dis(cfg conf.C) cmd2.Dispatchable {
+	return cmd2.Select{
+		Actions: map[string]cmd2.Dispatchable{
+			Import: importing.Actions(cfg),
+			Select: selecting.Actions(cfg),
+			//Test: TODO
+		},
+	}
 }
 
 const (

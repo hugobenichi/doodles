@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"../cmd"
+	"../cmd2"
 	"../conf"
 )
 
@@ -30,7 +31,7 @@ type ItemInfo struct {
 	modtime time.Time
 }
 
-var (
+const (
 	List = "list"
 	Scan = "scan"
 	Copy = "copy"
@@ -44,6 +45,17 @@ func Init(cfg conf.C) {
 		cmd.ActionWithoutArgs(Copy, c.cmd_copy),
 	}
 	cmd.Register(acts)
+}
+
+func Actions(cfg conf.C) cmd2.Dispatchable {
+	c := Config(cfg)
+	return cmd2.Select{
+		Actions: map[string]cmd2.Dispatchable{
+			List: cmd2.ActionWithoutArgs(c.cmd_list),
+			Scan: cmd2.ActionWithoutArgs(c.cmd_scan),
+			Copy: cmd2.ActionWithoutArgs(c.cmd_copy),
+		},
+	}
 }
 
 func (c *Config) cmd_list() {
