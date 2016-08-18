@@ -42,9 +42,9 @@ var (
 func Init(cfg conf.C) {
 	c := Config(cfg)
 	acts := []cmd.Action{
-		{Name: string(List), Fn: c.cmd_list},
-		{Name: string(Scan), Fn: c.cmd_scan},
-		{Name: string(Copy), Fn: c.cmd_copy},
+		cmd.ActionWithoutArgs(string(List), c.cmd_list),
+		cmd.ActionWithoutArgs(string(Scan), c.cmd_scan),
+		cmd.ActionWithoutArgs(string(Copy), c.cmd_copy),
 	}
 	cmd.Register(acts)
 }

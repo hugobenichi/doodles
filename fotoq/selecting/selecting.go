@@ -2,11 +2,11 @@ package selecting
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"../cmd"
 	"../conf"
 )
 
@@ -19,17 +19,19 @@ var (
 	Clean = Cmd("clean")
 )
 
-func Do(cfg conf.C, cmd Cmd) {
+func Init(cfg conf.C) {
 	c := Config(cfg)
-	switch cmd {
-	case Diff:
-		c.cmd_diff()
-	case Clean:
-		c.cmd_clean()
-	default:
-		fmt.Printf("Unknown import command %s\n", cmd)
-		os.Exit(1)
+	acts := []cmd.Action{
+		cmd.ActionWithoutArgs(string(Diff), c.cmd_diff),
+		cmd.ActionWithoutArgs(string(Clean), c.cmd_clean),
 	}
+	cmd.Register(acts)
+}
+
+func Do(cfg conf.C, command Cmd) {
+	Init(cfg)
+	fn := cmd.Dispatch([]string{string(command)})
+	fn()
 }
 
 func (c *Config) cmd_diff() {
