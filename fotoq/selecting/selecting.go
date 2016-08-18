@@ -12,26 +12,18 @@ import (
 
 type Config conf.C
 
-type Cmd string
-
-var (
-	Diff  = Cmd("diff")
-	Clean = Cmd("clean")
+const (
+	Diff  = "diff"
+	Clean = "clean"
 )
 
 func Init(cfg conf.C) {
 	c := Config(cfg)
 	acts := []cmd.Action{
-		cmd.ActionWithoutArgs(string(Diff), c.cmd_diff),
-		cmd.ActionWithoutArgs(string(Clean), c.cmd_clean),
+		cmd.ActionWithoutArgs(Diff, c.cmd_diff),
+		cmd.ActionWithoutArgs(Clean, c.cmd_clean),
 	}
 	cmd.Register(acts)
-}
-
-func Do(cfg conf.C, command Cmd) {
-	Init(cfg)
-	fn := cmd.Dispatch([]string{string(command)})
-	fn()
 }
 
 func (c *Config) cmd_diff() {

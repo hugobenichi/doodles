@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"./cmd"
 	"./conf"
 	"./importing"
 	"./selecting"
@@ -26,18 +27,22 @@ var (
 	Test   = Cmd("test")
 )
 
-func Do(cmd Cmd) {
+func Do(command Cmd) {
 	c := cfg["test"]
 	//c := cfg["prod"]
-	switch cmd {
+	switch command {
 	case Import:
-		importing.Do(c, importing.Cmd(os.Args[2]))
+		importing.Init(c)
+		fn := cmd.Dispatch(os.Args[2:])
+		fn()
 	case Select:
-		selecting.Do(c, selecting.Cmd(os.Args[2]))
+		selecting.Init(c)
+		fn := cmd.Dispatch(os.Args[2:])
+		fn()
 	case Test:
 		// integration tests
 	default:
-		fmt.Printf("Unknown main command %s\n", cmd)
+		fmt.Printf("Unknown main command %s\n", command)
 		fmt.Println("TODO: usage")
 		os.Exit(1)
 	}

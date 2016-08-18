@@ -30,29 +30,20 @@ type ItemInfo struct {
 	modtime time.Time
 }
 
-type Cmd string
-
-// TODO: change to enum
 var (
-	List = Cmd("list")
-	Scan = Cmd("scan")
-	Copy = Cmd("copy")
+	List = "list"
+	Scan = "scan"
+	Copy = "copy"
 )
 
 func Init(cfg conf.C) {
 	c := Config(cfg)
 	acts := []cmd.Action{
-		cmd.ActionWithoutArgs(string(List), c.cmd_list),
-		cmd.ActionWithoutArgs(string(Scan), c.cmd_scan),
-		cmd.ActionWithoutArgs(string(Copy), c.cmd_copy),
+		cmd.ActionWithoutArgs(List, c.cmd_list),
+		cmd.ActionWithoutArgs(Scan, c.cmd_scan),
+		cmd.ActionWithoutArgs(Copy, c.cmd_copy),
 	}
 	cmd.Register(acts)
-}
-
-func Do(cfg conf.C, command Cmd) {
-	Init(cfg)
-	fn := cmd.Dispatch([]string{string(command)})
-	fn()
 }
 
 func (c *Config) cmd_list() {
