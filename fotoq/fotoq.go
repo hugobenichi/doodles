@@ -16,29 +16,24 @@ func main() {
 		fmt.Println("TODO: usage")
 		os.Exit(1)
 	}
-	Do(Cmd(os.Args[1]))
+	c := cfg["test"]
+	importing.Init(c)
+	selecting.Init(c)
+	Do(os.Args[1])
 }
 
-type Cmd string
-
-var (
-	Import = Cmd("import")
-	Select = Cmd("select")
-	Test   = Cmd("test")
+const (
+	Import = "import"
+	Select = "select"
+	Test   = "test"
 )
 
-func Do(command Cmd) {
-	c := cfg["test"]
-	//c := cfg["prod"]
+func Do(command string) {
 	switch command {
 	case Import:
-		importing.Init(c)
-		fn := cmd.Dispatch(os.Args[2:])
-		fn()
+		cmd.Dispatch(os.Args[2:])()
 	case Select:
-		selecting.Init(c)
-		fn := cmd.Dispatch(os.Args[2:])
-		fn()
+		cmd.Dispatch(os.Args[2:])()
 	case Test:
 		// integration tests
 	default:
