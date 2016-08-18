@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"../cmd"
-	"../cmd2"
 	"../conf"
 )
 
@@ -18,21 +17,12 @@ const (
 	Clean = "clean"
 )
 
-func Init(cfg conf.C) {
+func Actions(cfg conf.C) cmd.Dispatchable {
 	c := Config(cfg)
-	acts := []cmd.Action{
-		cmd.ActionWithoutArgs(Diff, c.cmd_diff),
-		cmd.ActionWithoutArgs(Clean, c.cmd_clean),
-	}
-	cmd.Register(acts)
-}
-
-func Actions(cfg conf.C) cmd2.Dispatchable {
-	c := Config(cfg)
-	return cmd2.Select{
-		Actions: map[string]cmd2.Dispatchable{
-			Diff:  cmd2.ActionWithoutArgs(c.cmd_diff),
-			Clean: cmd2.ActionWithoutArgs(c.cmd_clean),
+	return cmd.Select{
+		Actions: map[string]cmd.Dispatchable{
+			Diff:  cmd.ActionWithoutArgs(c.cmd_diff),
+			Clean: cmd.ActionWithoutArgs(c.cmd_clean),
 		},
 	}
 }

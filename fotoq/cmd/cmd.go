@@ -3,55 +3,48 @@ package cmd
 import (
 	"fmt"
 	"os"
-
-	"../lock"
 )
+
+type Dispatchable interface {
+	implement_dispatchable()
+}
+
+type Select struct {
+	Actions map[string]Dispatchable
+}
 
 type Action struct {
-	Name  string
 	Fn    func([]string)
 	Arity int
-	// TODO: add a way to consume more than zero arg. Neet to specify arrity.
 }
 
-var (
-	l       lock.L
-	actions map[string]Action = make(map[string]Action)
-)
+func (s Select) implement_dispatchable() {}
+func (a Action) implement_dispatchable() {}
 
-func Register(acts []Action) {
-	defer l.Lock().Unlock()
-	for _, act := range acts {
-		actions[act.Name] = act
+func Dispatch(d Dispatchable, args []string) func() {
+	//fmt.Printf("DEBUG: dispatching %v with %v\n", d, args)
+	switch d := d.(type) {
+	case Select:
+		exit_if(len(args) == 0, "No argument")
+		arg, next_args := args[0], args[1:]
+		next, ok := d.Actions[arg]
+		exit_if(!ok, fmt.Sprintf("Unknown command %s", arg))
+		return Dispatch(next, next_args)
+	case Action:
+		exit_if(len(args) < d.Arity, fmt.Sprintf("Not enough arguments: want %s, got %s", d.Arity, len(args)))
+		return func() {
+			d.Fn(args[:d.Arity])
+		}
+	default:
+		exit_if(true, fmt.Sprintf("Unknown type %v", d))
+		return func() {}
 	}
 }
 
-func AsAction(name string, subactions []Action) Action {
-	return Action{}
-}
-
-func Dispatch(args []string) func() { // TODO: add debug option to print dispatch chain
-	defer l.Lock().Unlock()
-	exit_if(len(args) == 0, "No argument") // TODO: take into account arity
-	c := args[0]
-	act, ok := actions[c]
-	exit_if(!ok, fmt.Sprintf("Unknown command %s", c))
-	exit_if(len(args) <= act.Arity, fmt.Sprintf("Not enough arguments: want %s, got %s", act.Arity, len(args)-1))
-	return func() {
-		act.Fn(args[1 : 1+act.Arity])
-	}
-}
-
-func ZeroArity(fn func()) func([]string) {
-	return func(unused []string) {
-		fn()
-	}
-}
-
-func ActionWithoutArgs(name string, fn func()) Action {
+func ActionWithoutArgs(fn func()) Action {
 	return Action{
-		Name: name,
-		Fn:   ZeroArity(fn),
+		Fn:    func(unused []string) { fn() },
+		Arity: 0,
 	}
 }
 

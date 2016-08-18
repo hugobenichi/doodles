@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"../cmd"
-	"../cmd2"
 	"../conf"
 )
 
@@ -37,23 +36,13 @@ const (
 	Copy = "copy"
 )
 
-func Init(cfg conf.C) {
+func Actions(cfg conf.C) cmd.Dispatchable {
 	c := Config(cfg)
-	acts := []cmd.Action{
-		cmd.ActionWithoutArgs(List, c.cmd_list),
-		cmd.ActionWithoutArgs(Scan, c.cmd_scan),
-		cmd.ActionWithoutArgs(Copy, c.cmd_copy),
-	}
-	cmd.Register(acts)
-}
-
-func Actions(cfg conf.C) cmd2.Dispatchable {
-	c := Config(cfg)
-	return cmd2.Select{
-		Actions: map[string]cmd2.Dispatchable{
-			List: cmd2.ActionWithoutArgs(c.cmd_list),
-			Scan: cmd2.ActionWithoutArgs(c.cmd_scan),
-			Copy: cmd2.ActionWithoutArgs(c.cmd_copy),
+	return cmd.Select{
+		Actions: map[string]cmd.Dispatchable{
+			List: cmd.ActionWithoutArgs(c.cmd_list),
+			Scan: cmd.ActionWithoutArgs(c.cmd_scan),
+			Copy: cmd.ActionWithoutArgs(c.cmd_copy),
 		},
 	}
 }
