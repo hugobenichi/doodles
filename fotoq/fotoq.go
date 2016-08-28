@@ -10,8 +10,8 @@ import (
 )
 
 func main() {
-	//c := cfg["prod"]
-	c := cfg["test"]
+	c := cfg["prod"]
+	//c := cfg["test"]
 	cmd.Dispatch(Actions(c), os.Args[1:])()
 }
 
@@ -45,7 +45,8 @@ var (
 			},
 		},
 		"prod": {
-			Source:  "/Volumes/Untitled/DCIM/",
+			Source: "/Volumes/Untitled/DCIM/",
+			//Staging: "/Volumes/Untitled/staging/",
 			Staging: "/Users/hugobenichi/Desktop/photos/staging",
 			Exts: []string{
 				"JPG",

@@ -5,6 +5,12 @@ import (
 	"os"
 )
 
+/*
+  TODOs:
+		- add Desc() to Dispatchable and help meta-command
+		- add autocompletion feature
+*/
+
 type Dispatchable interface {
 	implement_dispatchable()
 }
@@ -35,9 +41,8 @@ func Dispatch(d Dispatchable, args []string) func() {
 		return func() {
 			d.Fn(args[:d.Arity])
 		}
-	default:
-		exit_if(true, fmt.Sprintf("Unknown type %v", d))
-		return func() {}
+	default: // cannot happen
+		panic(fmt.Errorf("Unknown type %v", d))
 	}
 }
 

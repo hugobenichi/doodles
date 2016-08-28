@@ -2,6 +2,7 @@ package selecting
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -36,6 +37,7 @@ func (c *Config) cmd_diff() {
 func (c *Config) cmd_clean() {
 	for _, r := range c.list_of_unpaired_raws() {
 		fmt.Println(r)
+		die_if(os.Remove(r))
 	}
 }
 
