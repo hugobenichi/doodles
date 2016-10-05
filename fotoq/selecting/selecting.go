@@ -52,7 +52,7 @@ func (c *Config) list_of_unpaired_raws() []string {
 }
 
 func (c *Config) all_dated_directories() []string {
-	ms, err := filepath.Glob(c.Staging + "/????-??-??")
+	ms, err := filepath.Glob(c.Working + "/????-??-??*")
 	die_if(err)
 	return ms
 }

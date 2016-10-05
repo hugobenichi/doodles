@@ -36,6 +36,7 @@ var (
 		"test": {
 			Source:  "/tmp/fotoq/test/in",
 			Staging: "/tmp/fotoq/test/out",
+			Working: "/tmp/fotoq/test/out",
 			Exts: []string{
 				"JPG",
 				"RAF",
@@ -45,9 +46,9 @@ var (
 			},
 		},
 		"prod": {
-			Source: "/Volumes/Untitled/DCIM/",
-			//Staging: "/Volumes/Untitled/staging/",
-			Staging: "/Users/hugobenichi/Desktop/photos/staging",
+			Source:  "/Volumes/Untitled/DCIM/",
+			Staging: "/Volumes/Untitled/staging/",
+			Working: "/Users/hugobenichi/Desktop/photos/",
 			Exts: []string{
 				"JPG",
 				"RAF",
