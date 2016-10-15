@@ -1,0 +1,7 @@
+#!/bin/bash
+
+clang -Wall ktvm.c -o ktvm
+
+if [ "run" = "$1" ]; then
+  ./ktvm
+fi
