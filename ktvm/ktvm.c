@@ -59,6 +59,48 @@ const instr i_load    =  22;
 const instr i_store   =  23;
 const instr i_recur   =  24;
 
+// TODO replace with a macro that both declares the instruction const and insert
+//      in the name array ?
+static char* instr_names[] = {
+  "i_noop",
+  "i_push_32",
+  "i_push_u8",
+  "i_push_s8",
+  "i_32add",
+  "i_32mul",
+  "i_32neg",
+  "i_32inc",
+  "i_32dec",
+  "i_not",
+  "i_eq",
+  "i_leq",
+  "i_geq",
+  "i_dup",
+  "i_dupbis",
+  "i_swap",
+  "i_goto",
+  "i_jump_if",
+  "i_skip_if",
+  "i_do_if",
+  "i_call",
+  "i_ret",
+  "i_load",
+  "i_store",
+  "i_recur",
+};
+static int instr_names_len = sizeof(instr_names);
+static char* instr_unknown = "unknown";
+
+char* instr_name(instr i) {
+  if (0 <= i && i < instr_names_len) {
+    return instr_names[i];
+  }
+  return instr_unknown;
+}
+
+void disassembly(FILE* f, instr* program, size_t len) {
+}
+
 /* other intructions to consider:
  * ------------------------------
  *  BE/LE conversion
@@ -249,7 +291,7 @@ void exec(struct ctx *c,        // execution context containing stack area
 
     if (DBG) {
       ctx_data_print(c, "  :");
-      printf("  -> %i\n", ctx_ip_get(c));
+      printf("  -> %s\n", instr_name(ctx_ip_get(c)));
     }
 
     switch(ctx_ip_get(c)) {
