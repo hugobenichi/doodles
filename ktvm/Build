@@ -2,6 +2,8 @@
 
 clang -Wall ktvm.c -o ktvm
 
-if [ "run" = "$1" ]; then
-  ./ktvm
-fi
+case "$1"  in
+  run)      ./ktvm            ;;
+  clean)    rm ktvm.o ktvm    ;;
+  *)
+esac
