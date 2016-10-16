@@ -28,40 +28,52 @@ static void* _must_malloc(size_t nbytes, int ln) {
 
 typedef uint8_t instr;
 
-static uint8_t multibyte(uint8_t i, int additional) {
-  return ((additional & 3) << 6) | (i & 0x3f);
+static const int instr_multibyte_mask = 3 << 6;
+static const int instr_codepoint_mask = 0x3f;
+
+#define multi(i, nadd) (((nadd & 3) << 6) | (i & 0x3f));
+
+static int instr_nbyte(instr i) {
+  return (i & instr_multibyte_mask) >> 6;
 }
 
-// next instr 25
+static instr instr_codepoint(instr i) {
+  return (i & instr_codepoint_mask);
+}
+
+const int instr_max = 25;    // next instr id
+static char* instr_names[instr_max];
+
 const instr i_noop    =   0; // nothing
-const instr i_push_32 =   1; // push next 4B as a LE int32
-                             //   !! following int will not be necessarily aligned !
-const instr i_push_u8 =   2; // push next 1B as uint8
-const instr i_push_s8 =   3; // push next 1B as int8 with sign expansion
+const instr i_push_32 =   1; // push next 4B as a LE int32 (next byte not 4B aligned !)
+const instr i_push_u8 =   multi(2, 1); // push next 1B as uint8
+const instr i_push_s8 =   multi(3, 1); // push next 1B as int8 with sign expansion
 const instr i_32add   =   4;
 const instr i_32mul   =   5;
 const instr i_32neg   =   6; // flip int sign
-const instr i_32inc   =  11;
-const instr i_32dec   =  20;
-const instr i_not     =   7; // 0 -> 1, any other -> 0
-const instr i_eq      =   8;
-const instr i_leq     =   9;
-const instr i_geq     =  10;
-const instr i_dup     =  12;
-const instr i_dupbis  =  21;
-const instr i_swap    =  13;
-const instr i_goto    =  14; // TODO: change to forward goto with relative offset
-const instr i_jump_if =  15; // TODO: change to forward goto with relative offset
-const instr i_skip_if =  16;
-const instr i_do_if   =  17;
-const instr i_call    =  18; // pop top of stack as programm addr and start subroutine there.
-                             // Folowwing byte indicate number of args to take form stack for frame pointer.
-const instr i_ret     =  19; // return to caller. Following byte indicate number of words to return.
+const instr i_32inc   =   7;
+const instr i_32dec   =   8;
+const instr i_not     =   9; // 0 -> 1, any other -> 0
+const instr i_eq      =  10 ;
+const instr i_leq     =  11;
+const instr i_geq     =  12;
+const instr i_dup     =  13;
+const instr i_dupbis  =  14;
+const instr i_swap    =  15;
+const instr i_goto    =  multi(16, 1); // TODO: change to forward goto with relative offset
+const instr i_jump_if =  multi(17, 1); // TODO: change to forward goto with relative offset
+const instr i_skip_if =  multi(18, 1);
+const instr i_do_if   =  multi(19, 1);
+const instr i_call    =  multi(20, 1); // pop top of stack as programm addr and start subroutine there.
+                                       // Folowwing byte indicate number of args to take from stack for fp.
+const instr i_ret     =  multi(21, 1); // return to caller. Following byte indicate number of words to return.
 
 // TODO:
 const instr i_load    =  22;
 const instr i_store   =  23;
 const instr i_recur   =  24;
+
+
 
 // TODO replace with a macro that both declares the instruction const and insert
 //      in the name array ?
@@ -96,6 +108,7 @@ static int instr_names_len = sizeof(instr_names);
 static char* instr_unknown = "unknown";
 
 char* instr_name(instr i) {
+  i = instr_codepoint(i);
   if (0 <= i && i < instr_names_len) {
     return instr_names[i];
   }
@@ -105,7 +118,33 @@ char* instr_name(instr i) {
 void disassembly(FILE* f, instr* program, size_t len) {
   instr* end = program + len;
   while (program < end) {
-
+    instr i = *program++;
+    int nbytes = instr_nbyte(i);
+    //fprintf(f, "%s\n", instr_name(i));
+    //program += nbytes;
+    instr a, b, c;
+    switch (nbytes) {
+      case 0:
+        fprintf(f, "%s\n", instr_name(i));
+        break;
+      case 1:
+        a = *program++;
+        fprintf(f, "%s, %i\n", instr_name(i), a);
+        break;
+      case 2:
+        a = *program++;
+        b = *program++;
+        fprintf(f, "%s, %i, %i\n", instr_name(i), a, b);
+        break;
+      case 3:
+        a = *program++;
+        b = *program++;
+        c = *program++;
+        fprintf(f, "%s, %i, %i, %i\n", instr_name(i), a, b, c);
+        break;
+      default:
+        fprintf(f, "TODO: fatal\n");
+    }
   }
 }
 
@@ -299,7 +338,8 @@ void exec(struct ctx *c,        // execution context containing stack area
 
     if (DBG) {
       ctx_data_print(c, "  :");
-      printf("  -> %s\n", instr_name(ctx_ip_get(c)));
+      instr i = ctx_ip_get(c);
+      printf("instr %s (%i:%i)\n", instr_name(i), instr_codepoint(i), instr_nbyte(i));
     }
 
     switch(ctx_ip_get(c)) {
@@ -437,6 +477,7 @@ void p1() {
     i_32neg,
     i_32add,
   };
+  if (DBG) disassembly(stdout, program, sizeof(program));
   run_program(program, sizeof(program));
 }
 
@@ -451,6 +492,7 @@ void p2() {
     i_goto, 4,
     i_noop
   };
+  if (DBG) disassembly(stdout, program, sizeof(program));
   run_program(program, sizeof(program));
 }
 
@@ -471,6 +513,8 @@ void p3() {
     i_32dec,              //              -> ..., n x acc, n - 1]
     i_goto, 4
   };
+
+  if (DBG) disassembly(stdout, program, sizeof(program));
   run_program(program, sizeof(program));
 }
 
@@ -496,20 +540,24 @@ void p4() { // like p3, but with call/ret
     i_push_u8, 2,         // factorial address
     i_call, 2
   };
+
+  if (DBG) disassembly(stdout, program, sizeof(program));
+  if (0) {
   run_program(program, sizeof(program));
+  }
 }
 
 int main(int argc, char *argv[]) {
-//  puts("p1");
-//  p1();
+  puts("p1");
+  p1();
 
-//  puts("");
-//  puts("p2");
-//  p2();
+  puts("");
+  puts("p2");
+  p2();
 
-//  puts("");
-//  puts("p3");
-//  p3();
+  puts("");
+  puts("p3");
+  p3();
 
   puts("");
   puts("p4");
