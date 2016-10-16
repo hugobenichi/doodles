@@ -28,6 +28,10 @@ static void* _must_malloc(size_t nbytes, int ln) {
 
 typedef uint8_t instr;
 
+static uint8_t multibyte(uint8_t i, int additional) {
+  return ((additional & 3) << 6) | (i & 0x3f);
+}
+
 // next instr 25
 const instr i_noop    =   0; // nothing
 const instr i_push_32 =   1; // push next 4B as a LE int32
@@ -99,6 +103,10 @@ char* instr_name(instr i) {
 }
 
 void disassembly(FILE* f, instr* program, size_t len) {
+  instr* end = program + len;
+  while (program < end) {
+
+  }
 }
 
 /* other intructions to consider:
