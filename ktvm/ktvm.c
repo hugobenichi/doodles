@@ -4,15 +4,21 @@
 
 #define DBG 1
 
+static char buf[256];
+
+static void _fatal(const char* msg, int ln) {
+  printf("%s:%d %s\n", __FILE__, ln, msg);
+  exit(-1);
+}
+#define fatal(msg) _fatal((msg), __LINE__)
+
 static void* _must_malloc(size_t nbytes, int ln) {
   void* p = malloc(nbytes);
   if (!p) {
-    printf("failed malloc at %s:%d\n", __FILE__, ln);
-    exit(-1);
+    _fatal("malloc failed", ln);
   }
   return p;
 }
-
 #define must_malloc(nbytes) _must_malloc((nbytes), __LINE__)
 
 /*
@@ -73,10 +79,6 @@ const instr i_load    =  22;
 const instr i_store   =  23;
 const instr i_recur   =  24;
 
-
-
-// TODO replace with a macro that both declares the instruction const and insert
-//      in the name array ?
 static char* instr_names[] = {
   "i_noop",
   "i_push_32",
@@ -143,7 +145,8 @@ void disassembly(FILE* f, instr* program, size_t len) {
         fprintf(f, "%s, %i, %i, %i\n", instr_name(i), a, b, c);
         break;
       default:
-        fprintf(f, "TODO: fatal\n");
+        snprintf(buf, sizeof(buf), "unexpected number of bytes %d", nbytes);
+        fatal(buf);
     }
   }
 }
@@ -281,7 +284,7 @@ void ctx_push(struct ctx *c, int32_t x) {
     fprintf(stderr, "data stack overflow error\n");
     fprintf(stderr, "-------------------------\n");
     ctx_dump(c, stderr);
-    exit(-1);
+    fatal("data stack overflow");
   }
 
   *(c -> data.top)++ = x;
@@ -292,7 +295,7 @@ int32_t ctx_pop(struct ctx *c) {
     fprintf(stderr, "data stack underflow error\n");
     fprintf(stderr, "--------------------------\n");
     ctx_dump(c, stderr);
-    exit(-1);
+    fatal("data stack underflow");
   }
 
   return *--(c -> data.top);
@@ -307,7 +310,7 @@ void ctx_call(struct ctx *c, instr* callee, int input_n) {
     fprintf(stderr, "call stack overflow error\n");
     fprintf(stderr, "-------------------------\n");
     ctx_dump(c, stderr);
-    exit(-1);
+    fatal("call stack overflow");
   }
 
   *(c -> call.top)++ = c -> current;
@@ -326,7 +329,7 @@ void ctx_ret(struct ctx *c, int output_n) {
     fprintf(stderr, "call stack underflow error\n");
     fprintf(stderr, "--------------------------\n");
     ctx_dump(c, stderr);
-    exit(-1);
+    fatal("call stack underflow");
   }
 
   c -> data.top = c -> current.fp + output_n;
