@@ -265,21 +265,18 @@ void ctx_dump(struct ctx *c, FILE* f) {
   // also mark data stack with frame pointers from call stack
 }
 
-void ctx_dump_fatal(FILE* f, struct ctx *c, const char *msg) {
+void _ctx_dump_fatal(FILE* f, struct ctx *c, const char *msg, int ln) {
     fprintf(f, "full context dump\n");
     fprintf(f, "-----------------\n");
     ctx_dump(c, f);
-    fatal(msg);
+    _fatal(msg, ln);
 }
+#define ctx_dump_fatal(f, c, msg) _ctx_dump_fatal(f, c, msg, __LINE__);
 
 void ctx_ip_next(struct ctx *c) {
   c -> current.ip++;
-  // TODO: check against program end, add end of current function
   if (c -> current.ip >= c -> ip_end) {
-    fprintf(stderr, "program area overflow\n");
-    fprintf(stderr, "-------------------------\n");
-    ctx_dump(c, stderr);
-    fatal("program area overflow");
+    ctx_dump_fatal(stderr, c, "program pointer overflow");
   }
 }
 
@@ -288,7 +285,6 @@ instr ctx_ip_get(struct ctx *c) {
 }
 
 void ctx_ip_set(struct ctx *c, instr* ip) {
-  // TODO: change to forward offset
   if (ip >= c -> ip_end) {
     ctx_dump_fatal(stderr, c, "invalid program address");
   }
@@ -297,22 +293,15 @@ void ctx_ip_set(struct ctx *c, instr* ip) {
 
 void ctx_push(struct ctx *c, int32_t x) {
   if (c-> data.top == c -> data.end) {
-    fprintf(stderr, "data stack overflow error\n");
-    fprintf(stderr, "-------------------------\n");
-    ctx_dump(c, stderr);
-    fatal("data stack overflow");
+    ctx_dump_fatal(stderr, c, "data stack overflow");
   }
   *(c -> data.top)++ = x;
 }
 
 int32_t ctx_pop(struct ctx *c) {
   if (c-> data.top == c -> data.bottom) {
-    fprintf(stderr, "data stack underflow error\n");
-    fprintf(stderr, "--------------------------\n");
-    ctx_dump(c, stderr);
-    fatal("data stack underflow");
+    ctx_dump_fatal(stderr, c, "data stack underflow");
   }
-
   return *--(c -> data.top);
 }
 
@@ -322,12 +311,8 @@ int32_t ctx_pop(struct ctx *c) {
 //  - creating a new activation record
 void ctx_call(struct ctx *c, instr* callee, int input_n) {
   if (c-> call.top == c -> call.end) {
-    fprintf(stderr, "call stack overflow error\n");
-    fprintf(stderr, "-------------------------\n");
-    ctx_dump(c, stderr);
-    fatal("call stack overflow");
+    ctx_dump_fatal(stderr, c, "call stack overflow");
   }
-
   *(c -> call.top)++ = c -> current;
   c -> current = (struct call){
     callee,
@@ -341,12 +326,8 @@ void ctx_call(struct ctx *c, instr* callee, int input_n) {
 //  - popping the top activation record of the call stack and making it current
 void ctx_ret(struct ctx *c, int output_n) {
   if (c-> call.top == c -> call.bottom) {
-    fprintf(stderr, "call stack underflow error\n");
-    fprintf(stderr, "--------------------------\n");
-    ctx_dump(c, stderr);
-    fatal("call stack underflow");
+    ctx_dump_fatal(stderr, c, "call stack underflow");
   }
-
   c -> data.top = c -> current.fp + output_n;
   c -> current = *--(c -> call.top);
 }
