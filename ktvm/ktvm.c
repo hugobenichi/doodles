@@ -315,8 +315,8 @@ void ctx_call(struct ctx *c, instr* callee, int input_n) {
   }
   *(c -> call.top)++ = c -> current;
   c -> current = (struct call){
-    callee,
-    c -> data.top - input_n
+    .ip = callee,
+    .fp = c -> data.top - input_n
   };
 }
 
@@ -487,8 +487,16 @@ void p1() {
     i_32add,
   };
 
-  struct fn fn_p1 = (struct fn){ program, sizeof(program) };
-  struct program p1 = (struct program){ &fn_p1, 1, 0 };
+  struct fn fn_p1 = {
+    .code = program,
+    .len = sizeof(program)
+  };
+  struct program p1 = {
+    .fns = &fn_p1,
+    .len = 1,
+    .main = 0
+  };
+  fn_p1 = *p1.fns; // suppress warnings
 
   if (DBG) disassembly(stdout, program, sizeof(program));
   run_program(program, sizeof(program));
