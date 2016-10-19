@@ -1,0 +1,36 @@
+reorganize vm around program and function struct
+------------------------------------------------
+  -> while thinking about how to support program reference as first class values
+  -> while thinking about how to support compilation modules
+
+first of all cut stuff into multiple files:
+  - instr.{h,c}
+      - static table
+      - name table
+      - name_of function
+      - multibyte
+  - program.{h,c}
+      - fn and program struct, or replace program
+      - disassembly function
+      - object file parser/serializer
+      - library for declaring programs programatically
+  - datastack.{h,c}
+  - callstack.{h,c}
+  - vm.{h,c}
+      replace ctx
+
+once cut into files, add missing features
+  - change jump instrs to froward only
+  - add recur
+      -> mutally recursive functions ?
+  - add load/store
+
+midterm:
+  compiler + simple arithmetic languages
+  heap, data struct, closures
+  GC
+  strings, arrays, basic IOs
+  some benchmarks ahah
+
+rm interpreter loop
+  instr switch -> goto pointers -> jit compiler from goto pointers
