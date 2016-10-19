@@ -452,10 +452,12 @@ void exec(struct ctx *c,        // execution context containing stack area
       case i_call:
         ctx_ip_next(c);
         r0 = ctx_pop(c);
-        ctx_call(c, program + r0, ctx_ip_get(c));
+        ctx_call(c, program + r0 - 1, ctx_ip_get(c));
+        break;
       case i_ret:
         ctx_ip_next(c);
         ctx_ret(c, ctx_ip_get(c));
+        break;
       case i_noop:
         break;
       default:
@@ -544,7 +546,7 @@ void p4() { // like p3, but with call/ret
   // compute 4!
   instr program[] = {
     // goto main
-    i_goto, 18,
+    i_goto, 14,
     // factorial
     i_dup,
     i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
@@ -563,7 +565,35 @@ void p4() { // like p3, but with call/ret
     i_call, 2
   };
 
-  if (DBG) disassembly(stdout, program, sizeof(program));
+  if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
+  run_program(program, sizeof(program));
+}
+
+void p5() { // like p4, but with non-tail recursion
+  // compute 4!
+  instr program[] = {
+    // goto main
+    i_goto, 16,
+    // factorial
+    i_dup,
+    i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
+    i_ret, 1,             // return
+    i_swap,               // ..., acc, n] -> ..., n, acc]
+    i_dupbis,             //              -> ..., n, acc, n]
+    i_32mul,              //              -> ..., n, n x acc]
+    i_swap,               //              -> ..., n x acc, n]
+    i_32dec,              //              -> ..., n x acc, n - 1]
+    i_push_u8, 2,         // factorial address
+    i_call, 2,            // recur
+    // push initial values
+    i_push_u8, 1,
+    i_push_u8, 5,
+    // call factorial
+    i_push_u8, 2,         // factorial address
+    i_call, 2
+  };
+
+  if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
   run_program(program, sizeof(program));
 }
 
@@ -579,7 +609,11 @@ int main(int argc, char *argv[]) {
   //puts("p3");
   //p3();
 
+  //puts("");
+  //puts("p4");
+  //p4();
+
   puts("");
-  puts("p4");
-  p4();
+  puts("p5");
+  p5();
 }
