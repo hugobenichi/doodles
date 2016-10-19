@@ -30,6 +30,7 @@ static void* _must_malloc(size_t nbytes, int ln) {
  *  - add load/store and change factorial
  *  - add fibonacci, both exponential and linear version
  *  - add recur
+ *  - replace static ctx.ip_end by a dynamic method end point set when calling/returning method
  */
 
 typedef uint8_t instr;
@@ -232,6 +233,7 @@ struct ctx {
   struct callstack call;
 
   struct call current;
+  instr* ip_end;
 };
 
 void ctx_new(struct ctx *c,
@@ -263,10 +265,22 @@ void ctx_dump(struct ctx *c, FILE* f) {
   // also mark data stack with frame pointers from call stack
 }
 
-int ctx_ip_next(struct ctx *c) {
+void ctx_dump_fatal(FILE* f, struct ctx *c, const char *msg) {
+    fprintf(f, "full context dump\n");
+    fprintf(f, "-----------------\n");
+    ctx_dump(c, f);
+    fatal(msg);
+}
+
+void ctx_ip_next(struct ctx *c) {
   c -> current.ip++;
   // TODO: check against program end, add end of current function
-  return 1;
+  if (c -> current.ip >= c -> ip_end) {
+    fprintf(stderr, "program area overflow\n");
+    fprintf(stderr, "-------------------------\n");
+    ctx_dump(c, stderr);
+    fatal("program area overflow");
+  }
 }
 
 instr ctx_ip_get(struct ctx *c) {
@@ -274,8 +288,10 @@ instr ctx_ip_get(struct ctx *c) {
 }
 
 void ctx_ip_set(struct ctx *c, instr* ip) {
-  // TODO: check against program end
   // TODO: change to forward offset
+  if (ip >= c -> ip_end) {
+    ctx_dump_fatal(stderr, c, "invalid program address");
+  }
   c -> current.ip = ip;
 }
 
@@ -286,7 +302,6 @@ void ctx_push(struct ctx *c, int32_t x) {
     ctx_dump(c, stderr);
     fatal("data stack overflow");
   }
-
   *(c -> data.top)++ = x;
 }
 
@@ -341,14 +356,13 @@ void exec(struct ctx *c,        // execution context containing stack area
           size_t len            // program length
           ) {
 
-  instr* program_end = program + len;
-
   c -> current.ip = program;
   c -> current.fp = c -> data.top;
+  c -> ip_end     = program + len;
 
   int32_t r0, r1;
 
-  while (c -> current.ip < program_end) {
+  while (c -> current.ip < c -> ip_end) {
 
     if (DBG) {
       ctx_data_print(c, "  :");
@@ -465,7 +479,7 @@ void exec(struct ctx *c,        // execution context containing stack area
       default:
         break;
     }
-    ctx_ip_next(c);
+    c -> current.ip++; // do not use ctx_ip_next() to avoid fatal-ing at program end
   }
 }
 
