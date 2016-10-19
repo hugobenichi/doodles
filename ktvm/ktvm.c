@@ -160,6 +160,17 @@ void disassembly(FILE* f, instr* program, size_t len) {
  *  truncation and widening between integer types
  */
 
+struct fn {
+  instr* code;
+  size_t len;
+};
+
+struct program {
+  struct fn* fns; // index implicitly identifies functions
+  size_t len;
+  int main;             // index of main function
+};
+
 struct datastack {
   uint32_t* bottom;
   uint32_t* top;
@@ -477,6 +488,10 @@ void p1() {
     i_32neg,
     i_32add,
   };
+
+  struct fn fn_p1 = (struct fn){ program, sizeof(program) };
+  struct program p1 = (struct program){ &fn_p1, 1, 0 };
+
   if (DBG) disassembly(stdout, program, sizeof(program));
   run_program(program, sizeof(program));
 }
