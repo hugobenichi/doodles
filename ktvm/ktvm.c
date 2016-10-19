@@ -286,7 +286,8 @@ instr ctx_ip_get(struct ctx *c) {
 
 void ctx_ip_set(struct ctx *c, instr* ip) {
   if (ip >= c -> ip_end) {
-    ctx_dump_fatal(stderr, c, "invalid program address");
+    snprintf(buf, sizeof(buf), "invalid program address %ld", ip - c -> current.ip);
+    ctx_dump_fatal(stderr, c, buf);
   }
   c -> current.ip = ip;
 }
@@ -305,18 +306,18 @@ int32_t ctx_pop(struct ctx *c) {
   return *--(c -> data.top);
 }
 
-// Jumps to function pointed by 'callee' which takes 'input_n' input args.
+// Jumps to function pointed by 'callee' which takes 'input_args_n' input args.
 // It does so by:
 //  - pushing the current activation record on the call stack
 //  - creating a new activation record
-void ctx_call(struct ctx *c, instr* callee, int input_n) {
+void ctx_call(struct ctx *c, instr* callee, int input_args_n) {
   if (c-> call.top == c -> call.end) {
     ctx_dump_fatal(stderr, c, "call stack overflow");
   }
   *(c -> call.top)++ = c -> current;
   c -> current = (struct call){
     .ip = callee,
-    .fp = c -> data.top - input_n
+    .fp = c -> data.top - input_args_n
   };
 }
 
@@ -526,7 +527,7 @@ void p3() {
     // factorial begin
     i_dup,
     i_jump_if, 9,         // exit below if top is zero, otherwise jump +2
-    i_goto, 100,          // exit
+    i_goto, 16,           // exit
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
@@ -563,22 +564,20 @@ void p4() { // like p3, but with call/ret
   };
 
   if (DBG) disassembly(stdout, program, sizeof(program));
-  if (0) {
   run_program(program, sizeof(program));
-  }
 }
 
 int main(int argc, char *argv[]) {
-  puts("p1");
-  p1();
+  //puts("p1");
+  //p1();
 
-  puts("");
-  puts("p2");
-  p2();
+  //puts("");
+  //puts("p2");
+  //p2();
 
-  puts("");
-  puts("p3");
-  p3();
+  //puts("");
+  //puts("p3");
+  //p3();
 
   puts("");
   puts("p4");
