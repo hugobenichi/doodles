@@ -118,13 +118,15 @@ char* instr_name(instr i) {
   return instr_unknown;
 }
 
+void instr_disassembly(FILE* f, instr* i_addr) {
+  // extract inner loop of dissambly here and use in callstack_print
+}
+
 void disassembly(FILE* f, instr* program, size_t len) {
   instr* end = program + len;
   while (program < end) {
     instr i = *program++;
     int nbytes = instr_nbyte(i);
-    //fprintf(f, "%s\n", instr_name(i));
-    //program += nbytes;
     instr a, b, c;
     switch (nbytes) {
       case 0:
@@ -202,6 +204,7 @@ void datastack_del(struct datastack *s) {
 struct call {
   instr*    ip;
   uint32_t* fp;
+  //int       n_args;
 };
 
 struct callstack {
@@ -257,11 +260,40 @@ void ctx_data_print(struct ctx *c, const char* indent) {
   }
 }
 
+void ctx_call_print(struct ctx* c, const char* indent) {
+  int i = 0;
+  struct call* call = c -> call.top;
+  while (call > c -> call.bottom) {
+    i++; // TODO keep track of call stack depth;
+    call--;
+  }
+  // int i = (c -> call.top) - (c -> call.bottom);
+
+  if (1) {
+    return;
+  }
+  call = c -> call.top;
+  while (call > c -> call.bottom) {
+    instr i = *(call -> ip);
+    //long addr = (long)(program - call.ip); TODO: use bottom call for program ref
+    const char* name = instr_name(i);
+    printf("%s%.2i: %s\n", indent, i--, name);
+    // TODO: print arguments by using data stack and n_args
+    call--;
+  }
+}
+
 void ctx_dump(struct ctx *c, FILE* f) {
   // also print call stack,
   // also print current function code and current
   //  add disassembly
+  fprintf(f, "\ndata stack dump\n");
+  fprintf(f, "------------------\n");
   ctx_data_print(c, "| ");
+
+  fprintf(f, "\ncall stack dump\n");
+  fprintf(f, "------------------\n");
+  ctx_call_print(c, "| ");
   // also mark data stack with frame pointers from call stack
 }
 
@@ -306,18 +338,19 @@ int32_t ctx_pop(struct ctx *c) {
   return *--(c -> data.top);
 }
 
-// Jumps to function pointed by 'callee' which takes 'input_args_n' input args.
+// Jumps to function pointed by 'callee' which takes 'n_args' input args.
 // It does so by:
 //  - pushing the current activation record on the call stack
 //  - creating a new activation record
-void ctx_call(struct ctx *c, instr* callee, int input_args_n) {
+void ctx_call(struct ctx *c, instr* callee, int n_args) {
   if (c-> call.top == c -> call.end) {
     ctx_dump_fatal(stderr, c, "call stack overflow");
   }
   *(c -> call.top)++ = c -> current;
   c -> current = (struct call){
     .ip = callee,
-    .fp = c -> data.top - input_args_n
+    .fp = c -> data.top - n_args,
+    //.n_args = n_args,
   };
 }
 
@@ -338,8 +371,9 @@ void exec(struct ctx *c,        // execution context containing stack area
           size_t len            // program length
           ) {
 
-  c -> current.ip = program;
-  c -> current.fp = c -> data.top;
+  c -> current.ip     = program;
+  c -> current.fp     = c -> data.top;
+  //c -> current.n_args = 0;
   c -> ip_end     = program + len;
 
   int32_t r0, r1;
