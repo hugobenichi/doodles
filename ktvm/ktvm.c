@@ -265,15 +265,16 @@ void ctx_datastack_print(struct ctx *c, const char* indent) {
 }
 
 void ctx_callstack_print(struct ctx* c, const char* indent) {
-  int n = (c -> call.top) - (c -> call.bottom);
-
+  // TODO: use instr_disassembly for rich printing instruction
+  // TODO: print arguments by using data stack and n_args
+  int n = (c -> current) - (c -> call.bottom);
+  instr* base = c -> call.bottom -> start;
   struct call* call = c -> current;
-  while (call > c -> call.bottom) {
-    instr i = *(call -> ip);
-    //long addr = (long)(program - call.ip); TODO: use bottom call for program ref
-    const char* name = instr_name(i);
-    printf("%s%.2i: %s\n", indent, n--, name);
-    // TODO: print arguments by using data stack and n_args
+  while (call >= c -> call.bottom) {
+    instr* s = call -> start + 1; // match +1 at end of exec's switch
+    instr* i = call -> ip;
+    printf("%s%.2i: +%ld: %s\n", indent, n--, (long)(s - base), instr_name(*s));
+    printf("%s    at +%ld: %s\n", indent, (long)(i - base), instr_name(*i));
     call--;
   }
 }
