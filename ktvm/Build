@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 clang -g -Wall ktvm.c -o ktvm
 
 case "$1"  in
