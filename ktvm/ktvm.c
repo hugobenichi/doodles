@@ -514,8 +514,8 @@ void run_program(instr* p, size_t len) {
   ctx_del(&c);
 }
 
-// 2 * (4 + (3 * 5)) - 10 = 28
 void p1() {
+  puts("p1: compute 2 * (4 + (3 * 5)) - 10 = 28");
   instr program[] = {
     i_push_u8, 4,
     i_push_u8, 3,
@@ -544,8 +544,8 @@ void p1() {
   run_program(program, sizeof(program));
 }
 
-// count until 20
 void p2() {
+  puts("p2: count until 20");
   instr program[] = {
     i_push_u8, 20,
     i_push_u8, 0,
@@ -556,11 +556,12 @@ void p2() {
     i_noop
   };
   if (DBG) disassembly(stdout, program, sizeof(program));
+  puts("");
   run_program(program, sizeof(program));
 }
 
 void p3() {
-  // compute 4!
+  puts("p3: compute 4! using inner goto loop only");
   instr program[] = {
     // initial values
     i_push_u8, 1,
@@ -576,13 +577,13 @@ void p3() {
     i_32dec,              //              -> ..., n x acc, n - 1]
     i_goto, 4
   };
-
   if (DBG) disassembly(stdout, program, sizeof(program));
+  puts("");
   run_program(program, sizeof(program));
 }
 
-void p4() { // like p3, but with call/ret
-  // compute 4!
+void p4() {
+  puts("p4: compute 4! using one layer of i_call/i_ret plus inner goto loop");
   instr program[] = {
     // goto main
     i_goto, 14,
@@ -604,13 +605,13 @@ void p4() { // like p3, but with call/ret
     i_push_u8, 2,         // factorial address
     i_call, 2
   };
-
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
+  puts("");
   run_program(program, sizeof(program));
 }
 
-void p5() { // like p4, but with non-tail recursion
-  // compute 4!
+void p5() {
+  puts("p5: compute 4! using non-tail recursive i_call/i_ret");
   instr program[] = {
     // goto main
     i_goto, 16,
@@ -632,28 +633,26 @@ void p5() { // like p4, but with non-tail recursion
     i_push_u8, 2,         // factorial address
     i_call, 2
   };
-
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
+  puts("");
   run_program(program, sizeof(program));
 }
 
+typedef void (*void_fn)();
+
 int main(int argc, char *argv[]) {
-  //puts("p1");
-  //p1();
+  void_fn programs[] = {
+    p1,
+    p2,
+    //p3,
+    //p4,
+    //p5,
+  };
 
-  //puts("");
-  //puts("p2");
-  //p2();
-
-  //puts("");
-  //puts("p3");
-  //p3();
-
-  puts("");
-  puts("p4");
-  p4();
-
-  //puts("");
-  //puts("p5");
-  //p5();
+  size_t len = sizeof(programs) / sizeof(programs[0]);
+  for (int i = 0; i < len; i++) {
+      programs[i]();
+      puts("");
+      puts("");
+  }
 }
