@@ -4,6 +4,8 @@
 
 #define DBG 1
 
+#define BOOM do { printf("boom\n"); exit(0); } while(0)
+
 static char buf[256];
 
 static void _fatal(const char* msg, int ln) {
@@ -204,9 +206,10 @@ void datastack_del(struct datastack *s) {
 
 
 struct call {
+  instr*    start;
   instr*    ip;
   uint32_t* fp;
-  //int       n_args;
+  int       n_args;
 };
 
 struct callstack {
@@ -236,8 +239,7 @@ void callstack_del(struct callstack *s) {
 struct ctx {
   struct datastack data;
   struct callstack call;
-
-  struct call current;
+  struct call* current;
   instr* ip_end;
 };
 
@@ -308,22 +310,22 @@ void _ctx_dump_fatal(FILE* f, struct ctx *c, const char *msg, int ln) {
 #define ctx_dump_fatal(f, c, msg) _ctx_dump_fatal(f, c, msg, __LINE__);
 
 void ctx_ip_next(struct ctx *c) {
-  c -> current.ip++;
-  if (c -> current.ip >= c -> ip_end) {
+  c -> current -> ip++;
+  if (c -> current -> ip >= c -> ip_end) {
     ctx_dump_fatal(stderr, c, "program pointer overflow");
   }
 }
 
 instr ctx_ip_get(struct ctx *c) {
-  return *(c -> current.ip);
+  return *(c -> current -> ip);
 }
 
 void ctx_ip_set(struct ctx *c, instr* ip) {
   if (ip >= c -> ip_end) {
-    snprintf(buf, sizeof(buf), "invalid program address %ld", ip - c -> current.ip);
+    snprintf(buf, sizeof(buf), "invalid program address %ld", ip - c -> current -> ip);
     ctx_dump_fatal(stderr, c, buf);
   }
-  c -> current.ip = ip;
+  c -> current -> ip = ip;
 }
 
 void ctx_push(struct ctx *c, int32_t x) {
@@ -342,18 +344,19 @@ int32_t ctx_pop(struct ctx *c) {
 
 // Jumps to function pointed by 'callee' which takes 'n_args' input args.
 // It does so by:
-//  - pushing the current activation record on the call stack
-//  - creating a new activation record
+//  - pushing a new activation record on the call stack.
+//  - pointing current activation record to new top of stack.
 void ctx_call(struct ctx *c, instr* callee, int n_args) {
   if (c-> call.top == c -> call.end) {
     ctx_dump_fatal(stderr, c, "call stack overflow");
   }
-  *(c -> call.top)++ = c -> current;
-  c -> current = (struct call){
-    .ip = callee,
-    .fp = c -> data.top - n_args,
-    //.n_args = n_args,
+  *(c -> call.top) = (struct call){
+    .start  = callee,
+    .ip     = callee,
+    .fp     = c -> data.top - n_args,
+    .n_args = n_args,
   };
+  c -> current = (c -> call.top)++;
 }
 
 // Returns from current function and returns 'output_n' args to the caller.
@@ -364,8 +367,8 @@ void ctx_ret(struct ctx *c, int output_n) {
   if (c-> call.top == c -> call.bottom) {
     ctx_dump_fatal(stderr, c, "call stack underflow");
   }
-  c -> data.top = c -> current.fp + output_n;
-  c -> current = *--(c -> call.top);
+  c -> data.top = (c -> call.top -> fp) + output_n;
+  (c -> call.top)--;
 }
 
 void exec(struct ctx *c,        // execution context containing stack area
@@ -373,14 +376,12 @@ void exec(struct ctx *c,        // execution context containing stack area
           size_t len            // program length
           ) {
 
-  c -> current.ip     = program;
-  c -> current.fp     = c -> data.top;
-  //c -> current.n_args = 0;
+  ctx_call(c, program, 0);
   c -> ip_end     = program + len;
 
   int32_t r0, r1;
 
-  while (c -> current.ip < c -> ip_end) {
+  while (c -> current -> ip < c -> ip_end) {
 
     if (DBG) {
       ctx_data_print(c, "  :");
@@ -502,7 +503,7 @@ void exec(struct ctx *c,        // execution context containing stack area
       default:
         break;
     }
-    c -> current.ip++; // do not use ctx_ip_next() to avoid fatal-ing at program end
+    (c -> current -> ip)++; // do not use ctx_ip_next() to avoid fatal-ing at program end
   }
 }
 
@@ -642,10 +643,10 @@ typedef void (*void_fn)();
 
 int main(int argc, char *argv[]) {
   void_fn programs[] = {
-    p1,
-    p2,
+    //p1,
+    //p2,
     //p3,
-    //p4,
+    p4,
     //p5,
   };
 

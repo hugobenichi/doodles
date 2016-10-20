@@ -1,6 +1,6 @@
 #!/bin/bash
 
-clang -Wall ktvm.c -o ktvm
+clang -g -Wall ktvm.c -o ktvm
 
 case "$1"  in
   run)      ./ktvm            ;;
