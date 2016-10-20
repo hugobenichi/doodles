@@ -255,7 +255,7 @@ void ctx_del(struct ctx *c) {
   callstack_del(&c -> call);
 }
 
-void ctx_data_print(struct ctx *c, const char* indent) {
+void ctx_datastack_print(struct ctx *c, const char* indent) {
   int i = 0;
   uint32_t* s = c -> data.bottom;
   while (s < c -> data.top) {
@@ -264,24 +264,15 @@ void ctx_data_print(struct ctx *c, const char* indent) {
   }
 }
 
-void ctx_call_print(struct ctx* c, const char* indent) {
-  int i = 0;
-  struct call* call = c -> call.top;
-  while (call > c -> call.bottom) {
-    i++; // TODO keep track of call stack depth;
-    call--;
-  }
-  // int i = (c -> call.top) - (c -> call.bottom);
+void ctx_callstack_print(struct ctx* c, const char* indent) {
+  int n = (c -> call.top) - (c -> call.bottom);
 
-  if (1) {
-    return;
-  }
-  call = c -> call.top;
+  struct call* call = c -> current;
   while (call > c -> call.bottom) {
     instr i = *(call -> ip);
     //long addr = (long)(program - call.ip); TODO: use bottom call for program ref
     const char* name = instr_name(i);
-    printf("%s%.2i: %s\n", indent, i--, name);
+    printf("%s%.2i: %s\n", indent, n--, name);
     // TODO: print arguments by using data stack and n_args
     call--;
   }
@@ -291,21 +282,24 @@ void ctx_dump(struct ctx *c, FILE* f) {
   // also print call stack,
   // also print current function code and current
   //  add disassembly
+  fprintf(f, "\nfull context dump\n");
+  fprintf(f,   "-----------------\n");
+
   fprintf(f, "\ndata stack dump\n");
   fprintf(f,   "---------------\n");
-  ctx_data_print(c, "| ");
+  ctx_datastack_print(c, "| ");
 
   fprintf(f, "\ncall stack dump\n");
   fprintf(f,   "---------------\n");
-  ctx_call_print(c, "| ");
+  ctx_callstack_print(c, "| ");
+
+  fprintf(f, "\n");
   // also mark data stack with frame pointers from call stack
 }
 
 void _ctx_dump_fatal(FILE* f, struct ctx *c, const char *msg, int ln) {
-    fprintf(f, "full context dump\n");
-    fprintf(f, "-----------------\n");
-    ctx_dump(c, f);
-    _fatal(msg, ln);
+  ctx_dump(c, f);
+  _fatal(msg, ln);
 }
 #define ctx_dump_fatal(f, c, msg) _ctx_dump_fatal(f, c, msg, __LINE__);
 
@@ -384,7 +378,7 @@ void exec(struct ctx *c,        // execution context containing stack area
   while (c -> current -> ip < c -> ip_end) {
 
     if (DBG) {
-      ctx_data_print(c, "  :");
+      ctx_datastack_print(c, "  :");
       instr i = ctx_ip_get(c);
       printf("instr %s (%i:%i)\n", instr_name(i), instr_codepoint(i), instr_nbyte(i));
     }
@@ -511,7 +505,7 @@ void run_program(instr* p, size_t len) {
   struct ctx c;
   ctx_new(&c, 256);
   exec(&c, p, len);
-  ctx_data_print(&c, "");
+  ctx_datastack_print(&c, "");
   ctx_del(&c);
 }
 
@@ -591,8 +585,7 @@ void p4() {
     // factorial
     i_dup,
     i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
-    //i_ret, 1,             // return
-    i_panic, 1,
+    i_ret, 1,             // return
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
@@ -639,6 +632,35 @@ void p5() {
   run_program(program, sizeof(program));
 }
 
+void p6() {
+  puts("p6: panic after some number of i_call");
+  instr program[] = {
+    i_push_u8, 1,
+    i_push_u8, 2,
+    i_push_u8, 10, // &f1
+    i_call, 2,
+    i_ret, 1,
+    i_noop,         // f1, addr = 10
+    i_32add,
+    i_push_u8, 3,
+    i_push_u8, 20, // &f2
+    i_call, 2,
+    i_ret, 1,
+    i_noop,         // f2, addr = 20
+    i_32mul,
+    i_push_u8, 4,
+    i_32mul,
+    i_push_u8, 31, // &f3
+    i_call, 2,
+    i_ret, 1,
+    i_noop,         // f3, addr = 31
+    i_panic,
+  };
+  if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
+  puts("");
+  run_program(program, sizeof(program));
+}
+
 typedef void (*void_fn)();
 
 int main(int argc, char *argv[]) {
@@ -646,8 +668,9 @@ int main(int argc, char *argv[]) {
     //p1,
     //p2,
     //p3,
-    p4,
+    //p4,
     //p5,
+    p6,
   };
 
   size_t len = sizeof(programs) / sizeof(programs[0]);
