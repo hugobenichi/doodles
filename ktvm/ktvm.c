@@ -48,7 +48,7 @@ static instr instr_codepoint(instr i) {
   return (i & instr_codepoint_mask);
 }
 
-const int instr_max = 25;    // next instr id
+const int instr_max = 26;    // next instr id
 static char* instr_names[instr_max];
 
 const instr i_noop    =   0; // nothing
@@ -74,6 +74,7 @@ const instr i_do_if   =  multi(19, 1);
 const instr i_call    =  multi(20, 1); // pop top of stack as programm addr and start subroutine there.
                                        // Folowwing byte indicate number of args to take from stack for fp.
 const instr i_ret     =  multi(21, 1); // return to caller. Following byte indicate number of words to return.
+const instr i_panic   =  25;
 
 // TODO:
 const instr i_load    =  22;
@@ -106,6 +107,7 @@ static char* instr_names[] = {
   "i_load",
   "i_store",
   "i_recur",
+  "i_panic",
 };
 static int instr_names_len = sizeof(instr_names);
 static char* instr_unknown = "unknown";
@@ -288,11 +290,11 @@ void ctx_dump(struct ctx *c, FILE* f) {
   // also print current function code and current
   //  add disassembly
   fprintf(f, "\ndata stack dump\n");
-  fprintf(f, "------------------\n");
+  fprintf(f,   "---------------\n");
   ctx_data_print(c, "| ");
 
   fprintf(f, "\ncall stack dump\n");
-  fprintf(f, "------------------\n");
+  fprintf(f,   "---------------\n");
   ctx_call_print(c, "| ");
   // also mark data stack with frame pointers from call stack
 }
@@ -492,6 +494,9 @@ void exec(struct ctx *c,        // execution context containing stack area
         ctx_ip_next(c);
         ctx_ret(c, ctx_ip_get(c));
         break;
+      case i_panic:
+        ctx_dump_fatal(stderr, c, "panic");
+        break;
       case i_noop:
         break;
       default:
@@ -584,7 +589,8 @@ void p4() { // like p3, but with call/ret
     // factorial
     i_dup,
     i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
-    i_ret, 1,             // return
+    //i_ret, 1,             // return
+    i_panic, 1,
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
@@ -643,11 +649,11 @@ int main(int argc, char *argv[]) {
   //puts("p3");
   //p3();
 
-  //puts("");
-  //puts("p4");
-  //p4();
-
   puts("");
-  puts("p5");
-  p5();
+  puts("p4");
+  p4();
+
+  //puts("");
+  //puts("p5");
+  //p5();
 }
