@@ -228,6 +228,17 @@ void callstack_del(struct callstack *s) {
   *s = callstack_empty;
 }
 
+int call_args(char* buf, size_t n, struct call* call) {
+  *buf++ = '(';
+  int nargs = (int) call -> n_args;
+  uint32_t* w = call -> fp;
+  while (nargs--) {
+    buf += snprintf(buf, 14, "%u, ", *w++);
+  }
+  *(buf - 2) = ')';
+  *(buf - 1) = 0;
+  return 0;
+}
 
 
 
@@ -260,7 +271,7 @@ void ctx_datastack_print(struct ctx *c, FILE* f, const char* indent) {
 }
 
 void ctx_callstack_print(struct ctx* c, FILE* f, const char* indent) {
-  // TODO: print arguments by using data stack and n_args
+  // TODO: call addr and instruction aat call addr should be swapped
   char b[64];
   int n = (c -> current) - (c -> call.bottom);
   instr* base = c -> call.bottom -> start;
@@ -270,7 +281,9 @@ void ctx_callstack_print(struct ctx* c, FILE* f, const char* indent) {
     instr* i = call -> ip;
     // BUG: why is it not printing multibyte instruction correctly ?
     instr_disassembly(b, sizeof(b), s);
-    fprintf(f, "%s%.2i: +%ld: %s\n", indent, n--, (long)(s - base), b);
+    fprintf(f, "%s%.2i: +%ld: %s", indent, n--, (long)(s - base), b);
+    call_args(b, sizeof(b), call);
+    fprintf(f, " with %s\n", b);
     instr_disassembly(b, sizeof(b), i);
     fprintf(f, "%s    at +%ld: %s\n", indent, (long)(i - base), b);
     call--;
