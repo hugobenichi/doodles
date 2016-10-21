@@ -122,39 +122,33 @@ char* instr_name(instr i) {
   return instr_unknown;
 }
 
-void instr_disassembly(FILE* f, instr* i_addr) {
-  // extract inner loop of dissambly here and use in callstack_print
+int instr_disassembly(char* buf, size_t n, instr* i_addr) {
+    instr i = *i_addr++;
+    int nbytes = instr_nbyte(i);
+    if (nbytes < 0 || 3 < nbytes) {
+      return -1;
+    }
+    int w = snprintf(buf, n, "%.2i:%s", instr_codepoint(i), instr_name(i));
+    buf += w;
+    n -= w;
+    int r = nbytes + 1;
+    while (nbytes--) {
+      snprintf(buf, n, ", %i", *i_addr++);
+    }
+    return r;
 }
 
 void disassembly(FILE* f, instr* program, size_t len) {
   instr* end = program + len;
+  char b[64];
   while (program < end) {
-    instr i = *program++;
-    int nbytes = instr_nbyte(i);
-    instr a, b, c;
-    switch (nbytes) {
-      case 0:
-        fprintf(f, "%s\n", instr_name(i));
-        break;
-      case 1:
-        a = *program++;
-        fprintf(f, "%s, %i\n", instr_name(i), a);
-        break;
-      case 2:
-        a = *program++;
-        b = *program++;
-        fprintf(f, "%s, %i, %i\n", instr_name(i), a, b);
-        break;
-      case 3:
-        a = *program++;
-        b = *program++;
-        c = *program++;
-        fprintf(f, "%s, %i, %i, %i\n", instr_name(i), a, b, c);
-        break;
-      default:
-        snprintf(buf, sizeof(buf), "unexpected number of bytes %d", nbytes);
-        fatal(buf);
+    int nbytes = instr_disassembly(b, sizeof(b), program);
+    fprintf(f, "%s\n", b);
+    if (nbytes < 0) {
+      snprintf(buf, sizeof(buf), "unexpected number of bytes %d", nbytes);
+      fatal(buf);
     }
+    program += nbytes;
   }
 }
 
@@ -265,16 +259,19 @@ void ctx_datastack_print(struct ctx *c, const char* indent) {
 }
 
 void ctx_callstack_print(struct ctx* c, const char* indent) {
-  // TODO: use instr_disassembly for rich printing instruction
   // TODO: print arguments by using data stack and n_args
+  char b[64];
   int n = (c -> current) - (c -> call.bottom);
   instr* base = c -> call.bottom -> start;
   struct call* call = c -> current;
   while (call >= c -> call.bottom) {
     instr* s = call -> start + 1; // match +1 at end of exec's switch
     instr* i = call -> ip;
-    printf("%s%.2i: +%ld: %s\n", indent, n--, (long)(s - base), instr_name(*s));
-    printf("%s    at +%ld: %s\n", indent, (long)(i - base), instr_name(*i));
+// BUG: why is it not printing the code point and additional arguments ??
+    instr_disassembly(b, sizeof(b), s);
+    printf("%s%.2i: +%ld: %s\n", indent, n--, (long)(s - base), b);
+    instr_disassembly(b, sizeof(b), i);
+    printf("%s    at +%ld: %s\n", indent, (long)(i - base), b);
     call--;
   }
 }
@@ -380,8 +377,8 @@ void exec(struct ctx *c,        // execution context containing stack area
 
     if (DBG) {
       ctx_datastack_print(c, "  :");
-      instr i = ctx_ip_get(c);
-      printf("instr %s (%i:%i)\n", instr_name(i), instr_codepoint(i), instr_nbyte(i));
+      instr_disassembly(buf, sizeof(buf), c -> current -> ip);
+      printf("%s\n", buf);
     }
 
     switch(ctx_ip_get(c)) {
@@ -634,7 +631,7 @@ void p5() {
 }
 
 void p6() {
-  puts("p6: panic after some number of i_call");
+  puts("p6: calling panic after some number of i_call");
   instr program[] = {
     i_push_u8, 1,
     i_push_u8, 2,
