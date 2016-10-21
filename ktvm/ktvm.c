@@ -123,19 +123,20 @@ char* instr_name(instr i) {
 }
 
 int instr_disassembly(char* buf, size_t n, instr* i_addr) {
-    instr i = *i_addr++;
-    int nbytes = instr_nbyte(i);
-    if (nbytes < 0 || 3 < nbytes) {
-      return -1;
-    }
-    int w = snprintf(buf, n, "%.2i:%s", instr_codepoint(i), instr_name(i));
-    buf += w;
-    n -= w;
-    int r = nbytes + 1;
-    while (nbytes--) {
-      snprintf(buf, n, ", %i", *i_addr++);
-    }
-    return r;
+  instr i = *i_addr++;
+  int nbytes = instr_nbyte(i);
+  if (nbytes < 0 || 3 < nbytes) {
+    return -1;
+  }
+  // TODO: safer string concatenation please, do not ignore w error values.
+  int w = snprintf(buf, n, "%.2i:%s", instr_codepoint(i), instr_name(i));
+  buf += w;
+  n -= w;
+  int r = nbytes + 1;
+  while (nbytes--) {
+    buf += snprintf(buf, n, ", %i", *i_addr++);
+  }
+  return r;
 }
 
 void disassembly(FILE* f, instr* program, size_t len) {
@@ -249,16 +250,16 @@ void ctx_del(struct ctx *c) {
   callstack_del(&c -> call);
 }
 
-void ctx_datastack_print(struct ctx *c, const char* indent) {
+void ctx_datastack_print(struct ctx *c, FILE* f, const char* indent) {
   int i = 0;
   uint32_t* s = c -> data.bottom;
   while (s < c -> data.top) {
-    printf("%s%.2i: 0x%.8x %i\n", indent, i++, *s, *s);
+    fprintf(f, "%s%.2i: 0x%.8x %i\n", indent, i++, *s, *s);
     s++;
   }
 }
 
-void ctx_callstack_print(struct ctx* c, const char* indent) {
+void ctx_callstack_print(struct ctx* c, FILE* f, const char* indent) {
   // TODO: print arguments by using data stack and n_args
   char b[64];
   int n = (c -> current) - (c -> call.bottom);
@@ -267,11 +268,11 @@ void ctx_callstack_print(struct ctx* c, const char* indent) {
   while (call >= c -> call.bottom) {
     instr* s = call -> start + 1; // match +1 at end of exec's switch
     instr* i = call -> ip;
-// BUG: why is it not printing the code point and additional arguments ??
+    // BUG: why is it not printing multibyte instruction correctly ?
     instr_disassembly(b, sizeof(b), s);
-    printf("%s%.2i: +%ld: %s\n", indent, n--, (long)(s - base), b);
+    fprintf(f, "%s%.2i: +%ld: %s\n", indent, n--, (long)(s - base), b);
     instr_disassembly(b, sizeof(b), i);
-    printf("%s    at +%ld: %s\n", indent, (long)(i - base), b);
+    fprintf(f, "%s    at +%ld: %s\n", indent, (long)(i - base), b);
     call--;
   }
 }
@@ -285,11 +286,11 @@ void ctx_dump(struct ctx *c, FILE* f) {
 
   fprintf(f, "\ndata stack dump\n");
   fprintf(f,   "---------------\n");
-  ctx_datastack_print(c, "| ");
+  ctx_datastack_print(c, f, "| ");
 
   fprintf(f, "\ncall stack dump\n");
   fprintf(f,   "---------------\n");
-  ctx_callstack_print(c, "| ");
+  ctx_callstack_print(c, f, "| ");
 
   fprintf(f, "\n");
   // also mark data stack with frame pointers from call stack
@@ -376,7 +377,7 @@ void exec(struct ctx *c,        // execution context containing stack area
   while (c -> current -> ip < c -> ip_end) {
 
     if (DBG) {
-      ctx_datastack_print(c, "  :");
+      ctx_datastack_print(c, stdout, "  :");
       instr_disassembly(buf, sizeof(buf), c -> current -> ip);
       printf("%s\n", buf);
     }
@@ -503,7 +504,7 @@ void run_program(instr* p, size_t len) {
   struct ctx c;
   ctx_new(&c, 256);
   exec(&c, p, len);
-  ctx_datastack_print(&c, "");
+  ctx_datastack_print(&c, stdout, "");
   ctx_del(&c);
 }
 
