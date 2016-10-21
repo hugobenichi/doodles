@@ -276,17 +276,18 @@ void ctx_callstack_print(struct ctx* c, FILE* f, const char* indent) {
   int n = (c -> current) - (c -> call.bottom);
   instr* base = c -> call.bottom -> start;
   struct call* call = c -> current;
-  while (call >= c -> call.bottom) {
+  while (n >= 0) {
     instr* s = call -> start + 1; // match +1 at end of exec's switch
     instr* i = call -> ip;
     // BUG: why is it not printing multibyte instruction correctly ?
     instr_disassembly(b, sizeof(b), s);
-    fprintf(f, "%s%.2i: +%ld: %s", indent, n--, (long)(s - base), b);
+    fprintf(f, "%s%.2i: +%ld: %s", indent, n, (long)(s - base), b);
     call_args(b, sizeof(b), call);
     fprintf(f, " with %s\n", b);
     instr_disassembly(b, sizeof(b), i);
     fprintf(f, "%s    at +%ld: %s\n", indent, (long)(i - base), b);
     call--;
+    n--;
   }
 }
 
