@@ -25,14 +25,9 @@ static void* _must_malloc(size_t nbytes, int ln) {
 
 /*
  * TODO next
- *  - implement ctx dump with pretty printing for call stack too
- *  - covers other exception paths like ctx_ip_set
- *  - debug i_call/i_ret
- *  - implement factorial with call/ret
- *  - add load/store and change factorial
  *  - add fibonacci, both exponential and linear version
+ *  - add load/store and apply to factorial, add sum of squares
  *  - add recur
- *  - replace static ctx.ip_end by a dynamic method end point set when calling/returning method
  */
 
 typedef uint8_t instr;
@@ -385,6 +380,7 @@ void ctx_ret(struct ctx *c, int output_n) {
     ctx_dump_fatal(stderr, c, "call stack underflow");
   }
   c -> data.top = (c -> call.top -> fp) + output_n; // BUG: progrably wrong, should use current and not top
+                                                    // fix by adding stack push after ret in p6
   (c -> call.top)--;
   (c -> current)--;
 }
