@@ -232,6 +232,9 @@ int call_args(char* buf, size_t n, struct call* call) {
   *buf++ = '(';
   int nargs = (int) call -> n_args;
   uint32_t* w = call -> fp;
+  if (!nargs) {
+      buf += 2;
+  }
   while (nargs--) {
     buf += snprintf(buf, 14, "%u, ", *w++);
   }
@@ -622,10 +625,11 @@ void p5() {
   puts("p5: compute 4! using non-tail recursive i_call/i_ret");
   instr program[] = {
     // goto main
-    i_goto, 16,
+    i_goto, 18,
     // factorial
     i_dup,
     i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
+    //i_panic, i_noop,
     i_ret, 1,             // return
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
@@ -634,6 +638,7 @@ void p5() {
     i_32dec,              //              -> ..., n x acc, n - 1]
     i_push_u8, 2,         // factorial address
     i_call, 2,            // recur
+    i_ret, 1,
     // push initial values
     i_push_u8, 1,
     i_push_u8, 5,
@@ -682,8 +687,8 @@ int main(int argc, char *argv[]) {
     //p1,
     //p2,
     //p3,
-    p4,
-    //p5,
+    //p4,
+    p5,
     //p6,
   };
 
