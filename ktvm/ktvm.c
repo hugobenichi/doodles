@@ -274,21 +274,28 @@ void ctx_datastack_print(struct ctx *c, FILE* f, const char* indent) {
 }
 
 void ctx_callstack_print(struct ctx* c, FILE* f, const char* indent) {
-  // TODO: call addr and instruction aat call addr should be swapped
+  // TODO: when calling function with argument area overlapping caller argument area,
+  //       the caller arguments are lost when dumping the stack.
   char b[64];
   int n = (c -> current) - (c -> call.bottom);
   instr* base = c -> call.bottom -> start;
   struct call* call = c -> current;
   while (n >= 0) {
-    instr* s = call -> start + 1; // match +1 at end of exec's switch
+    instr* s = call -> start;
     instr* i = call -> ip;
+    if (n > 0) {
+      s++; // match +1 at end of exec's switch for non-first call. TODO: clean this hack
+    }
+    if (call < c -> current) {
+      i--; // similar hack to the one above
+    }
     // BUG: why is it not printing multibyte instruction correctly ?
+    instr_disassembly(b, sizeof(b), i);
+    fprintf(f, "%s%.2i: at +%.2ld: %s\n", indent, n, (long)(i - base), b);
     instr_disassembly(b, sizeof(b), s);
-    fprintf(f, "%s%.2i: +%ld: %s", indent, n, (long)(s - base), b);
+    fprintf(f, "%s    in +%.2ld: %s", indent, (long)(s - base), b);
     call_args(b, sizeof(b), call);
     fprintf(f, " with %s\n", b);
-    instr_disassembly(b, sizeof(b), i);
-    fprintf(f, "%s    at +%ld: %s\n", indent, (long)(i - base), b);
     call--;
     n--;
   }
@@ -377,7 +384,7 @@ void ctx_ret(struct ctx *c, int output_n) {
   if (c-> call.top == c -> call.bottom) {
     ctx_dump_fatal(stderr, c, "call stack underflow");
   }
-  c -> data.top = (c -> call.top -> fp) + output_n;
+  c -> data.top = (c -> call.top -> fp) + output_n; // BUG: progrably wrong, should use current and not top
   (c -> call.top)--;
   (c -> current)--;
 }
@@ -629,8 +636,8 @@ void p5() {
     // factorial
     i_dup,
     i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
-    //i_panic, i_noop,
-    i_ret, 1,             // return
+    i_panic, i_noop,
+    //i_ret, 1,             // return
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
