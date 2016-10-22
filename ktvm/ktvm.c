@@ -376,6 +376,7 @@ void ctx_ret(struct ctx *c, int output_n) {
   }
   c -> data.top = (c -> call.top -> fp) + output_n;
   (c -> call.top)--;
+  (c -> current)--;
 }
 
 void exec(struct ctx *c,        // execution context containing stack area
@@ -650,20 +651,20 @@ void p6() {
   instr program[] = {
     i_push_u8, 1,
     i_push_u8, 2,
-    i_push_u8, 10, // &f1
+    i_push_u8, 10,  // &f1
     i_call, 2,
     i_ret, 1,
     i_noop,         // f1, addr = 10
     i_32add,
     i_push_u8, 3,
-    i_push_u8, 20, // &f2
+    i_push_u8, 20,  // &f2
     i_call, 2,
     i_ret, 1,
     i_noop,         // f2, addr = 20
     i_32mul,
     i_push_u8, 4,
     i_32mul,
-    i_push_u8, 31, // &f3
+    i_push_u8, 31,  // &f3
     i_call, 2,
     i_ret, 1,
     i_noop,         // f3, addr = 31
@@ -681,9 +682,9 @@ int main(int argc, char *argv[]) {
     //p1,
     //p2,
     //p3,
-    //p4,
+    p4,
     //p5,
-    p6,
+    //p6,
   };
 
   size_t len = sizeof(programs) / sizeof(programs[0]);
