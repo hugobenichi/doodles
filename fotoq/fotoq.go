@@ -48,7 +48,8 @@ var (
 		"prod": {
 			Source:  "/Volumes/Untitled/DCIM/",
 			Staging: "/Volumes/Untitled/staging/",
-			Working: "/Users/hugobenichi/Desktop/photos/",
+			Working: "/Volumes/Untitled/staging/",
+			//Working: "/Users/hugobenichi/Desktop/photos/",
 			Exts: []string{
 				"JPG",
 				"RAF",
