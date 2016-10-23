@@ -683,6 +683,39 @@ void p6() {
   run_program(program, sizeof(program));
 }
 
+void p7() {
+  puts("p7: sum of square with an sub function ");
+  instr program[] = {
+    i_goto, 24,     // goto main
+    // f1: square top of stack
+    i_dup,
+    i_32mul,
+    i_ret, 1,
+    // f2: sum of square
+    i_dup,
+    i_jump_if, 12,  // swap top of stack and exit below if top is zero
+    i_swap,
+    i_ret, 1,
+    i_swap,
+    i_dupbis,
+    i_push_u8, 2,   // &f1
+    i_call, 1,
+    i_32add,
+    i_swap,
+    i_push_u8, 6,   // &f2
+    i_call, 2,
+    // main: prepare sack and call f2
+    i_push_u8, 0,
+    i_push_u8, 4,
+    i_push_u8, 6,   // &f2,
+    i_call, 2,
+    i_ret, 1,
+  };
+  if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
+  puts("");
+  run_program(program, sizeof(program));
+}
+
 typedef void (*void_fn)();
 
 int main(int argc, char *argv[]) {
@@ -691,8 +724,9 @@ int main(int argc, char *argv[]) {
     //p2,
     //p3,
     //p4,
-    p5,
+    //p5,
     //p6,
+    p7,
   };
 
   size_t len = sizeof(programs) / sizeof(programs[0]);
