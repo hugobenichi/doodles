@@ -379,8 +379,7 @@ void ctx_ret(struct ctx *c, int output_n) {
   if (c-> call.top == c -> call.bottom) {
     ctx_dump_fatal(stderr, c, "call stack underflow");
   }
-  c -> data.top = (c -> call.top -> fp) + output_n; // BUG: progrably wrong, should use current and not top
-                                                    // fix by adding stack push after ret in p6
+  //uint32_t* = new_fp = (c -> call.top -> fp) + output_n;
   (c -> call.top)--;
   (c -> current)--;
 }
@@ -693,8 +692,7 @@ void p7() {
     i_ret, 1,
     // f2: sum of square
     i_dup,
-    i_jump_if, 12,  // swap top of stack and exit below if top is zero
-    i_swap,
+    i_jump_if, 11,  // swap top of stack and exit below if top is zero
     i_ret, 1,
     i_swap,
     i_dupbis,
@@ -702,6 +700,7 @@ void p7() {
     i_call, 1,
     i_32add,
     i_swap,
+    i_32dec,
     i_push_u8, 6,   // &f2
     i_call, 2,
     // main: prepare sack and call f2
