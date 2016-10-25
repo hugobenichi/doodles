@@ -119,7 +119,7 @@ char* instr_name(instr i) {
 }
 
 int instr_disassembly(char* buf, size_t n, instr* i_addr) {
-  instr i = *i_addr++;
+  instr i = *i_addr;
   int nbytes = instr_nbyte(i);
   if (nbytes < 0 || 3 < nbytes) {
     return -1;
@@ -130,7 +130,8 @@ int instr_disassembly(char* buf, size_t n, instr* i_addr) {
   n -= w;
   int r = nbytes + 1;
   while (nbytes--) {
-    buf += snprintf(buf, n, ", %i", *i_addr++);
+    i = *++i_addr;
+    buf += snprintf(buf, n, ", 0x%.2x (%i)", i, i);
   }
   return r;
 }
@@ -138,9 +139,11 @@ int instr_disassembly(char* buf, size_t n, instr* i_addr) {
 void disassembly(FILE* f, instr* program, size_t len) {
   instr* end = program + len;
   char b[64];
+  int i = 0;
   while (program < end) {
     int nbytes = instr_disassembly(b, sizeof(b), program);
-    fprintf(f, "%s\n", b);
+    fprintf(f, "0x%.2x: %s\n", i, b);
+    i += nbytes;
     if (nbytes < 0) {
       snprintf(buf, sizeof(buf), "unexpected number of bytes %d", nbytes);
       fatal(buf);
