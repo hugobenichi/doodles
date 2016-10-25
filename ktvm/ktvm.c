@@ -25,9 +25,7 @@ static void* _must_malloc(size_t nbytes, int ln) {
 
 /*
  * TODO next
- *  - add load, store, recur: use to simplify factorial
- *  - add recur
- *  - add fibonacci
+ *  - polish i_load, i_store, i_recur
  */
 
 typedef uint8_t instr;
@@ -71,12 +69,10 @@ const instr i_do_if   =  multi(19, 1);
 const instr i_call    =  multi(20, 1); // pop top of stack as programm addr and start subroutine there.
                                        // Folowwing byte indicate number of args to take from stack for fp.
 const instr i_ret     =  multi(21, 1); // return to caller. Following byte indicate number of words to return.
-const instr i_panic   =  25;
-
-// TODO:
-const instr i_load    =  22;
-const instr i_store   =  23;
+const instr i_load    =  multi(22, 1);
+const instr i_store   =  multi(23, 1);
 const instr i_recur   =  24;
+const instr i_panic   =  25;
 
 static char* instr_names[] = {
   "i_noop",
@@ -254,7 +250,7 @@ void ctx_new(struct ctx *c,
              size_t depth
              ) {
   datastack_new(&c -> data, depth);
-  callstack_new(&c -> call, 256);
+  callstack_new(&c -> call, depth);
 }
 
 void ctx_del(struct ctx *c) {
@@ -502,6 +498,22 @@ void exec(struct ctx *c,        // execution context containing stack area
           ctx_ip_next(c);
         }
         break;
+      case i_load:
+        ctx_ip_next(c);
+        r0= ctx_ip_get(c);
+        // TODO: check 0 <= r0 < n_args
+        ctx_push(c, *(c -> current -> fp + r0));
+        break;
+      case i_store:
+        ctx_ip_next(c);
+        r0= ctx_ip_get(c);
+        // TODO: check 0 <= r0 < n_args
+        *(c -> current -> fp + r0) = ctx_pop(c);
+        break;
+      case i_recur:
+        c -> current -> ip = c -> current -> start;
+        // TODO: reset stack pointer
+        break;
       case i_call:
         ctx_ip_next(c);
         r0 = ctx_pop(c);
@@ -718,6 +730,35 @@ void p7() {
   run_program(program, sizeof(program));
 }
 
+void p8() {
+  puts("p8: compute fibonacci using i_load/i_store");
+  instr program[] = {
+    // goto main
+    i_goto, 18,
+    // fib
+    i_dup,
+    i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
+    i_ret, 1,             // return
+    i_dupbis,             // [f_n-1, f_n, n] -> [f_n-1, f_n, n, f_n]
+    i_dup,                // [f_n-1, f_n, n] -> [f_n-1, f_n, n, f_n, f_n]
+    i_load, 0,            //                 -> [f_n-1, f_n, n, f_n, f_n, f_n-1]
+    i_32add,              //                 -> [f_n-1, f_n, n, f_n, f_n+1]
+    i_store, 1,           //                 -> [f_n-1, f_n+1, n, f_n]
+    i_store, 0,           //                 -> [f_n, f_n+1, n]
+    i_32dec,
+    i_recur,
+    // push initial values
+    i_push_u8, 0,         // f0
+    i_push_u8, 1,         // f1
+    i_push_u8, 19,        // fib(n)
+    i_push_u8, 2,         // &fib
+    i_call, 3
+  };
+  if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
+  puts("");
+  run_program(program, sizeof(program));
+}
+
 typedef void (*void_fn)();
 
 int main(int argc, char *argv[]) {
@@ -728,7 +769,8 @@ int main(int argc, char *argv[]) {
     //p4,
     //p5,
     //p6,
-    p7,
+    //p7,
+    p8,
   };
 
   size_t len = sizeof(programs) / sizeof(programs[0]);
