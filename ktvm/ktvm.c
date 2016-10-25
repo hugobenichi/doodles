@@ -25,7 +25,6 @@ static void* _must_malloc(size_t nbytes, int ln) {
 
 /*
  * TODO next
- *  - debug p7
  *  - add load, store, recur: use to simplify factorial
  *  - add recur
  *  - add fibonacci
@@ -713,7 +712,6 @@ void p7() {
     i_push_u8, 4,
     i_push_u8, 6,   // &f2,
     i_call, 2,
-    i_ret, 1,
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
   puts("");
