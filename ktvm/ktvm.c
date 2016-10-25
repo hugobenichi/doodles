@@ -380,9 +380,9 @@ void ctx_ret(struct ctx *c, int output_n) {
   if (c-> call.top == c -> call.bottom) {
     ctx_dump_fatal(stderr, c, "call stack underflow");
   }
-  //uint32_t* = new_fp = (c -> call.top -> fp) + output_n;
   (c -> call.top)--;
   (c -> current)--;
+  //c -> current -> fp += output_n;
 }
 
 void exec(struct ctx *c,        // execution context containing stack area
@@ -686,7 +686,7 @@ void p6() {
 void p7() {
   puts("p7: sum of square with an sub function ");
   instr program[] = {
-    i_goto, 24,     // goto main
+    i_goto, 26,     // goto main
     // f1: square top of stack
     i_dup,
     i_32mul,
@@ -704,6 +704,7 @@ void p7() {
     i_32dec,
     i_push_u8, 6,   // &f2
     i_call, 2,
+    i_ret, 1,
     // main: prepare sack and call f2
     i_push_u8, 0,
     i_push_u8, 4,
