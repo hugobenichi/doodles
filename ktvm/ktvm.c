@@ -380,12 +380,12 @@ void ctx_call(struct ctx *c, instr* callee, int n_args) {
 //  - restoring the data stack top, taking into account the number of output args.
 //  - popping the top activation record of the call stack and making it current
 void ctx_ret(struct ctx *c, int output_n) {
-  if (c-> call.top == c -> call.bottom) {
-    ctx_dump_fatal(stderr, c, "call stack underflow");
-  }
   (c -> call.top)--;
   (c -> current)--;
   //c -> current -> fp += output_n;
+  if (c-> call.top == c -> call.bottom) {
+    ctx_dump_fatal(stderr, c, "call stack underflow");
+  }
 }
 
 void exec(struct ctx *c,        // execution context containing stack area
