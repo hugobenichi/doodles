@@ -25,9 +25,10 @@ static void* _must_malloc(size_t nbytes, int ln) {
 
 /*
  * TODO next
- *  - add fibonacci, both exponential and linear version
- *  - add load/store and apply to factorial, add sum of squares
+ *  - debug p7
+ *  - add load, store, recur: use to simplify factorial
  *  - add recur
+ *  - add fibonacci
  */
 
 typedef uint8_t instr;
