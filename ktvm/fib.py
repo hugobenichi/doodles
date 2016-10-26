@@ -8,10 +8,14 @@ def fib(n):
         b = c
         n -= 1
     return b
-start = time.monotonic()
-count = 10
+
+start = time.time()
+
+count = 100
 while (count > 0):
     x = fib(19)
     count -= 1;
-stop = time.monotonic()
+
+stop = time.time()
+
 print(x, 1000 * 1000 * (stop - start))

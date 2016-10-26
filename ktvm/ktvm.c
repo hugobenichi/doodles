@@ -419,9 +419,9 @@ void exec(struct ctx *c,        // execution context containing stack area
         ctx_push(c, ctx_ip_get(c));
         break;
       case i_32add:
+        // TODO: check datastack len > 1
         r0 = ctx_pop(c);
-        r1 = ctx_pop(c);
-        ctx_push(c, r0 + r1);
+        (*(c -> data.top - 1)) += r0;
         break;
       case i_32mul:
         r0 = ctx_pop(c);
@@ -459,10 +459,13 @@ void exec(struct ctx *c,        // execution context containing stack area
         ctx_push(c, r0 >= r1);
         break;
       case i_32inc:
+        // TODO: check datastack len > 0
         ctx_push(c, ctx_pop(c) + 1);
+        (*(c -> data.top - 1))++;
         break;
       case i_32dec:
-        ctx_push(c, ctx_pop(c) - 1);
+        // TODO: check datastack len > 0
+        (*(c -> data.top - 1))--;
         break;
       case i_dup:
         // TODO: check datastack len > 0
@@ -501,13 +504,13 @@ void exec(struct ctx *c,        // execution context containing stack area
         break;
       case i_load:
         ctx_ip_next(c);
-        r0= ctx_ip_get(c);
+        r0 = ctx_ip_get(c);
         // TODO: check 0 <= r0 < n_args
         ctx_push(c, *(c -> current -> fp + r0));
         break;
       case i_store:
         ctx_ip_next(c);
-        r0= ctx_ip_get(c);
+        r0 = ctx_ip_get(c);
         // TODO: check 0 <= r0 < n_args
         *(c -> current -> fp + r0) = ctx_pop(c);
         break;
@@ -545,14 +548,14 @@ void run_program(instr* p, size_t len) {
   ctx_new(&c, 256);
 
   clock_gettime(CLOCK_REALTIME, &start);
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 100; i++) {
     exec(&c, p, len);
+    //ctx_datastack_print(&c, stdout, "");
     ctx_reset(&c);
   }
   clock_gettime(CLOCK_REALTIME, &stop);
   long elapsed = (stop.tv_sec - start.tv_sec) * 1000 * 1000 + (stop.tv_nsec - start.tv_nsec) / 1000;
 
-  ctx_datastack_print(&c, stdout, "");
   printf("duration: %ld\n", elapsed);
 
   ctx_del(&c);
@@ -791,7 +794,9 @@ int main(int argc, char *argv[]) {
   size_t len = sizeof(programs) / sizeof(programs[0]);
   for (int i = 0; i < len; i++) {
       programs[i]();
-      puts("");
-      puts("");
+      if (i < len - 1) {
+        puts("");
+        puts("");
+      }
   }
 }
