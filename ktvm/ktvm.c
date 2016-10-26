@@ -465,20 +465,15 @@ void exec(struct ctx *c,        // execution context containing stack area
         ctx_push(c, ctx_pop(c) - 1);
         break;
       case i_dup:
-        // PERF: read top of stack instead of popping
-        r0 = ctx_pop(c);
-        ctx_push(c, r0);
-        ctx_push(c, r0);
+        // TODO: check datastack len > 0
+        ctx_push(c, *(c -> data.top - 1));
         break;
       case i_dupbis:
-        // PERF: read top two of stack instead of popping
-        r0 = ctx_pop(c);
-        r1 = ctx_pop(c);
-        ctx_push(c, r1);
-        ctx_push(c, r0);
-        ctx_push(c, r1);
+        // TODO: check datastack len > 1
+        ctx_push(c, *(c -> data.top - 2));
         break;
       case i_swap:
+        // TODO: check datastack len > 1
         r0 = ctx_pop(c);
         r1 = ctx_pop(c);
         ctx_push(c, r0);
