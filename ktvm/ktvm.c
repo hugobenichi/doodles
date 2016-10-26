@@ -258,6 +258,12 @@ void ctx_del(struct ctx *c) {
   callstack_del(&c -> call);
 }
 
+void ctx_reset(struct ctx *c) {
+  c -> current = 0;
+  c -> data.top = c -> data.bottom;
+  c -> call.top = c -> call.bottom;
+}
+
 void ctx_datastack_print(struct ctx *c, FILE* f, const char* indent) {
   int i = 0;
   uint32_t* s = c -> data.bottom;
@@ -538,8 +544,11 @@ void exec(struct ctx *c,        // execution context containing stack area
 void run_program(instr* p, size_t len) {
   struct ctx c;
   ctx_new(&c, 256);
-  exec(&c, p, len);
-  ctx_datastack_print(&c, stdout, "");
+  for (int i = 0; i < 10; i++) {
+    exec(&c, p, len);
+    ctx_datastack_print(&c, stdout, "");
+    ctx_reset(&c);
+  }
   ctx_del(&c);
 }
 
