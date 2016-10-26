@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DBG 1
+#define DBG 0
 
 #define BOOM do { printf("boom\n"); exit(0); } while(0)
 
@@ -541,14 +541,25 @@ void exec(struct ctx *c,        // execution context containing stack area
   }
 }
 
+#include <time.h>
+
 void run_program(instr* p, size_t len) {
   struct ctx c;
+  struct timespec start, stop;
+
   ctx_new(&c, 256);
-  for (int i = 0; i < 10; i++) {
+
+  clock_gettime(CLOCK_REALTIME, &start);
+  for (int i = 0; i < 20; i++) {
     exec(&c, p, len);
-    ctx_datastack_print(&c, stdout, "");
     ctx_reset(&c);
   }
+  clock_gettime(CLOCK_REALTIME, &stop);
+  long elapsed = (stop.tv_sec - start.tv_sec) * 1000 * 1000 + (stop.tv_nsec - start.tv_nsec) / 1000;
+
+  ctx_datastack_print(&c, stdout, "");
+  printf("duration: %ld\n", elapsed);
+
   ctx_del(&c);
 }
 
