@@ -302,22 +302,15 @@ void ctx_callstack_print(struct ctx* c, FILE* f, const char* indent) {
 }
 
 void ctx_dump(struct ctx *c, FILE* f) {
-  // also print call stack,
-  // also print current function code and current
-  //  add disassembly
   fprintf(f, "\nfull context dump\n");
   fprintf(f,   "-----------------\n");
-
   fprintf(f, "\ndata stack dump\n");
   fprintf(f,   "---------------\n");
   ctx_datastack_print(c, f, "| ");
-
   fprintf(f, "\ncall stack dump\n");
   fprintf(f,   "---------------\n");
   ctx_callstack_print(c, f, "| ");
-
   fprintf(f, "\n");
-  // also mark data stack with frame pointers from call stack
 }
 
 void _ctx_dump_fatal(FILE* f, struct ctx *c, const char *msg, int ln) {
