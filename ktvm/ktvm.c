@@ -191,7 +191,16 @@ void datastack_del(struct datastack *s) {
   *s = datastack_empty;
 }
 
+int datastack_ensure_capacity(struct datastack* d, int n) {
+  return ((n < 0) && (d -> top - d -> bottom) >= n)
+    ||  ((n > 0) && (d -> end - d -> top) >= n);
+  return 0;
+}
 
+#define datastack_overflow(c, n)  if (!datastack_ensure_capacity((c) -> data, n) \
+                                    ctx_dump_fatal(stderr, (c), "data stack overflow")
+#define datastack_underflow(c, n) if (!datastack_ensure_capacity((c) -> data, n) \
+                                    ctx_dump_fatal(stderr, (c), "data stack underflow")
 
 
 struct call {
