@@ -20,10 +20,9 @@ first of all cut stuff into multiple files:
       replace ctx
 
 once cut into files, add missing features
-  - change jump instrs to froward only
-  - add recur
-      -> mutally recursive functions ?
-  - add load/store
+  - change jump instrs to forward only
+  - add mutally recursive functions with recur2
+  - add bytecode verifier which compute function frame size
 
 midterm:
   compiler + simple arithmetic languages
@@ -33,4 +32,8 @@ midterm:
   some benchmarks ahah
 
 rm interpreter loop
-  instr switch -> goto pointers -> jit compiler from goto pointers
+  (done) instr switch
+  (done) goto pointers
+    decode the bytecode instructions into labels in single buffer upfront
+    try removing the data stack checks and see the effect
+  jit compiler from goto pointers
