@@ -13,7 +13,7 @@ start = time.time()
 
 count = 100
 while (count > 0):
-    x = fib(19)
+    x = fib(40)
     count -= 1;
 
 stop = time.time()

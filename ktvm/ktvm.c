@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DBG 0
+#define DBG 1
 
 #define BOOM do { printf("boom\n"); exit(0); } while(0)
 
@@ -382,16 +382,11 @@ void ctx_ret(struct ctx *c, int output_n) {
   }
 }
 
-void exec(struct ctx *c,        // execution context containing stack area
-          instr* program,       // program to execute
-          size_t len            // program length
-          ) {
+void exec(struct ctx *c, instr* program, size_t len) {
+  int32_t r0, r1;
 
   ctx_call(c, program, 0);
   c -> ip_end     = program + len;
-
-  int32_t r0, r1;
-
   while (c -> current -> ip < c -> ip_end) {
 
     if (DBG) {
@@ -532,6 +527,182 @@ void exec(struct ctx *c,        // execution context containing stack area
   }
 }
 
+void exec2(struct ctx *c, instr* program, size_t len) {
+  int32_t r0, r1;
+
+  static char* instr_labels[] = {
+    &&do_i_noop,
+    &&do_i_push_32,
+    &&do_i_push_u8,
+    &&do_i_push_s8,
+    &&do_i_32add,
+    &&do_i_32mul,
+    &&do_i_32neg,
+    &&do_i_32inc,
+    &&do_i_32dec,
+    &&do_i_not,
+    &&do_i_eq,
+    &&do_i_leq,
+    &&do_i_geq,
+    &&do_i_dup,
+    &&do_i_dupbis,
+    &&do_i_swap,
+    &&do_i_goto,
+    &&do_i_jump_if,
+    &&do_i_skip_if,
+    &&do_i_do_if,
+    &&do_i_call,
+    &&do_i_ret,
+    &&do_i_load,
+    &&do_i_store,
+    &&do_i_recur,
+    &&do_i_panic,
+  };
+
+  ctx_call(c, program, 0);
+  c -> ip_end     = program + len;
+
+  dispatch:
+    if (c -> current -> ip >= c -> ip_end) return;
+
+    if (DBG) {
+      ctx_datastack_print(c, stdout, "  :");
+      instr_disassembly(buf, sizeof(buf), c -> current -> ip);
+      printf("%s\n", buf);
+    }
+
+    instr i = instr_codepoint(ctx_ip_get(c));
+    // TODO: check bounds
+    void* label = instr_labels[i];
+    goto *label;
+
+  do_i_push_u8: // TODO: fix broken widening
+    ctx_ip_next(c);
+    ctx_push(c, (ctx_ip_get(c)) & 0xff);
+    goto next;
+  do_i_push_s8:
+    ctx_ip_next(c);
+    ctx_push(c, ctx_ip_get(c));
+    goto next;
+  do_i_32add:
+    // TODO: check datastack len > 1
+    r0 = ctx_pop(c);
+    (*(c -> data.top - 1)) += r0;
+    goto next;
+  do_i_32mul:
+    r0 = ctx_pop(c);
+    r1 = ctx_pop(c);
+    ctx_push(c, r0 * r1);
+    goto next;
+  do_i_32neg:
+    r0 = ctx_pop(c);
+    ctx_push(c, -r0);
+    goto next;
+  do_i_not:
+    r0 = ctx_pop(c);
+    r1 = r0 ? 0 : 1;
+    ctx_push(c, r1);
+    goto next;
+  do_i_eq:
+    r0 = ctx_pop(c);
+    r1 = ctx_pop(c);
+    ctx_push(c, r1);
+    ctx_push(c, r0);
+    ctx_push(c, r0 == r1);
+    goto next;
+  do_i_leq:
+    r0 = ctx_pop(c);
+    r1 = ctx_pop(c);
+    ctx_push(c, r1);
+    ctx_push(c, r0);
+    ctx_push(c, r0 <= r1);
+    goto next;
+  do_i_geq:
+    r0 = ctx_pop(c);
+    r1 = ctx_pop(c);
+    ctx_push(c, r1);
+    ctx_push(c, r0);
+    ctx_push(c, r0 >= r1);
+    goto next;
+  do_i_32inc:
+    // TODO: check datastack len > 0
+    ctx_push(c, ctx_pop(c) + 1);
+    (*(c -> data.top - 1))++;
+    goto next;
+  do_i_32dec:
+    // TODO: check datastack len > 0
+    (*(c -> data.top - 1))--;
+    goto next;
+  do_i_dup:
+    // TODO: check datastack len > 0
+    ctx_push(c, *(c -> data.top - 1));
+    goto next;
+  do_i_dupbis:
+    // TODO: check datastack len > 1
+    ctx_push(c, *(c -> data.top - 2));
+    goto next;
+  do_i_swap:
+    // TODO: check datastack len > 1
+    r0 = ctx_pop(c);
+    r1 = ctx_pop(c);
+    ctx_push(c, r0);
+    ctx_push(c, r1);
+    goto next;
+  do_i_goto:
+    ctx_ip_next(c);
+    ctx_ip_set(c, program + ctx_ip_get(c) - 1);
+    goto next;
+  do_i_jump_if:
+    ctx_ip_next(c);
+    if (ctx_pop(c)) {
+      ctx_ip_set(c, program + ctx_ip_get(c) - 1);
+    }
+    goto next;
+  do_i_skip_if:
+    if (ctx_pop(c)) {
+      ctx_ip_next(c);
+    }
+    goto next;
+  do_i_do_if:
+    if (!ctx_pop(c)) {
+      ctx_ip_next(c);
+    }
+    goto next;
+  do_i_load:
+    ctx_ip_next(c);
+    r0 = ctx_ip_get(c);
+    // TODO: check 0 <= r0 < n_args
+    ctx_push(c, *(c -> current -> fp + r0));
+    goto next;
+  do_i_store:
+    ctx_ip_next(c);
+    r0 = ctx_ip_get(c);
+    // TODO: check 0 <= r0 < n_args
+    *(c -> current -> fp + r0) = ctx_pop(c);
+    goto next;
+  do_i_recur:
+    c -> current -> ip = c -> current -> start;
+    // TODO: reset stack pointer
+    goto next;
+  do_i_call:
+    ctx_ip_next(c);
+    r0 = ctx_pop(c);
+    ctx_call(c, program + r0 - 1, ctx_ip_get(c));
+    goto next;
+  do_i_ret:
+    ctx_ip_next(c);
+    ctx_ret(c, ctx_ip_get(c));
+    goto next;
+  do_i_panic:
+    ctx_dump_fatal(stderr, c, "panic");
+    goto next;
+  do_i_push_32:
+  do_i_noop:
+  next:
+    (c -> current -> ip)++; // do not use ctx_ip_next() to avoid fatal-ing at program end
+    goto dispatch;
+}
+
 #include <time.h>
 
 void run_program(instr* p, size_t len) {
@@ -539,11 +710,12 @@ void run_program(instr* p, size_t len) {
   struct timespec start, stop;
 
   ctx_new(&c, 256);
+  int iter = 1;
 
   clock_gettime(CLOCK_REALTIME, &start);
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < iter; i++) {
     exec(&c, p, len);
-    //ctx_datastack_print(&c, stdout, "");
+    if (DBG) ctx_datastack_print(&c, stdout, "");
     ctx_reset(&c);
   }
   clock_gettime(CLOCK_REALTIME, &stop);
@@ -761,7 +933,7 @@ void p8() {
     // push initial values
     i_push_u8, 0,         // f0
     i_push_u8, 1,         // f1
-    i_push_u8, 19,        // fib(n)
+    i_push_u8, 40,        // fib(n)
     i_push_u8, 2,         // &fib
     i_call, 3
   };
