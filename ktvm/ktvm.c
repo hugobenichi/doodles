@@ -23,11 +23,6 @@ static void* _must_malloc(size_t nbytes, int ln) {
 }
 #define must_malloc(nbytes) _must_malloc((nbytes), __LINE__)
 
-/*
- * TODO next
- *  - polish i_load, i_store, i_recur
- */
-
 typedef uint8_t instr;
 
 static const int instr_multibyte_mask = 3 << 6;
@@ -105,6 +100,28 @@ static char* instr_names[] = {
 static int instr_names_len = sizeof(instr_names);
 static char* instr_unknown = "unknown";
 
+struct instr {
+  instr i;
+  uint32_t data;
+  uint32_t has_data;
+};
+
+void decode_instr(struct instr* d, instr* i_addr) {
+  d -> i = instr_codepoint(*i_addr);
+  int nbytes = instr_nbyte(*i_addr);
+  if (nbytes > 0) {
+    d -> data = *(i_addr + 1);
+    d -> has_data = 1;
+  }
+}
+
+int decode_program(struct instr* d, size_t dlen, instr* p, size_t plen) {
+  while (plen-- && dlen--) {
+    decode_instr(d++, p++);
+  }
+  return plen;
+}
+
 char* instr_name(instr i) {
   i = instr_codepoint(i);
   if (0 <= i && i < instr_names_len) {
@@ -113,6 +130,7 @@ char* instr_name(instr i) {
   return instr_unknown;
 }
 
+// TODO: replace with print_instr(struct instr i)
 int instr_disassembly(char* buf, size_t n, instr* i_addr) {
   instr i = *i_addr;
   int nbytes = instr_nbyte(i);
@@ -131,6 +149,7 @@ int instr_disassembly(char* buf, size_t n, instr* i_addr) {
   return r;
 }
 
+// TODO: replace with decode_program
 void disassembly(FILE* f, instr* program, size_t len) {
   instr* end = program + len;
   char b[64];
@@ -393,6 +412,9 @@ void ctx_ret(struct ctx *c, int output_n) {
 
 void exec(struct ctx *c, instr* program, size_t len) {
   int32_t r0, r1;
+
+  struct instr dec[128] = {};
+  int left = decode_program(dec, 128, program, len);
 
   ctx_call(c, program, 0);
   c -> ip_end     = program + len;
