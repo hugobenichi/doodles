@@ -102,24 +102,30 @@ static char* instr_unknown = "unknown";
 
 struct instr {
   instr i;
+  uint8_t has_data;
   uint32_t data;
-  uint32_t has_data;
 };
 
-void decode_instr(struct instr* d, instr* i_addr) {
+int  decode_instr(struct instr* d, instr* i_addr) {
   d -> i = instr_codepoint(*i_addr);
   int nbytes = instr_nbyte(*i_addr);
   if (nbytes > 0) {
     d -> data = *(i_addr + 1);
     d -> has_data = 1;
   }
+  return nbytes;
 }
 
-int decode_program(struct instr* d, size_t dlen, instr* p, size_t plen) {
-  while (plen-- && dlen--) {
-    decode_instr(d++, p++);
+int decode_program(struct instr* out, size_t outlen, instr* in, size_t inlen) {
+  int i = 0;
+  while (i < inlen && i < outlen) {
+    int n = decode_instr(out, in);
+    out++;
+    in += n;
+    i++;
   }
-  return plen;
+  printf("%ld|%ld|%d\n", inlen, outlen, i);
+  return i;
 }
 
 char* instr_name(instr i) {
@@ -128,6 +134,27 @@ char* instr_name(instr i) {
     return instr_names[i];
   }
   return instr_unknown;
+}
+
+void instr_print(char* buf, size_t n, struct instr* i_addr) {
+  instr i = i_addr -> i;
+  uint8_t d = i_addr -> data;
+  int w = snprintf(buf, n, "%.2i:%s", i, instr_name(i));
+  if (!i_addr -> has_data) {
+    return;
+  }
+  // TODO: safer string concatenation please, do not ignore w error values.
+  buf += w;
+  buf += snprintf(buf, n - w, ", 0x%.2x (%i)", d, d);
+}
+
+void program_fprint(FILE* f, struct instr* program, size_t len) {
+  char b[64];
+  int i = 0;
+  while (i < len) {
+    instr_print(b, sizeof(b), program++);
+    fprintf(f, "0x%.2x: %s\n", i++, b);
+  }
 }
 
 // TODO: replace with print_instr(struct instr i)
@@ -414,7 +441,15 @@ void exec(struct ctx *c, instr* program, size_t len) {
   int32_t r0, r1;
 
   struct instr dec[128] = {};
-  int left = decode_program(dec, 128, program, len);
+  int declen = decode_program(dec, 128, program, len);
+  if (declen < 0) {
+    snprintf(buf, sizeof(buf), "program too big, could not decode %d bytes", -declen);
+    fatal(buf);
+  }
+
+  printf("declen = %d\n" ,declen);
+  program_fprint(stdout, dec, declen);
+  BOOM;
 
   ctx_call(c, program, 0);
   c -> ip_end     = program + len;
