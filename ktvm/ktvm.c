@@ -108,7 +108,7 @@ struct instr {
 };
 
 int  decode_instr(struct instr* d, instr* i_addr) {
-  d -> i = instr_codepoint(*i_addr);
+  d -> i = *i_addr;
   int nbytes = instr_nbyte(*i_addr);
   if (nbytes > 0) {
     d -> data = *(i_addr + 1);
@@ -466,7 +466,7 @@ void exec(struct ctx *c, instr* program, size_t len) {
       printf("%s\n", buf);
     }
 
-    switch(instr_codepoint(i.i)) {
+    switch(i.i) {
       case i_push_32:
         break;
       case i_push_u8:
@@ -647,9 +647,9 @@ void p2() {
     i_push_u8, 20,
     i_push_u8, 0,
     i_geq,
-    i_jump_if, 10,
+    i_jump_if, 6,
     i_32inc,
-    i_goto, 4,
+    i_goto, 2,
     i_noop
   };
   if (DBG) disassembly(stdout, program, sizeof(program));
@@ -663,16 +663,15 @@ void p3() {
     // initial values
     i_push_u8, 1,
     i_push_u8, 5,
-    // factorial begin
-    i_dup,
-    i_jump_if, 9,         // exit below if top is zero, otherwise jump +2
-    i_goto, 16,           // exit
+    i_dup,                // factorial begin
+    i_jump_if, 5,         // exit below if top is zero, otherwise jump +2
+    i_goto, 12,           // exit
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
     i_swap,               //              -> ..., n x acc, n]
     i_32dec,              //              -> ..., n x acc, n - 1]
-    i_goto, 4
+    i_goto, 2
   };
   if (DBG) disassembly(stdout, program, sizeof(program));
   puts("");
@@ -682,24 +681,20 @@ void p3() {
 void p4() {
   puts("p4: compute 4! using one layer of i_call/i_ret plus inner goto loop");
   instr program[] = {
-    // goto main
-    i_goto, 14,
-    // factorial
-    i_dup,
-    i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
+    i_goto, 10,           // goto main
+    i_dup,                // factorial
+    i_jump_if, 4,         // exit below if top is zero, otherwise jump +2
     i_ret, 1,             // return
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
     i_swap,               //              -> ..., n x acc, n]
     i_32dec,              //              -> ..., n x acc, n - 1]
-    i_goto, 2,
-    // push initial values
-    i_push_u8, 1,
+    i_goto, 1,
+    i_push_u8, 1,         // main: push initial values
     i_push_u8, 5,
-    // call factorial
-    i_push_u8, 2,         // factorial address
-    i_call, 2
+    i_push_u8, 1,         // factorial address
+    i_call, 2             // call factorial
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
   puts("");
@@ -709,27 +704,22 @@ void p4() {
 void p5() {
   puts("p5: compute 4! using non-tail recursive i_call/i_ret");
   instr program[] = {
-    // goto main
-    i_goto, 18,
-    // factorial
-    i_dup,
-    i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
-    i_panic, i_noop,
-    //i_ret, 1,             // return
+    i_goto, 12,           // goto main
+    i_dup,                // factorial
+    i_jump_if, 4,         // exit below if top is zero, otherwise jump +2
+    i_ret, 1,             // return
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
     i_swap,               //              -> ..., n x acc, n]
     i_32dec,              //              -> ..., n x acc, n - 1]
-    i_push_u8, 2,         // factorial address
+    i_push_u8, 1,         // factorial address
     i_call, 2,            // recur
     i_ret, 1,
-    // push initial values
-    i_push_u8, 1,
+    i_push_u8, 1,         // main: push initial values
     i_push_u8, 5,
-    // call factorial
-    i_push_u8, 2,         // factorial address
-    i_call, 2
+    i_push_u8, 1,         // factorial address
+    i_call, 2             // call factorial
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
   puts("");
@@ -741,23 +731,23 @@ void p6() {
   instr program[] = {
     i_push_u8, 1,
     i_push_u8, 2,
-    i_push_u8, 10,  // &f1
+    i_push_u8, 5,  // &f1
     i_call, 2,
     i_ret, 1,
-    i_noop,         // f1, addr = 10
+    i_noop,         // f1, addr = 5
     i_32add,
     i_push_u8, 3,
-    i_push_u8, 20,  // &f2
+    i_push_u8, 11,  // &f2
     i_call, 2,
     i_ret, 1,
-    i_noop,         // f2, addr = 20
+    i_noop,         // f2, addr = 11
     i_32mul,
     i_push_u8, 4,
     i_32mul,
-    i_push_u8, 31,  // &f3
+    i_push_u8, 18,  // &f3
     i_call, 2,
     i_ret, 1,
-    i_noop,         // f3, addr = 31
+    i_noop,         // f3, addr = 18
     i_panic,
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
@@ -768,29 +758,26 @@ void p6() {
 void p7() {
   puts("p7: sum of square with an sub function ");
   instr program[] = {
-    i_goto, 26,     // goto main
-    // f1: square top of stack
-    i_dup,
+    i_goto, 17,     // goto main
+    i_dup,          // f1(1): square top of stack
     i_32mul,
     i_ret, 1,
-    // f2: sum of square
-    i_dup,
-    i_jump_if, 11,  // swap top of stack and exit below if top is zero
+    i_dup,          // f2(4): sum of square
+    i_jump_if, 7,  // swap top of stack and exit below if top is zero
     i_ret, 1,
     i_swap,
     i_dupbis,
-    i_push_u8, 2,   // &f1
+    i_push_u8, 1,   // &f1
     i_call, 1,
     i_32add,
     i_swap,
     i_32dec,
-    i_push_u8, 6,   // &f2
+    i_push_u8, 4,   // &f2
     i_call, 2,
     i_ret, 1,
-    // main: prepare sack and call f2
-    i_push_u8, 0,
-    i_push_u8, 4,
-    i_push_u8, 6,   // &f2,
+    i_push_u8, 0,   // main: prepare sack and call f2
+    i_push_u8, 5,
+    i_push_u8, 4,   // &f2,
     i_call, 2,
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
@@ -801,11 +788,9 @@ void p7() {
 void p8() {
   puts("p8: compute fibonacci using i_load/i_store");
   instr program[] = {
-    // goto main
-    i_goto, 18,
-    // fib
-    i_dup,
-    i_jump_if, 7,         // exit below if top is zero, otherwise jump +2
+    i_goto, 12,           // goto main
+    i_dup,                // fib
+    i_jump_if, 4,         // exit below if top is zero, otherwise jump +2
     i_ret, 1,             // return
     i_dupbis,             // [f_n-1, f_n, n] -> [f_n-1, f_n, n, f_n]
     i_dup,                // [f_n-1, f_n, n] -> [f_n-1, f_n, n, f_n, f_n]
@@ -815,11 +800,11 @@ void p8() {
     i_store, 0,           //                 -> [f_n, f_n+1, n]
     i_32dec,
     i_recur,
-    // push initial values
+    i_noop,               // main
     i_push_u8, 0,         // f0
     i_push_u8, 1,         // f1
     i_push_u8, 40,        // fib(n)
-    i_push_u8, 2,         // &fib
+    i_push_u8, 1,         // &fib
     i_call, 3
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
@@ -831,13 +816,13 @@ typedef void (*void_fn)();
 
 int main(int argc, char *argv[]) {
   void_fn programs[] = {
-    p1,
-    p2,
-    p3,
-    p4,
-    p5,
-    p6,
-    p7,
+    //p1,
+    //p2,
+    //p3,
+    //p4,
+    //p5,
+    //p6,
+    //p7,
     p8,
   };
 
