@@ -30,6 +30,7 @@ static const int instr_codepoint_mask = 0x3f;
 
 #define multi(i, nadd) (((nadd & 3) << 6) | (i & 0x3f));
 
+// TODO: consider returniung length of instr instead of number of extra bytes
 static int instr_nbyte(instr i) {
   return (i & instr_multibyte_mask) >> 6;
 }
@@ -113,19 +114,22 @@ int  decode_instr(struct instr* d, instr* i_addr) {
     d -> data = *(i_addr + 1);
     d -> has_data = 1;
   }
-  return nbytes;
+  return nbytes + 1;
 }
 
 int decode_program(struct instr* out, size_t outlen, instr* in, size_t inlen) {
-  int i = 0;
-  while (i < inlen && i < outlen) {
+  struct instr* outstart = out;
+  while (inlen && outlen) {
     int n = decode_instr(out, in);
-    out++;
     in += n;
-    i++;
+    inlen -= n;
+    out++;
+    outlen--;
   }
-  printf("%ld|%ld|%d\n", inlen, outlen, i);
-  return i;
+  if (inlen) {
+    return -inlen;
+  }
+  return out - outstart;
 }
 
 char* instr_name(instr i) {
