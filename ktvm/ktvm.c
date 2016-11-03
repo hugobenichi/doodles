@@ -254,8 +254,8 @@ int datastack_ensure_capacity(struct datastack* d, int n) {
 
 
 struct call {
-  instr*    start;
-  instr*    ip;
+  struct instr*    start;
+  struct instr*    ip;
   uint32_t* fp;
   int       n_args;
 };
@@ -302,7 +302,7 @@ struct ctx {
   struct datastack data;
   struct callstack call;
   struct call* current;
-  instr* ip_end;
+  struct instr* ip_end;
 };
 
 void ctx_new(struct ctx *c,
@@ -337,11 +337,11 @@ void ctx_callstack_print(struct ctx* c, FILE* f, const char* indent) {
   //       the caller arguments are lost when dumping the stack.
   char b[64];
   int n = (c -> current) - (c -> call.bottom);
-  instr* base = c -> call.bottom -> start;
+  struct instr* base = c -> call.bottom -> start;
   struct call* call = c -> current;
   while (n >= 0) {
-    instr* s = call -> start;
-    instr* i = call -> ip;
+    struct instr* s = call -> start;
+    struct instr* i = call -> ip;
     if (n > 0) {
       s++; // match +1 at end of exec's switch for non-first call. TODO: clean this hack
     }
@@ -349,9 +349,9 @@ void ctx_callstack_print(struct ctx* c, FILE* f, const char* indent) {
       i--; // similar hack to the one above
     }
     // BUG: why is it not printing multibyte instruction correctly ?
-    instr_disassembly(b, sizeof(b), i);
+    instr_print(b, sizeof(b), i);
     fprintf(f, "%s%.2i: at +%.2ld: %s\n", indent, n, (long)(i - base), b);
-    instr_disassembly(b, sizeof(b), s);
+    instr_print(b, sizeof(b), s);
     fprintf(f, "%s    in +%.2ld: %s", indent, (long)(s - base), b);
     call_args(b, sizeof(b), call);
     fprintf(f, " with %s\n", b);
@@ -385,11 +385,11 @@ void ctx_ip_next(struct ctx *c) {
   }
 }
 
-instr ctx_ip_get(struct ctx *c) {
+struct instr ctx_ip_get(struct ctx *c) {
   return *(c -> current -> ip);
 }
 
-void ctx_ip_set(struct ctx *c, instr* ip) {
+void ctx_ip_set(struct ctx *c, struct instr* ip) {
   if (ip >= c -> ip_end) {
     snprintf(buf, sizeof(buf), "invalid program address %ld", ip - c -> current -> ip);
     ctx_dump_fatal(stderr, c, buf);
@@ -415,7 +415,7 @@ int32_t ctx_pop(struct ctx *c) {
 // It does so by:
 //  - pushing a new activation record on the call stack.
 //  - pointing current activation record to new top of stack.
-void ctx_call(struct ctx *c, instr* callee, int n_args) {
+void ctx_call(struct ctx *c, struct instr* callee, int n_args) {
   if (c-> call.top == c -> call.end) {
     ctx_dump_fatal(stderr, c, "call stack overflow");
   }
@@ -453,28 +453,27 @@ void exec(struct ctx *c, instr* program, size_t len) {
 
   printf("declen = %d\n" ,declen);
   program_fprint(stdout, dec, declen);
-  BOOM;
+  printf("\n");
 
-  ctx_call(c, program, 0);
-  c -> ip_end     = program + len;
+  ctx_call(c, dec, 0);
+  c -> ip_end     = dec + len;
   while (c -> current -> ip < c -> ip_end) {
+    struct instr i = ctx_ip_get(c);
 
     if (DBG) {
       ctx_datastack_print(c, stdout, "  :");
-      instr_disassembly(buf, sizeof(buf), c -> current -> ip);
+      instr_print(buf, sizeof(buf), &i);
       printf("%s\n", buf);
     }
 
-    switch(ctx_ip_get(c)) {
+    switch(instr_codepoint(i.i)) {
       case i_push_32:
         break;
-      case i_push_u8: // TODO: fix broken widening
-        ctx_ip_next(c);
-        ctx_push(c, (ctx_ip_get(c)) & 0xff);
+      case i_push_u8:
+        ctx_push(c, i.data & 0xff);
         break;
-      case i_push_s8:
-        ctx_ip_next(c);
-        ctx_push(c, ctx_ip_get(c));
+      case i_push_s8: // TODO: fix broken widening
+        ctx_push(c, i.data);
         break;
       case i_32add:
         // TODO: check datastack len > 1
@@ -541,13 +540,11 @@ void exec(struct ctx *c, instr* program, size_t len) {
         ctx_push(c, r1);
         break;
       case i_goto:
-        ctx_ip_next(c);
-        ctx_ip_set(c, program + ctx_ip_get(c) - 1);
+        ctx_ip_set(c, dec + i.data - 1);
         break;
       case i_jump_if:
-        ctx_ip_next(c);
         if (ctx_pop(c)) {
-          ctx_ip_set(c, program + ctx_ip_get(c) - 1);
+          ctx_ip_set(c, dec + i.data - 1);
         }
         break;
       case i_skip_if:
@@ -561,29 +558,23 @@ void exec(struct ctx *c, instr* program, size_t len) {
         }
         break;
       case i_load:
-        ctx_ip_next(c);
-        r0 = ctx_ip_get(c);
-        // TODO: check 0 <= r0 < n_args
-        ctx_push(c, *(c -> current -> fp + r0));
+        // TODO: check 0 <= i.data < n_args
+        ctx_push(c, *(c -> current -> fp + i.data));
         break;
       case i_store:
-        ctx_ip_next(c);
-        r0 = ctx_ip_get(c);
-        // TODO: check 0 <= r0 < n_args
-        *(c -> current -> fp + r0) = ctx_pop(c);
+        // TODO: check 0 <= i.data < n_args
+        *(c -> current -> fp + i.data) = ctx_pop(c);
         break;
       case i_recur:
         c -> current -> ip = c -> current -> start;
         // TODO: reset stack pointer
         break;
       case i_call:
-        ctx_ip_next(c);
         r0 = ctx_pop(c);
-        ctx_call(c, program + r0 - 1, ctx_ip_get(c));
+        ctx_call(c, dec + r0 - 1, i.data);
         break;
       case i_ret:
-        ctx_ip_next(c);
-        ctx_ret(c, ctx_ip_get(c));
+        ctx_ret(c, i.data);
         break;
       case i_panic:
         ctx_dump_fatal(stderr, c, "panic");
@@ -595,182 +586,6 @@ void exec(struct ctx *c, instr* program, size_t len) {
     }
     (c -> current -> ip)++; // do not use ctx_ip_next() to avoid fatal-ing at program end
   }
-}
-
-void exec2(struct ctx *c, instr* program, size_t len) {
-  int32_t r0, r1;
-
-  static char* instr_labels[] = {
-    &&do_i_noop,
-    &&do_i_push_32,
-    &&do_i_push_u8,
-    &&do_i_push_s8,
-    &&do_i_32add,
-    &&do_i_32mul,
-    &&do_i_32neg,
-    &&do_i_32inc,
-    &&do_i_32dec,
-    &&do_i_not,
-    &&do_i_eq,
-    &&do_i_leq,
-    &&do_i_geq,
-    &&do_i_dup,
-    &&do_i_dupbis,
-    &&do_i_swap,
-    &&do_i_goto,
-    &&do_i_jump_if,
-    &&do_i_skip_if,
-    &&do_i_do_if,
-    &&do_i_call,
-    &&do_i_ret,
-    &&do_i_load,
-    &&do_i_store,
-    &&do_i_recur,
-    &&do_i_panic,
-  };
-
-  ctx_call(c, program, 0);
-  c -> ip_end     = program + len;
-
-  dispatch:
-    if (c -> current -> ip >= c -> ip_end) return;
-
-    if (DBG) {
-      ctx_datastack_print(c, stdout, "  :");
-      instr_disassembly(buf, sizeof(buf), c -> current -> ip);
-      printf("%s\n", buf);
-    }
-
-    instr i = instr_codepoint(ctx_ip_get(c));
-    // TODO: check bounds
-    void* label = instr_labels[i];
-    goto *label;
-
-  do_i_push_u8: // TODO: fix broken widening
-    ctx_ip_next(c);
-    ctx_push(c, (ctx_ip_get(c)) & 0xff);
-    goto next;
-  do_i_push_s8:
-    ctx_ip_next(c);
-    ctx_push(c, ctx_ip_get(c));
-    goto next;
-  do_i_32add:
-    // TODO: check datastack len > 1
-    r0 = ctx_pop(c);
-    (*(c -> data.top - 1)) += r0;
-    goto next;
-  do_i_32mul:
-    r0 = ctx_pop(c);
-    r1 = ctx_pop(c);
-    ctx_push(c, r0 * r1);
-    goto next;
-  do_i_32neg:
-    r0 = ctx_pop(c);
-    ctx_push(c, -r0);
-    goto next;
-  do_i_not:
-    r0 = ctx_pop(c);
-    r1 = r0 ? 0 : 1;
-    ctx_push(c, r1);
-    goto next;
-  do_i_eq:
-    r0 = ctx_pop(c);
-    r1 = ctx_pop(c);
-    ctx_push(c, r1);
-    ctx_push(c, r0);
-    ctx_push(c, r0 == r1);
-    goto next;
-  do_i_leq:
-    r0 = ctx_pop(c);
-    r1 = ctx_pop(c);
-    ctx_push(c, r1);
-    ctx_push(c, r0);
-    ctx_push(c, r0 <= r1);
-    goto next;
-  do_i_geq:
-    r0 = ctx_pop(c);
-    r1 = ctx_pop(c);
-    ctx_push(c, r1);
-    ctx_push(c, r0);
-    ctx_push(c, r0 >= r1);
-    goto next;
-  do_i_32inc:
-    // TODO: check datastack len > 0
-    ctx_push(c, ctx_pop(c) + 1);
-    (*(c -> data.top - 1))++;
-    goto next;
-  do_i_32dec:
-    // TODO: check datastack len > 0
-    (*(c -> data.top - 1))--;
-    goto next;
-  do_i_dup:
-    // TODO: check datastack len > 0
-    ctx_push(c, *(c -> data.top - 1));
-    goto next;
-  do_i_dupbis:
-    // TODO: check datastack len > 1
-    ctx_push(c, *(c -> data.top - 2));
-    goto next;
-  do_i_swap:
-    // TODO: check datastack len > 1
-    r0 = ctx_pop(c);
-    r1 = ctx_pop(c);
-    ctx_push(c, r0);
-    ctx_push(c, r1);
-    goto next;
-  do_i_goto:
-    ctx_ip_next(c);
-    ctx_ip_set(c, program + ctx_ip_get(c) - 1);
-    goto next;
-  do_i_jump_if:
-    ctx_ip_next(c);
-    if (ctx_pop(c)) {
-      ctx_ip_set(c, program + ctx_ip_get(c) - 1);
-    }
-    goto next;
-  do_i_skip_if:
-    if (ctx_pop(c)) {
-      ctx_ip_next(c);
-    }
-    goto next;
-  do_i_do_if:
-    if (!ctx_pop(c)) {
-      ctx_ip_next(c);
-    }
-    goto next;
-  do_i_load:
-    ctx_ip_next(c);
-    r0 = ctx_ip_get(c);
-    // TODO: check 0 <= r0 < n_args
-    ctx_push(c, *(c -> current -> fp + r0));
-    goto next;
-  do_i_store:
-    ctx_ip_next(c);
-    r0 = ctx_ip_get(c);
-    // TODO: check 0 <= r0 < n_args
-    *(c -> current -> fp + r0) = ctx_pop(c);
-    goto next;
-  do_i_recur:
-    c -> current -> ip = c -> current -> start;
-    // TODO: reset stack pointer
-    goto next;
-  do_i_call:
-    ctx_ip_next(c);
-    r0 = ctx_pop(c);
-    ctx_call(c, program + r0 - 1, ctx_ip_get(c));
-    goto next;
-  do_i_ret:
-    ctx_ip_next(c);
-    ctx_ret(c, ctx_ip_get(c));
-    goto next;
-  do_i_panic:
-    ctx_dump_fatal(stderr, c, "panic");
-    goto next;
-  do_i_push_32:
-  do_i_noop:
-  next:
-    (c -> current -> ip)++; // do not use ctx_ip_next() to avoid fatal-ing at program end
-    goto dispatch;
 }
 
 #include <time.h>
@@ -1016,13 +831,13 @@ typedef void (*void_fn)();
 
 int main(int argc, char *argv[]) {
   void_fn programs[] = {
-    //p1,
-    //p2,
-    //p3,
-    //p4,
-    //p5,
-    //p6,
-    //p7,
+    p1,
+    p2,
+    p3,
+    p4,
+    p5,
+    p6,
+    p7,
     p8,
   };
 
