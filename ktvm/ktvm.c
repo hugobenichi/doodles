@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DBG 0
-#define ITER 100
+#define DBG 1
+#define ITER 1
 
 #define BOOM do { printf("boom\n"); exit(0); } while(0)
 
@@ -61,8 +61,8 @@ const instr i_dupbis  =  14;
 const instr i_swap    =  15;
 const instr i_goto    =  multi(16, 1); // TODO: change to forward goto with relative offset
 const instr i_jump_if =  multi(17, 1); // TODO: change to forward goto with relative offset
-const instr i_skip_if =  multi(18, 1);
-const instr i_do_if   =  multi(19, 1);
+const instr i_skip_if =  18;
+const instr i_do_if   =  19;
 const instr i_call    =  multi(20, 1); // pop top of stack as programm addr and start subroutine there.
                                        // Folowwing byte indicate number of args to take from stack for fp.
 const instr i_ret     =  multi(21, 1); // return to caller. Following byte indicate number of words to return.
@@ -648,51 +648,35 @@ void p2() {
   instr program[] = {
     i_push_u8, 20,
     i_push_u8, 0,
-    i_geq,
-    i_jump_if, 6,
+    i_push_u8, 5, // &count
+    i_call, 2,
+    i_goto, 10,
+    i_geq,        // count
+    i_skip_if,
+    i_ret, 1,
     i_32inc,
-    i_goto, 2,
-    i_noop
+    i_recur
   };
   if (DBG) disassembly(stdout, program, sizeof(program));
   puts("");
   run_program(program, sizeof(program));
 }
 
-void p3() {
-  puts("p3: compute 4! using inner goto loop only");
+void p5() {
+  puts("p5: compute 4! using non-tail recursive i_call/i_ret");
   instr program[] = {
-    // initial values
-    i_push_u8, 1,
-    i_push_u8, 5,
-    i_dup,                // factorial begin
-    i_jump_if, 5,         // exit below if top is zero, otherwise jump +2
-    i_goto, 12,           // exit
-    i_swap,               // ..., acc, n] -> ..., n, acc]
-    i_dupbis,             //              -> ..., n, acc, n]
-    i_32mul,              //              -> ..., n, n x acc]
-    i_swap,               //              -> ..., n x acc, n]
-    i_32dec,              //              -> ..., n x acc, n - 1]
-    i_goto, 2
-  };
-  if (DBG) disassembly(stdout, program, sizeof(program));
-  puts("");
-  run_program(program, sizeof(program));
-}
-
-void p4() {
-  puts("p4: compute 4! using one layer of i_call/i_ret plus inner goto loop");
-  instr program[] = {
-    i_goto, 10,           // goto main
+    i_goto, 12,           // goto main
     i_dup,                // factorial
-    i_jump_if, 4,         // exit below if top is zero, otherwise jump +2
+    i_skip_if,            // exit below if top is zero, otherwise jump +2
     i_ret, 1,             // return
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
     i_swap,               //              -> ..., n x acc, n]
     i_32dec,              //              -> ..., n x acc, n - 1]
-    i_goto, 1,
+    i_push_u8, 1,         // factorial address
+    i_call, 2,            // recur
+    i_ret, 1,
     i_push_u8, 1,         // main: push initial values
     i_push_u8, 5,
     i_push_u8, 1,         // factorial address
@@ -703,21 +687,19 @@ void p4() {
   run_program(program, sizeof(program));
 }
 
-void p5() {
-  puts("p5: compute 4! using non-tail recursive i_call/i_ret");
+void p5bis() {
+  puts("p5: compute 4! using i_recur");
   instr program[] = {
-    i_goto, 12,           // goto main
+    i_goto, 10,           // goto main
     i_dup,                // factorial
-    i_jump_if, 4,         // exit below if top is zero, otherwise jump +2
+    i_skip_if,            // exit below if top is zero, otherwise jump +2
     i_ret, 1,             // return
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
     i_swap,               //              -> ..., n x acc, n]
     i_32dec,              //              -> ..., n x acc, n - 1]
-    i_push_u8, 1,         // factorial address
-    i_call, 2,            // recur
-    i_ret, 1,
+    i_recur,              // recur
     i_push_u8, 1,         // main: push initial values
     i_push_u8, 5,
     i_push_u8, 1,         // factorial address
@@ -765,7 +747,7 @@ void p7() {
     i_32mul,
     i_ret, 1,
     i_dup,          // f2(4): sum of square
-    i_jump_if, 7,  // swap top of stack and exit below if top is zero
+    i_skip_if,  // swap top of stack and exit below if top is zero
     i_ret, 1,
     i_swap,
     i_dupbis,
@@ -792,7 +774,7 @@ void p8() {
   instr program[] = {
     i_goto, 12,           // goto main
     i_dup,                // fib
-    i_jump_if, 4,         // exit below if top is zero, otherwise jump +2
+    i_skip_if,            // exit below if top is zero, otherwise jump +2
     i_ret, 1,             // return
     i_dupbis,             // [f_n-1, f_n, n] -> [f_n-1, f_n, n, f_n]
     i_dup,                // [f_n-1, f_n, n] -> [f_n-1, f_n, n, f_n, f_n]
@@ -819,13 +801,12 @@ typedef void (*void_fn)();
 int main(int argc, char *argv[]) {
   void_fn programs[] = {
     //p1,
-    //p2,
-    //p3,
-    //p4,
+    p2,
     //p5,
+    //p5bis,
     //p6,
     //p7,
-    p8,
+    //p8,
   };
 
   size_t len = sizeof(programs) / sizeof(programs[0]);
