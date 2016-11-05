@@ -59,8 +59,8 @@ const instr i_geq     =  12;
 const instr i_dup     =  13;
 const instr i_dupbis  =  14;
 const instr i_swap    =  15;
-const instr i_goto    =  multi(16, 1); // TODO: change to forward goto with relative offset
-const instr i_jump_if =  multi(17, 1); // TODO: change to forward goto with relative offset
+const instr i_goto    =  multi(16, 1);
+const instr i_jump_if =  multi(17, 1);
 const instr i_skip_if =  18;
 const instr i_do_if   =  19;
 const instr i_call    =  multi(20, 1); // pop top of stack as programm addr and start subroutine there.
@@ -541,11 +541,11 @@ void exec(struct ctx *c, instr* program, size_t len) {
         ctx_push(c, r1);
         break;
       case i_goto:
-        ctx_ip_set(c, dec + i.data - 1);
+        ctx_ip_set(c, c -> current -> ip + i.data - 1);
         break;
       case i_jump_if:
         if (ctx_pop(c)) {
-          ctx_ip_set(c, dec + i.data - 1);
+          ctx_ip_set(c, c -> current -> ip + i.data - 1);
         }
         break;
       case i_skip_if:
@@ -650,7 +650,7 @@ void p2() {
     i_push_u8, 0,
     i_push_u8, 5, // &count
     i_call, 2,
-    i_goto, 10,
+    i_goto, 6,
     i_geq,        // count
     i_skip_if,
     i_ret, 1,
