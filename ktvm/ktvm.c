@@ -62,7 +62,7 @@ const instr i_swap    =  15;
 const instr i_goto    =  multi(16, 1);
 const instr i_jump_if =  multi(17, 1);
 const instr i_skip_if =  18;
-const instr i_do_if   =  19;
+const instr i_ret_ze  =  multi(19, 1);
 const instr i_call    =  multi(20, 1); // pop top of stack as programm addr and start subroutine there.
                                        // Folowwing byte indicate number of args to take from stack for fp.
 const instr i_ret     =  multi(21, 1); // return to caller. Following byte indicate number of words to return.
@@ -91,7 +91,7 @@ static char* instr_names[] = {
   "i_goto",
   "i_jump_if",
   "i_skip_if",
-  "i_do_if",
+  "i_ret_ze",
   "i_call",
   "i_ret",
   "i_load",
@@ -553,9 +553,9 @@ void exec(struct ctx *c, instr* program, size_t len) {
           ctx_ip_next(c);
         }
         break;
-      case i_do_if:
+      case i_ret_ze:
         if (!ctx_pop(c)) {
-          ctx_ip_next(c);
+          ctx_ret(c, i.data);
         }
         break;
       case i_load:
@@ -650,10 +650,9 @@ void p2() {
     i_push_u8, 0,
     i_push_u8, 5, // &count
     i_call, 2,
-    i_goto, 6,
+    i_goto, 5,
     i_geq,        // count
-    i_skip_if,
-    i_ret, 1,
+    i_ret_ze, 1,
     i_32inc,
     i_recur
   };
@@ -665,10 +664,9 @@ void p2() {
 void p5() {
   puts("p5: compute 4! using non-tail recursive i_call/i_ret");
   instr program[] = {
-    i_goto, 12,           // goto main
+    i_goto, 11,           // goto main
     i_dup,                // factorial
-    i_skip_if,            // exit below if top is zero, otherwise jump +2
-    i_ret, 1,             // return
+    i_ret_ze, 1,          // return if top is zero
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
@@ -690,10 +688,9 @@ void p5() {
 void p5bis() {
   puts("p5: compute 4! using i_recur");
   instr program[] = {
-    i_goto, 10,           // goto main
+    i_goto, 9,            // goto main
     i_dup,                // factorial
-    i_skip_if,            // exit below if top is zero, otherwise jump +2
-    i_ret, 1,             // return
+    i_ret_ze, 1,          // return if top is zero
     i_swap,               // ..., acc, n] -> ..., n, acc]
     i_dupbis,             //              -> ..., n, acc, n]
     i_32mul,              //              -> ..., n, n x acc]
@@ -801,9 +798,9 @@ typedef void (*void_fn)();
 int main(int argc, char *argv[]) {
   void_fn programs[] = {
     //p1,
-    p2,
+    //p2,
     //p5,
-    //p5bis,
+    p5bis,
     //p6,
     //p7,
     //p8,
