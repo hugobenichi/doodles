@@ -40,7 +40,7 @@ static instr instr_codepoint(instr i) {
   return (i & instr_codepoint_mask);
 }
 
-const int instr_max = 26;    // next instr id
+const int instr_max = 27;    // next instr id
 static char* instr_names[instr_max];
 
 const instr i_noop    =   0; // nothing
@@ -70,6 +70,7 @@ const instr i_load    =  multi(22, 1);
 const instr i_store   =  multi(23, 1);
 const instr i_recur   =  24;
 const instr i_panic   =  25;
+const instr i_halt    =  26;
 
 static char* instr_names[] = {
   "i_noop",
@@ -98,6 +99,7 @@ static char* instr_names[] = {
   "i_store",
   "i_recur",
   "i_panic",
+  "i_halt",
 };
 static int instr_names_len = sizeof(instr_names);
 static char* instr_unknown = "unknown";
@@ -580,8 +582,9 @@ void exec(struct ctx *c, instr* program, size_t len) {
       case i_panic:
         ctx_dump_fatal(stderr, c, "panic");
         break;
+      case i_halt:
+        return;
       case i_noop:
-        break;
       default:
         break;
     }
@@ -650,7 +653,7 @@ void p2() {
     i_push_u8, 0,
     i_push_u8, 5, // &count
     i_call, 2,
-    i_goto, 5,
+    i_halt,
     i_geq,        // count
     i_ret_ze, 1,
     i_32inc,
@@ -678,7 +681,8 @@ void p5() {
     i_push_u8, 1,         // main: push initial values
     i_push_u8, 5,
     i_push_u8, 1,         // factorial address
-    i_call, 2             // call factorial
+    i_call, 2,            // call factorial
+    i_halt
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
   puts("");
@@ -700,7 +704,8 @@ void p5bis() {
     i_push_u8, 1,         // main: push initial values
     i_push_u8, 5,
     i_push_u8, 1,         // factorial address
-    i_call, 2             // call factorial
+    i_call, 2,            // call factorial
+    i_halt
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
   puts("");
@@ -760,6 +765,7 @@ void p7() {
     i_push_u8, 5,
     i_push_u8, 4,   // &f2,
     i_call, 2,
+    i_halt,
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
   puts("");
@@ -786,7 +792,8 @@ void p8() {
     i_push_u8, 1,         // f1
     i_push_u8, 40,        // fib(n)
     i_push_u8, 1,         // &fib
-    i_call, 3
+    i_call, 3,
+    i_halt,
   };
   if (DBG) { disassembly(stdout, program, sizeof(program)); puts(""); }
   puts("");
@@ -800,10 +807,10 @@ int main(int argc, char *argv[]) {
     //p1,
     //p2,
     //p5,
-    p5bis,
+    //p5bis,
     //p6,
     //p7,
-    //p8,
+    p8,
   };
 
   size_t len = sizeof(programs) / sizeof(programs[0]);
