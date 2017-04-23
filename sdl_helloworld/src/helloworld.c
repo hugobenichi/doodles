@@ -4,6 +4,15 @@
 
 #define null NULL
 
+#define _ERR printf("error at %s:%d", __FILE__, __LINE__)
+
+// TODO: move to timeutil
+#define MILLI_IN_MICRO * 1000
+#define SEC_IN_MICRO * 1000 MILLI_IN_MICRO
+#define MIN_IN_MICRO * 60 SEC_IN_MICRO
+#define SEC_IN_MILLIS * 1000
+#define MIN_IN_MILLIS * 60 SEC_IN_MILLIS
+
 struct Ctx {
   // configuration
   int width;
@@ -20,7 +29,7 @@ struct Ctx {
 
 int init_ctx(struct Ctx* c) {
   int ret = SDL_CreateWindowAndRenderer(c -> width, c -> height, SDL_WINDOW_OPENGL, &(c->screen), &(c->renderer));
-  if (0 != ret) return ret;
+  if (0 != ret) { _ERR; return ret; }
 
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
   SDL_RenderSetLogicalSize(c -> renderer, c -> width, c -> height);
@@ -30,25 +39,34 @@ int init_ctx(struct Ctx* c) {
 
 int load_assets(struct Ctx* c) {
   SDL_Surface* object = SDL_LoadBMP( "lena512.bmp" );
-  if (!object) return -1;
+  if (!object) { _ERR; return -1; }
 
   c -> texture = SDL_CreateTextureFromSurface(c -> renderer, object);
-  if (!c -> texture) return -1;
+  if (!c -> texture) { _ERR; return -1; }
 
   // TODO: release 'object'
   return 0;
 }
 
-int draw_frame(struct Ctx* c) {
+int draw_frame(struct Ctx* c, SDL_Rect* rec) {
   int ret;
   ret = SDL_RenderClear(c -> renderer);
-  if (0 != ret) return -1;
+  if (0 != ret) { _ERR; return -1; }
   // parametrize this: tecture assets need to live in entity structs that hold the calculation of blit rectangles
-  ret = SDL_RenderCopy(c -> renderer, c -> texture, null, null);
-  if (0 != ret) return -1;
+  ret = SDL_RenderCopy(c -> renderer, c -> texture, rec, rec);
+  if (0 != ret) { _ERR; return -1; }
   SDL_RenderPresent(c -> renderer);
 
   return 0;
+}
+
+void advance_rec(SDL_Rect* rec, int step, int wrap_x, int wrap_y) {
+  rec -> x += step;
+  if (rec -> x < wrap_x) return;
+  rec -> x = 0;
+  rec -> y += step;
+  if (rec -> y < wrap_y) return;
+  rec -> y = 0;
 }
 
 void draw_something() {
@@ -64,10 +82,30 @@ void draw_something() {
   ret = load_assets(&c);
   if (0 != ret) goto err;
 
-  ret = draw_frame(&c);
-  if (0 != ret) goto err;
+  puts("Ready to draw");
 
-  usleep(6000);
+  int step = 512 / 4;
+
+  SDL_Rect rec = (SDL_Rect) {
+    .x = 0,
+    .y = 0,
+    .w = step,
+    .h = step,
+  };
+
+  int total_time_us = 5 SEC_IN_MICRO;
+  int time_step_us = 50 MILLI_IN_MICRO;
+
+  int count_down = total_time_us / time_step_us;
+  while (count_down--) {
+    printf("count_down = %d\n", count_down);
+    ret = draw_frame(&c, &rec);
+    if (0 != ret) goto err;
+    usleep(time_step_us);
+    advance_rec(&rec, step, c.width, c.height);
+  }
+
+  usleep(1 SEC_IN_MICRO);
 
   return;
 err:
