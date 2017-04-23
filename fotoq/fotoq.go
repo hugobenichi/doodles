@@ -31,6 +31,10 @@ const (
 	Test   = "test"
 )
 
+const (
+	sdcard = "sd64GB_A"
+)
+
 var (
 	cfg = map[string]conf.C{
 		"test": {
@@ -46,9 +50,9 @@ var (
 			},
 		},
 		"prod": {
-			Source:  "/Volumes/Untitled/DCIM/",
-			Staging: "/Volumes/Untitled/staging/",
-			Working: "/Volumes/Untitled/staging/",
+			Source:  "/Volumes/" + sdcard + "/DCIM/",
+			Staging: "/Volumes/" + sdcard + "/staging/",
+			Working: "/Volumes/" + sdcard + "/staging/",
 			//Working: "/Users/hugobenichi/Desktop/photos/",
 			Exts: []string{
 				"JPG",
