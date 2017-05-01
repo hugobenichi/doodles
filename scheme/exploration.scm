@@ -13,6 +13,7 @@
   (lambda args
     (for-each (cut print <> #\space) args)))
 ; OR
+(import (srfi 1))
 (define prints2
   (lambda args
     (for-each display (concatenate (map (cut list <> #\space) args)))))
@@ -21,7 +22,7 @@
   (lambda args (apply prints args) (newline)))
 
 (println 1 2 3)
-(printsln 1 2 3)
+(println 1 2 3)
 (prints2 1 2 3)(newline)
 
 ;; util
@@ -50,7 +51,17 @@
     pair))
 
 (let ((s (constant-streams 2)))
-  (printsln (car s) (car ((cdr s))) (car ((cdr ((cdr s)))))))
+  (println (car s) (car ((cdr s))) (car ((cdr ((cdr s)))))))
+
+;; Objects
+
+(define (make-obj assocls)
+  (case-lambda
+  ((sym) (cadr (assoc sym assocls)))
+  ((sym new_val) (cadr (assoc sym assocls)))
+
+(let ((obj (make-obj '((x 1) (y 3) (z -2)))))
+  (println (obj 'x) (obj 'y) (obj 'z)))
 
 ;; IO list
 
