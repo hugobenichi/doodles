@@ -1,18 +1,14 @@
-(defn
-  fib
-  [n]
-  (loop [a 1, b 1, x '(1 1)]
-    ( if(= n (count x))
-	  x
-     (recur (+ a b) a (cons (+ a b)  x ))
-	)
-  )
-)
+(defn fib [n]
+  (loop [a 1, b 1, vx [a b]]
+    (if (= n (count vx))
+	    vx
+      (let [ab (+ a b)]
+        (recur ab a (conj vx ab))))))
 
 (def nbrs [4 7 14])
 
-(doseq 
-  [n nbrs] 
-  (println (fib n) ) 
-)
+(doseq [r (map fib nbrs)] println)
+(doseq [n nbrs]
+  (println (fib n)))
 
+(run! println (map fib [ 5 10 15]))
