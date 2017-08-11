@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<body id="all">
+
+<img id="scream" style="display:none;" width="220" height="277" src="https://www.w3schools.com/html/img_the_scream.jpg" alt="The Scream">
+
+<canvas id="canvas" width="240" height="297" style="border:1px solid #d3d3d3;">
+</canvas>
+
+<canvas id="zoom" width="200" height="200" style="border:1px solid #d3d3d3;">
+</canvas>
+
+<canvas id="grad" width="400" height="400" style="border:1px solid #d3d3d3;">
+</canvas>
+
+<script>
+let get_canvas = (elem) => { return elem.getContext('2d'); };
+let get_by_id = (id) => { return document.getElementById(id); };
+let clear = (ctx, w, h) => { ctx.clearRect(0, 0, w, h); };
+
+let property = (key) => {
+  return (obj, x) => {
+    if (obj == null) {
+        return;
+    }
+    if (x !== undefined) {
+        obj[key] = x;
+        return;
+    }
+    return obj[key];
+  };
+};
+
+let update = (key, fn) {
+  return (obj) => {
+    if (obj == null) {
+      return;
+    }
+    obj[key] = fn(obj[key]);
+  };
+};
+
+let prop_up = property('up');
+let prop_down = property('down');
+let prop_left = property('left');
+let prop_right = property('right');
+
+window.onload = function() {
+
+  /* zooming rectangle */
+
+  let img = get_by_id("scream");
+
+  let imgctx = get_canvas(get_by_id("canvas"));
+  imgctx.drawImage(img, 0, 0);
+
+  let zoomctx = get_canvas(get_by_id("zoom"));
+  zoomctx.imageSmoothingEnabled = false;
+
+  let zoomwidth = 20;
+  let zoomwidthhalf = 10;
+
+  let state = {
+    x: zoomwidthhalf,
+    y: zoomwidthhalf,
+  };
+
+  let drawzoom = (x,y) => {
+    if (x < zoomwidthhalf) {
+      x = zoomwidthhalf;
+    }
+    if (y < zoomwidthhalf) {
+      y = zoomwidthhalf;
+    }
+    if (img.width - x < zoomwidthhalf) {
+      x = img.width - zoomwidthhalf;
+    }
+    if (img.height - y < zoomwidthhalf) {
+      y = img.height - zoomwidthhalf;
+    }
+    let sx = x - zoomwidthhalf;
+    let sy = y - zoomwidthhalf;
+    zoomctx.drawImage(img, sx, sy, zoomwidth, zoomwidth, 0, 0, 200, 200);
+
+    clear(imgctx, 240, 297);
+    imgctx.drawImage(img, 0, 0);
+    imgctx.strokeRect(sx,sy,20,20);
+  };
+  drawzoom(zoomwidthhalf, zoomwidthhalf);
+
+  let redraw = () => {
+    drawzoom(state.x, state.y);
+  };
+
+  // TODO: offsetmouse position by top-left corner of canvas for correctness
+  let movezoomwindow = (event) => {
+    state.x = event.layerX;
+    state.y = event.layerY;
+    window.requestAnimationFrame(redraw);
+  };
+  canvas.addEventListener('mousemove', movezoomwindow);
+
+
+
+
+
+  /* moving gradient */
+
+  let gradctx = get_canvas(get_by_id('grad'));
+  let w = gradctx.canvas.width;
+  let h = gradctx.canvas.height;
+
+  // TODO: can this be simplified ?
+  let buffer = gradctx.createImageData(w, h);
+  let bufferraw = new ArrayBuffer(buffer.data.length);
+  let buffer32 = new Uint32Array(bufferraw);
+  let buffer8 = new Uint8ClampedArray(bufferraw);
+
+  let gradoffset = {x: 0, y: 0};
+  let drawgrad = () => {
+    var offset = 0;
+    for (i = 0; i < w; i++) {
+      for (j = 0; j < h; j++) {
+        let R = Math.abs(gradoffset.x + j * 4) & 255;
+        let G = 0 & 255;
+        let B = Math.abs(gradoffset.y + i * 4) & 255;
+        let A = 255;
+        let val = (A << 24) + (R << 16) + (G << 8) + B;
+        buffer32[offset] = val;
+        offset++;
+      }
+    }
+    //gradoffset.x = gradoffset.x - 3;
+    //gradoffset.y = gradoffset.y + 1;
+
+    let displacement_speed = 8;
+
+    if (gradoffset.up) {
+      gradoffset.y = gradoffset.y + displacement_speed;
+    }
+    if (gradoffset.down) {
+      gradoffset.y = gradoffset.y - displacement_speed;
+    }
+    if (gradoffset.left) {
+      gradoffset.x = gradoffset.x - displacement_speed;
+    }
+    if (gradoffset.right) {
+      gradoffset.x = gradoffset.x + displacement_speed;
+    }
+    buffer.data.set(buffer8);
+    gradctx.putImageData(buffer, 0, 0);
+    window.requestAnimationFrame(drawgrad);
+  };
+  drawgrad();
+
+
+  let keyboard_handler_map = {
+      'ArrowUp':      prop_up,
+      'ArrowDown':    prop_down,
+      'ArrowLeft':    prop_left,
+      'ArrowRight':   prop_left,
+      'w':            prop_up,
+      's':            prop_down,
+      'a':            prop_left,
+      'd':            prop_right,
+  };
+
+  let keyboard_handler_maker = (map, v) => {
+    return (ev) => {
+      ev.stopPropagation();
+      let prop = map[ev.key];
+      prop && prop(gradoffset, v);
+    };
+  };
+
+  get_by_id('all').addEventListener('keydown', keyboard_handler_maker(keyboard_handler_map, true));
+  get_by_id('all').addEventListener('keyup', keyboard_handler_maker(keyboard_handler_map, false));
+  //get_by_id('all').addEventListener('keydown', keyboard_down_handler);
+  //get_by_id('all').addEventListener('keyup', keyboard_up_handler);
+}
+</script>
+
+</body>
+</html>

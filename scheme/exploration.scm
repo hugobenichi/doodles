@@ -73,9 +73,23 @@
       ((string? x)    (display x))
       ((char? x)      (display x))
       ((number? x)    (display x))
+      ((null? x)      #f) ;nothing
       ((pair? x)      (iolist-print (car x)) (iolist-print (cdr x)))
       ((vector? x)    (vector-for-each iolist-print x))
       ((procedure? x) (iolist-print (x)))
-      ((null? x)      #f) ;nothing
-      ('default       (display x)))))
+      ('default       (display x))))) ; should be nothing ?
 
+;; better JS-like object
+
+(define (make-obj assocls)
+  (case-lambda
+    ((sym)          (cadr (assoc sym assocls)))
+    ((sym new_val)  (let* ((pair (assoc sym assocls))
+                           (old_val (car pair)))
+                      (set-car! pair new_val)
+                      old_val))))
+
+(let ((obj (make-obj '((x 1) (y 2) (z 3)))))
+  (println (obj 'x) (obj 'y) (obj 'z))
+  (obj 'x 4)
+  (println (obj 'x) (obj 'y) (obj 'z)))
