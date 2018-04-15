@@ -32,7 +32,14 @@ const (
 )
 
 const (
-	sdcard = "sd64GB_A"
+	sdcard = "Untitled"
+	//sdcard = "NO NAME"
+	//sdcard = "sd64GB_A"
+	//sdcard = "sd64GB_B"
+	//sdcard = "16G_A"
+	//sdcard = "16GB_B"
+	//sdcard = "16GB_C"
+	//sdcard = "16GB_D"
 )
 
 var (
